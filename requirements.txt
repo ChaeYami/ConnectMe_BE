@@ -7,6 +7,7 @@ django-cors-headers==4.0.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 mypy-extensions==1.0.0
+mysqlclient==2.1.1
 packaging==23.1
 pathspec==0.11.1
 platformdirs==3.5.1
