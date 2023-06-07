@@ -20,9 +20,7 @@ from user.serializers import (
     UserDelSerializer,
     PasswordResetSerializer,
     SetNewPasswordSerializer,
-    TokenSerializer,
     EmailThread,
-    PasswordVerificationSerializer,
     UserUpdateSerializer,
 )
 
@@ -30,13 +28,13 @@ from .models import User, Profile
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
-class SignupView(APIView):
+class UserView(APIView):
     permission_classes = [AllowAny]
     
     def get_permissions(self):
         if self.request.method == "PUT" or self.request.method == "DELETE":
             return [IsAuthenticated(),]
-        return super(SignupView, self).get_permissions()
+        return super(UserView, self).get_permissions()
     
     # 회원가입
     def post(self,request):

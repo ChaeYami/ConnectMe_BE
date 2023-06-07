@@ -42,6 +42,7 @@ class User(AbstractBaseUser):
     
     is_staff = models.BooleanField("스태프", default=False)
     is_admin = models.BooleanField("관리자", default=False)
+    is_active = models.BooleanField("활성화", default=True) 
     
     objects = UserManager()
     
@@ -89,4 +90,9 @@ class Profile(models.Model):
     ]
     mbti = models.CharField("MBTI", choices=mbti_choices, max_length=4, blank=True, null=True)
     age = models.IntegerField("나이", default = 0, blank=True, null= True)
-    introduce = models.CharField("자기소개", default=None, blank=True, null= True)
+    introduce = models.CharField("자기소개", max_length=225, default=None, blank=True, null= True)
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
+    
+    def __str__(self):
+        return self.user.account, self.user.nickname

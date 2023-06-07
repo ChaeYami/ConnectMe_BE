@@ -48,6 +48,13 @@ class SignupSerializer(serializers.ModelSerializer):
                     "blank": "비밀번호는 필수 입력 사항입니다.",
                 },
             },
+            "phone": {
+                "write_only": True,
+                "error_messages": {
+                    "required": "전화번호는 필수 입력 사항입니다.",
+                    "blank": "전화번호는 필수 입력 사항입니다.",
+                },
+            },
             "email": {
                 "error_messages": {
                     "required": "이메일은 필수 입력 사항입니다.",
@@ -102,19 +109,12 @@ class SignupSerializer(serializers.ModelSerializer):
     
     # 회원가입
     def create(self, validated_data):
-        account = validated_data["account"]
-        email = validated_data["email"]
-        phone = validated_data["phone"]
+        user = super().create(validated_data)
+        password = user.password
+        user.set_password(password)
+        user.save()
         
-        user = User(
-            account = account,
-            email = email,
-            phone = phone,
-        )
-        user.set_password(validated_data["password"])
-        user.save
-        
-        # Profile.object.creat(user = user) -> 프로필 시리얼라이저 생성 후 활성화 예정
+        # Profile.object.create(user = user)
         
         return user
         

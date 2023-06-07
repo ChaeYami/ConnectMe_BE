@@ -10,6 +10,7 @@ mypy-extensions==1.0.0
 mysqlclient==2.1.1
 packaging==23.1
 pathspec==0.11.1
+Pillow==9.5.0
 platformdirs==3.5.1
 PyJWT==2.7.0
 python-decouple==3.8
