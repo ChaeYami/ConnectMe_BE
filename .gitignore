@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,visualstudiocode,pycharm,python,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,visualstudiocode,pycharm,python,django
 
+my_settings.py
+
 ### Django ###
 *.log
 *.pot
@@ -453,5 +455,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+
+
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,visualstudiocode,pycharm,python,django
