@@ -36,6 +36,12 @@ class UserView(APIView):
             return [IsAuthenticated(),]
         return super(UserView, self).get_permissions()
     
+    # 개인정보 보기
+    def get(self, request):
+        user = get_object_or_404(User, id = request.user.id)
+        serializer = SignupSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
     # 회원가입
     def post(self,request):
         serializer = SignupSerializer(data=request.data)
@@ -73,6 +79,7 @@ class UserView(APIView):
             return Response({"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST)
 
 # ================================ 회원가입, 회원정보 끝 ================================
+
 
 # ================================ 로그인 ================================
 class CustomTokenObtainPairView(TokenObtainPairView):
