@@ -16,6 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from user.serializers import (
     ChangePasswordSerializer,
+    ProfileUpdateSerializer,
     SignupSerializer,
     CustomTokenObtainPairSerializer,
     UserDelSerializer,
@@ -36,7 +37,8 @@ class UserView(APIView):
     def get_permissions(self):
         if self.request.method == "PATCH" or self.request.method == "DELETE":
             return [IsAuthenticated(),]
-        return super(UserView, self).get_permissions()
+        else:
+            return super(UserView, self).get_permissions()
     
     # 개인정보 보기
     def get(self, request):
@@ -48,11 +50,13 @@ class UserView(APIView):
     def post(self,request):
         serializer = SignupSerializer(data=request.data)
         
+        
         if serializer.is_valid():
            serializer.save()
            return Response({"message" : "회원가입 완료!"} , status=status.HTTP_201_CREATED)
        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # 회원정보수정
     def patch (self, request):
@@ -62,7 +66,8 @@ class UserView(APIView):
             serializer.save()
             return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
         
-        return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
@@ -88,22 +93,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
     
-# ================================ 프로필 시작 ================================
-
-class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, user_id):
-        profile = get_object_or_404(Profile)
-        user = get_object_or_404(User, id=user_id)
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
-    
-    
-    # 비밀번호 변경
-
+# ================================ 비밀번호 변경 ================================
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -113,4 +103,39 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# ================================ 프로필 시작 ================================
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
+    def get_object(self, user_id):
+        return get_object_or_404(User, id=user_id)
+    
+    # 프로필 보기
+    def get(self, request, user_id):
+        profile = get_object_or_404(Profile)
+        user = get_object_or_404(User, id=user_id)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # 프로필 수정
+    def patch(self, request, user_id):
+        user = self.get_object(user_id) # 요청 유저의 정보 가져오기
+        
+        if user == request.user:
+            profile = get_object_or_404(Profile, id = user_id)
+            serializer = ProfileSerializer(profile, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
+        
+    
+    
