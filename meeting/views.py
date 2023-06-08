@@ -1,9 +1,13 @@
-from meeting.models import Meeting
+from meeting.models import (
+    Meeting,
+    MeetingComment,
+    )
 
 from meeting.serializer import (
-    MeetingListSerializer, 
-    MeetingCreateSerializer, 
-    MeetingDetailSerializer
+    MeetingListSerializer,
+    MeetingCreateSerializer,
+    MeetingDetailSerializer,
+    MeetingCommentCreateSerializer,
     )
 
 from rest_framework.views import APIView
@@ -75,3 +79,42 @@ class MeetingBookmarkView(APIView):
         else:
             meeting.bookmark.add(request.user)
             return Response('북마크', status=status.HTTP_200_OK)
+        
+# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크 끝 ================================
+
+# ================================ 모임 댓글 작성, 수정, 삭제 ================================
+
+class MeetingCommentView(APIView):
+    #모임 댓글 작성하기
+    def post(self, request, meeting_id):
+        serializer = MeetingCommentCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, meeting_id=meeting_id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class MeetingCommentDetailView(APIView):
+    #모임 댓글 수정
+    def put(self, request, comment_id, meeting_id):
+        comment = get_object_or_404(MeetingComment, id= comment_id)
+        if request.user == comment.user:
+            serializer = MeetingCommentCreateSerializer(comment, request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"meesage":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+    
+    #모임 댓글 삭제
+    def delete(self, request, comment_id, meeting_id):
+        comment = get_object_or_404(MeetingComment, id=comment_id)
+        if request.user == comment.user:
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+# ================================ 모임 댓글 작성, 수정, 삭제 끝 ================================
