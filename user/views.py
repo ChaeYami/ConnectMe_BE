@@ -15,9 +15,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from user.serializers import (
+    ChangePasswordSerializer,
     SignupSerializer,
     CustomTokenObtainPairSerializer,
     UserDelSerializer,
+    ProfileSerializer,
     PasswordResetSerializer,
     SetNewPasswordSerializer,
     EmailThread,
@@ -32,7 +34,7 @@ class UserView(APIView):
     permission_classes = [AllowAny]
     
     def get_permissions(self):
-        if self.request.method == "PUT" or self.request.method == "DELETE":
+        if self.request.method == "PATCH" or self.request.method == "DELETE":
             return [IsAuthenticated(),]
         return super(UserView, self).get_permissions()
     
@@ -84,3 +86,31 @@ class UserView(APIView):
 # ================================ 로그인 ================================
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
+    
+# ================================ 프로필 시작 ================================
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        profile = get_object_or_404(Profile)
+        user = get_object_or_404(User, id=user_id)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    
+    
+    # 비밀번호 변경
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = get_object_or_404(User, id=request.user.id)
+        serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
