@@ -24,7 +24,7 @@ from django.conf import settings
 
 
 
-# SignupSerializer 회원가입(user serializser) ================================ 
+# ================================ SignupSerializer 회원가입(user serializser) ================================ 
 
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
@@ -419,15 +419,15 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             "profile_img",
             "introduce",
         )
-        # extra_kwargs = {
-        #     "nickname": {
-        #         "error_messages": {
-        #             "required": "닉네임을 입력해주세요.",
-        #             "blank": "닉네임을 입력해주세요.",
-        #         }
-        #     },
-        #     
-        # }
+        extra_kwargs = {
+            "nickname": {
+                "error_messages": {
+                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
+                    "blank": "닉네임은 필수 입력 사항입니다.",
+                }
+            },
+            
+        }
 
     def validate(self, data):
         nickname = data.get("nickname")

@@ -3,6 +3,8 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.core.exceptions import ValidationError
 import os
 
+
+
 # ================================ 유저 모델 시작 ================================ 
 class UserManager(BaseUserManager):
     def create_user(self, account, email, phone, password = None, **extra_fields):
@@ -46,6 +48,9 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField("관리자", default=False)
     is_active = models.BooleanField("활성화", default=True) 
     
+    friends = models.ManyToManyField("self", related_name='friends', blank=True)
+
+    
     objects = UserManager()
     
     USERNAME_FIELD = "account"
@@ -66,12 +71,18 @@ class User(AbstractBaseUser):
     
 # ================================ 유저 모델 끝 ================================ 
     
+class Friend(models.Model):
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_friend_requests')
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_friend_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+
     
 # ================================ 프로필 시작 ================================ 
 
 class Profile(models.Model):
     profile_img = models.ImageField("프로필사진", null=True, blank=True, default=None, upload_to="profile_img/")
-    prefer_region = models.CharField("선호지역", max_length=10) 
+    prefer_region = models.CharField("선호지역", max_length=10 , default="전국", blank=True) 
     # 자바스크립트에서 도/특별시/광역시를 고르면 해당하는 시/군/구를 고르게 한 다음 해당 시/군/구만 텍스트로 보내올 예정 (탁근님이 할 거임 쿠다사이)
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")

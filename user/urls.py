@@ -12,4 +12,9 @@ urlpatterns = [
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/ : 프로필
     
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
+    
+    # friend
+    path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'),
+    path('friend/<int:friend_request_id>/accept/', views.FriendAcceptView.as_view(), name='friend_request_accept_view'),
+    path('friend/<int:friend_request_id>/reject/', views.FriendRejectView.as_view(), name='friend_request_reject_view'),
 ]
