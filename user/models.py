@@ -48,6 +48,9 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField("관리자", default=False)
     is_active = models.BooleanField("활성화", default=True) 
     
+    friends = models.ManyToManyField("self", related_name='friends', blank=True)
+
+    
     objects = UserManager()
     
     USERNAME_FIELD = "account"
@@ -68,6 +71,11 @@ class User(AbstractBaseUser):
     
 # ================================ 유저 모델 끝 ================================ 
     
+class Friend(models.Model):
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_friend_requests')
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_friend_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
 
     
 # ================================ 프로필 시작 ================================ 

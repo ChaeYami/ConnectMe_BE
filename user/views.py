@@ -27,7 +27,7 @@ from user.serializers import (
     UserUpdateSerializer,
 )
 
-from .models import User, Profile
+from .models import Friend, User, Profile
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
@@ -137,5 +137,76 @@ class ProfileView(APIView):
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
+        
+        
+        
+        
+# ================================ 프로필 끝 ================================
+        
     
     
+
+# ================================ 친구신청 시작 ================================
+
+class FriendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request ,user_id):
+        from_user = request.user
+        to_user = get_object_or_404(User, id=user_id)
+        if from_user == to_user:
+            return Response({"message": "자기 자신에게 친구 신청할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if from_user.friends.filter(id=user_id).exists():
+            return Response({"message": "이미 친구입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if from_user.sent_friend_requests.filter(to_user=to_user).exists():
+            return Response({"message": "이미 친구 신청을 보냈습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if from_user.received_friend_requests.filter(from_user=to_user).exists():
+            return Response({"message": "상대방이 이미 친구 신청을 보냈습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend_request = Friend(from_user=from_user, to_user=to_user)
+        friend_request.save()
+        
+        return Response({"message": "친구 신청을 보냈습니다."}, status=status.HTTP_201_CREATED)
+
+
+class FriendAcceptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friend_request_id):
+        friend_request = get_object_or_404(Friend, id=friend_request_id)
+        if friend_request.to_user != request.user:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if friend_request.status != 'pending':
+            return Response({"message": "이미 처리된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend_request.status = 'accepted'
+        friend_request.save()
+
+        from_user = friend_request.from_user
+        to_user = friend_request.to_user
+        from_user.friends.add(to_user)
+       
+        return Response({"message": "친구 신청을 수락했습니다."}, status=status.HTTP_200_OK)
+
+
+class FriendRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friend_request_id):
+        friend_request = get_object_or_404(Friend, id=friend_request_id)
+        if friend_request.to_user != request.user:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if friend_request.status != 'pending':
+            return Response({"message": "이미 처리된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend_request.status = 'rejected'
+        friend_request.save()
+
+        return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
+    
+    
+
+# ================================ 친구신청 시작 ================================
