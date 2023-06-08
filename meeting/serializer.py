@@ -1,15 +1,26 @@
 from rest_framework import serializers
 
 from meeting.models import (
-    Meeting, MeetingComment
+    Meeting,
+    MeetingComment,
+    MettingCommentReply,
     )
 # ================================ 모임 댓글 리스트 ================================
+
 # 따로 위에 올려놓은 이유는 모임 글 상세에 Nested Serializer 사용하기 위함입니다.
+#모임 대댓글 리스트
+class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MettingCommentReply
+        fields = ("user","content","updated_at",)
+
 #모임 댓글 리스트
 class MeetingCommentListSerializer(serializers.ModelSerializer):
+    reply = MeetingCommentReplyListSerializer(many=True)
     class Meta:
         model = MeetingComment
-        fields = ("user","content","updated_at",)
+        fields = ("user","content","updated_at","reply",)
+
 
 # ================================ 모임 글 리스트, 작성, 상세, 수정 ================================
 
@@ -51,3 +62,13 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
         fields = ("content",)
 
 # ================================ 모임 댓글 작성, 수정 끝 ================================
+
+# ================================ 모임 대댓글 작성, 수정 시작 ================================
+
+#모임 대댓글 작성 수정
+class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MettingCommentReply
+        fields = ("content",)
+
+# ================================ 모임 대댓글 작성, 수정 끝 ================================
