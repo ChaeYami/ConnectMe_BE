@@ -85,7 +85,7 @@ class SignupSerializer(serializers.ModelSerializer):
     # 아이디 유효성 검사
         if account_validator(account):
             raise serializers.ValidationError(
-                detail={"username": "아이디는 5자 이상 20자 이하의 숫자, 영문 대/소문자를 포함해야 합니다."}
+                detail={"account": "아이디는 5자 이상 20자 이하의 숫자, 영문 대/소문자를 포함해야 합니다."}
             )
 
         # 비밀번호 유효성 검사
