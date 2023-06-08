@@ -14,6 +14,7 @@ from user.validators import (
     password_pattern,
     account_validator,
     nickname_validator,
+    phone_validator
 )
 
 import threading
@@ -22,7 +23,7 @@ from django.conf import settings
 
 
 
-# =============== 회원가입(user serializser) =============== 
+# SignupSerializer 회원가입(user serializser) ================================ 
 
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
@@ -49,23 +50,23 @@ class SignupSerializer(serializers.ModelSerializer):
                 },
             },
             "phone": {
-                "write_only": True,
                 "error_messages": {
                     "required": "전화번호는 필수 입력 사항입니다.",
+                    "invalid": "알맞은 형식의 전화번호를 입력해주세요.",
                     "blank": "전화번호는 필수 입력 사항입니다.",
                 },
             },
             "email": {
                 "error_messages": {
                     "required": "이메일은 필수 입력 사항입니다.",
-                    "invalid": "이메일 형식이 맞지 않습니다. 알맞은 형식의 이메일을 입력해주세요.",
+                    "invalid": "알맞은 형식의 이메일을 입력해주세요.",
                     "blank": "이메일은 필수 입력 사항입니다.",
                 }
             },
             "nickname": {
                 "error_messages": {
                     "required": "닉네임은 필수 입력 사항입니다.",
-                    "invalid": "닉네임 형식이 맞지 않습니다. 알맞은 형식의 닉네임을 입력해주세요.",
+                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
                     "blank": "닉네임은 필수 입력 사항입니다.",
                 }
             },
@@ -81,6 +82,7 @@ class SignupSerializer(serializers.ModelSerializer):
         account = data.get("account")
         password = data.get("password")
         nickname = data.get("nickname")
+        phone = data.get("phone")
         
     # 아이디 유효성 검사
         if account_validator(account):
@@ -100,6 +102,11 @@ class SignupSerializer(serializers.ModelSerializer):
                 detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
             )
             
+        if phone_validator(phone):
+            raise serializers.ValidationError(
+                detail={"phone": "전화번호는 숫자만 사용해주세요."}
+            )
+            
         if nickname_validator(nickname):
             raise serializers.ValidationError(
                 detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
@@ -114,15 +121,15 @@ class SignupSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         
-        # Profile.object.create(user = user)
+        Profile.objects.create(user = user)
         
         return user
         
-# =============== 회원가입(user serializser) 끝 =============== 
+# ================================ 회원가입(user serializser) 끝 ================================ 
 
         
 
-# =============== 정보수정(이메일, 전화번호) 시작 =============== 
+# ================================ 정보수정(이메일, 전화번호) 시작 ================================ 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,24 +145,33 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             },
             "phone": {
                 "error_messages": {
-                    "required": "휴대폰 번호를 입력해주세요.",
+                    "required": "전화번호를 입력해주세요.",
+                    "invalid": "알맞은 형식의 전화번호를 입력해주세요.",
+                    "blank": "전화번호를 입력해주세요.",
                 }
             },
         }
         
     def validate(self, data):
         phone = data.get("phone")
-        pass
+        current_phone = self.context.get("request").user.phone
+
+        # 휴대폰 번호 존재여부와 blank 허용
+        if (User.objects.filter(phone=phone).exclude(phone=current_phone).exists() and not phone == ""):
+            raise serializers.ValidationError(detail={"phone": "이미 사용중인 휴대폰 번호 이거나 탈퇴한 휴대폰 번호입니다."})
+
+        return data
+
     
     def update(self, instance, validated_data):
         instance.email = validated_data.get("email", instance.email)
-        instance.phone_number = validated_data.get("phone_number", instance.phone_number)
+        instance.phone = validated_data.get("phone", instance.phone)
         instance.save()
         
         return instance
     
     
-# =============== 정보수정(이메일, 전화번호) 끝 =============== 
+# ================================ 정보수정(이메일, 전화번호) 끝 ================================ 
 
 
 # 로그인 토큰 serializer
@@ -179,7 +195,7 @@ class UserDelSerializer(serializers.ModelSerializer):
         model = User
         fields = ("is_active",)
 
-# ===========================================================
+# ==============================================================================================================
 class EmailThread(threading.Thread):
     def __init__(self, email):
         self.email = email
@@ -200,11 +216,11 @@ class Util:
         EmailThread(email).start()
 
 
-# ===========================================================
+# ==============================================================================================================
 
 
     
-# =============== 비밀번호 재설정 시작 =============== 
+# ================================ 비밀번호 재설정 시작 ================================ 
 
 # 비밀번호 찾기 serializer
 class PasswordResetSerializer(serializers.Serializer):
@@ -302,10 +318,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(detail={"user": "존재하지 않는 회원입니다."})
 
 
-# =============== 비밀번호 재설정 끝 =============== 
+# ================================ 비밀번호 재설정 끝 ================================ 
 
 
-# =============== 프로필 시작 =============== 
+# ================================ 프로필 시작 ================================ 
 
 # 프로필 serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -317,13 +333,47 @@ class ProfileSerializer(serializers.ModelSerializer):
         return obj.user.id
     
     def get_account(self,obj):
-        return obj.user.accont
+        return obj.user.account
     
     def get_nickname(self, obj):
         return obj.user.nickname
     
     class Meta:
         model = Profile
-        fields = ("id", "user_id", "account", "nickname", "profile_img", "region", "mbti", "age", "introduce")
+        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
 # 프로필 편집 serializer
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = (
+            "nickname",
+            "profile_img",
+            "introduce",
+        )
+        # extra_kwargs = {
+        #     "nickname": {
+        #         "error_messages": {
+        #             "required": "닉네임을 입력해주세요.",
+        #             "blank": "닉네임을 입력해주세요.",
+        #         }
+        #     },
+        #     
+        # }
+
+    def validate(self, data):
+        nickname = data.get("nickname")
+
+        # 닉네임 유효성 검사
+        if nickname_validator(nickname):
+            raise serializers.ValidationError(detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글,'-' 또는'_'만 사용 가능합니다."})
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance.nickname = validated_data.get("nickname", instance.nickname)
+        instance.profile_img = validated_data.get("profile_img", instance.profile_img)
+        instance.introduce = validated_data.get("introduce", instance.introduce)
+        instance.save()
+
+        return instance

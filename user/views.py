@@ -18,6 +18,7 @@ from user.serializers import (
     SignupSerializer,
     CustomTokenObtainPairSerializer,
     UserDelSerializer,
+    ProfileSerializer,
     PasswordResetSerializer,
     SetNewPasswordSerializer,
     EmailThread,
@@ -32,7 +33,7 @@ class UserView(APIView):
     permission_classes = [AllowAny]
     
     def get_permissions(self):
-        if self.request.method == "PUT" or self.request.method == "DELETE":
+        if self.request.method == "PATCH" or self.request.method == "DELETE":
             return [IsAuthenticated(),]
         return super(UserView, self).get_permissions()
     
@@ -84,3 +85,15 @@ class UserView(APIView):
 # ================================ 로그인 ================================
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
+    
+# ================================ 프로필 시작 ================================
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        profile = get_object_or_404(Profile)
+        user = get_object_or_404(User, id=user_id)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
