@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
 from place.models import Place, PlaceComment
-from place.serializers import PlaceCommentSerializer, PlaceSerializer, PlaceCreateSerializer, PlaceCreateCommentSerializer
+from place.serializers import PlaceCommentSerializer, PlaceSerializer, PlaceCreateSerializer, PlaceCreateCommentSerializer, PlaceUpdateSerializer, PlaceDeleteCommentSerializer
+
 from user.models import User
 
 from rest_framework import status
@@ -68,9 +69,8 @@ class PlaceDetailView(APIView):
     def patch(self, request, place_id):  # ✔️
         place = get_object_or_404(Place, id=place_id)
 
-        # 일부만 수정가능하도록 수정해야함
         if request.user.is_staff:
-            serializer = PlaceCreateSerializer(place, data=request.data)
+            serializer = PlaceUpdateSerializer(place, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status.HTTP_200_OK)
@@ -154,10 +154,20 @@ class PlaceCommentDetailView(APIView):
     # 댓글 삭제
     def delete(self, request, place_id, place_comment_id):  # ✔️
         login = request.user
+        comment = PlaceComment.objects.filter(main_comment=place_comment_id)
         writer = get_object_or_404(PlaceComment, id=place_comment_id)
         if login == writer.user:
-            writer.delete()
-            return Response(status.HTTP_200_OK)
+            serializer = PlaceDeleteCommentSerializer(
+                writer, data=request.data)
+            if serializer.is_valid():
+                if comment:
+                    serializer.save(content=None)
+                    return Response(serializer.data, status.HTTP_200_OK)
+                else:
+                    writer.delete()
+                    return Response(status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
