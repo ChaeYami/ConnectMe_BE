@@ -16,7 +16,13 @@ def password_pattern(password):
         return True
     return False
 
-
+def phone_validator(phone):
+    # 11자 숫자
+    phone_validations = r"^[0-9]$"
+    if re.search(phone_validations, str(phone)):
+        return True
+    return False
+    
 def account_validator(account):
     # 5자 이상 20자 이하 숫자 / 영문 대소문자
     account_validations = r"^[A-Za-z0-9]{5,20}$"
