@@ -123,3 +123,17 @@ class Profile(models.Model):
 class ProfileAlbum(models.Model):
     album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="%Y/%m/%d")
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')
+    
+    
+    
+    
+    
+# 소셜 로그인
+class OauthId(models.Model):
+    access_token = models.CharField("토큰", max_length=255)
+    provider = models.CharField("구분자", max_length=255)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
+
+    def __str__(self):
+        return f"[아이디]{self.user.username}, [소셜 도메인]{self.provider}"
