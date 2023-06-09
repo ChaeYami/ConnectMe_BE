@@ -26,7 +26,6 @@ class UserManager(BaseUserManager):
         user = self.create_user(account = account, password=password, **extra_fields)
 
         user.is_admin = True
-        user.is_staff = True
         user.is_active = True
         user.save(using=self._db)
         return user
@@ -43,12 +42,13 @@ class User(AbstractBaseUser):
     joined_at = models.DateTimeField("가입일", auto_now_add=True)
     warning = models.IntegerField("신고횟수", default=0)
     is_blocked = models.BooleanField("차단여부", default=False)
+    is_certify = models.BooleanField("번호인증여부", default=False)
     
     is_staff = models.BooleanField("스태프", default=False)
     is_admin = models.BooleanField("관리자", default=False)
     is_active = models.BooleanField("활성화", default=True) 
     
-    friends = models.ManyToManyField("self", related_name='friends', blank=True)
+    friends = models.ManyToManyField("self", related_name='friends', blank=True) # user_friends : 친구 상태 테이블
 
     
     objects = UserManager()
@@ -70,12 +70,17 @@ class User(AbstractBaseUser):
         return self.is_admin
     
 # ================================ 유저 모델 끝 ================================ 
-    
+ 
+ 
+'''
+user_friend : 친구신청 상태 테이블
+user_friends : 친구 상태 테이블
+'''   
 class Friend(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_friend_requests')
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_friend_requests')
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+    status = models.CharField(max_length=20, choices=[('pending', '신청중'), ('accepted', '수락됨'), ('rejected', '거절됨')], default='신청중')
 
     
 # ================================ 프로필 시작 ================================ 
@@ -112,3 +117,9 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.account, self.user.nickname
+    
+    
+    
+class ProfileAlbum(models.Model):
+    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="%Y/%m/%d")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')

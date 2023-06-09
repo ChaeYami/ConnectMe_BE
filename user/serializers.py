@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import User, Profile
+from user.models import ProfileAlbum, User, Profile, Friend
 from user.validators import (
     password_validator,
     password_pattern,
@@ -196,28 +196,6 @@ class UserDelSerializer(serializers.ModelSerializer):
         model = User
         fields = ("is_active",)
 
-# ==============================================================================================================
-class EmailThread(threading.Thread):
-    def __init__(self, email):
-        self.email = email
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.email.send()
-
-
-class Util:
-    @staticmethod
-    def send_email(message):
-        email = EmailMessage(
-            subject=message["email_subject"],
-            body=message["email_body"],
-            to=[message["to_email"]],
-        )
-        EmailThread(email).start()
-
-
-# ==============================================================================================================
 
 # 비밀번호 변경 serializer
 class ChangePasswordSerializer(serializers.ModelSerializer):
@@ -289,6 +267,24 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return instance
     
 # ================================ 비밀번호 재설정 시작 ================================ 
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
+class Util:
+    @staticmethod
+    def send_email(message):
+        email = EmailMessage(
+            subject=message["email_subject"],
+            body=message["email_body"],
+            to=[message["to_email"]],
+        )
+        EmailThread(email).start()
 
 # 비밀번호 찾기 serializer
 class PasswordResetSerializer(serializers.Serializer):
@@ -410,38 +406,54 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
-# 프로필 편집 serializer
-class ProfileUpdateSerializer(serializers.ModelSerializer):
+# 앨범
+class ProfileAlbumSerializer(serializers.ModelSerializer):
+    # 이미지 url로 반환
+    album_img = serializers.ImageField(use_url=True)
+
     class Meta:
-        model = Profile
-        fields = (
-            "nickname",
-            "profile_img",
-            "introduce",
-        )
-        extra_kwargs = {
-            "nickname": {
-                "error_messages": {
-                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
-                    "blank": "닉네임은 필수 입력 사항입니다.",
-                }
-            },
-            
-        }
+        model = ProfileAlbum
+        fields = ["image", ]
+    
+# ================================ 친구신청 시작 ================================
+    
+class FriendSerializer(serializers.Serializer):
+    from_user = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all(),
+        slug_field='account'
+    )
+    to_user = serializers.SlugRelatedField(
+        queryset=User.objects.all(),
+        slug_field='account'
+    )
+    status = serializers.CharField(read_only=True)
 
     def validate(self, data):
-        nickname = data.get("nickname")
-
-        # 닉네임 유효성 검사
-        if nickname_validator(nickname):
-            raise serializers.ValidationError(detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글,'-' 또는'_'만 사용 가능합니다."})
-
+        from_user = data['from_user']
+        to_user = data['to_user']
+        
+        if from_user == to_user:
+            raise serializers.ValidationError("자기 자신에게 친구 신청할 수 없습니다.")
+        
+        if from_user.friends.filter(id=to_user.id).exists():
+            raise serializers.ValidationError("이미 친구입니다.")
+        
+        if from_user.sent_friend_requests.filter(to_user=to_user).exists():
+            raise serializers.ValidationError("이미 친구 신청을 보냈습니다.")
+        
+        if from_user.received_friend_requests.filter(from_user=to_user).exists():
+            raise serializers.ValidationError("상대방이 이미 친구 신청을 보냈습니다.")
+        
         return data
 
-    def update(self, instance, validated_data):
-        instance.nickname = validated_data.get("nickname", instance.nickname)
-        instance.profile_img = validated_data.get("profile_img", instance.profile_img)
-        instance.introduce = validated_data.get("introduce", instance.introduce)
-        instance.save()
-
-        return instance
+    def create(self, validated_data):
+        friend_request = Friend.objects.create(
+            from_user=validated_data['from_user'],
+            to_user=validated_data['to_user'],
+            status='pending'
+        )
+        return friend_request
+    
+# ================================ 친구신청 끝 ================================
+    
