@@ -30,7 +30,8 @@ from user.serializers import (
 
 from my_settings import (
     KAKAO_REST_API_KEY,
-    
+    NAVER_API_KEY,
+    NAVER_SECRET_KEY
 )
 
 from .models import Friend, ProfileAlbum, User, Profile
@@ -314,6 +315,37 @@ class KakaoLoginView(APIView):
             "login_type": "kakao",
         }
         return SocialLogin(**data)
+    
+# 네이버로그인
+class NaverLoginView(APIView):
+
+    def get(self, request):
+        return Response(NAVER_API_KEY, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        code = request.data.get("naver_code")
+        state = request.data.get("state")
+        access_token = requests.post(
+            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_API_KEY}&client_secret={NAVER_SECRET_KEY}&state={state}",
+            headers={"Accept": "application/json"},
+        )
+        access_token = access_token.json().get("access_token")
+        user_data = requests.get(
+            "https://openapi.naver.com/v1/nid/me",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+            },
+        )
+        user_data = user_data.json().get("response")
+        data = {
+            "avatar": user_data.get("profile_image"),
+            "email": user_data.get("email"),
+            "nickname": user_data.get("nickname"),
+            "login_type": "naver",
+        }
+        return SocialLogin(**data)
+
 
 # # 구글로그인
 # class GoogleLoginView(APIView):
@@ -336,35 +368,6 @@ class KakaoLoginView(APIView):
 #         }
 #         return SocialLogin(**data)
 
-# # 네이버로그인
-# class NaverLoginView(APIView):
-
-#     def get(self, request):
-#         return Response(NAVER_API_KEY, status=status.HTTP_200_OK)
-
-#     def post(self, request):
-#         code = request.data.get("naver_code")
-#         state = request.data.get("state")
-#         access_token = requests.post(
-#             f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_API_KEY}&client_secret={NAVER_SECRET_KEY}&state={state}",
-#             headers={"Accept": "application/json"},
-#         )
-#         access_token = access_token.json().get("access_token")
-#         user_data = requests.get(
-#             "https://openapi.naver.com/v1/nid/me",
-#             headers={
-#                 "Authorization": f"Bearer {access_token}",
-#                 "Accept": "application/json",
-#             },
-#         )
-#         user_data = user_data.json().get("response")
-#         data = {
-#             "avatar": user_data.get("profile_image"),
-#             "email": user_data.get("email"),
-#             "nickname": user_data.get("nickname"),
-#             "login_type": "naver",
-#         }
-#         return SocialLogin(**data)
 
 
 # def SocialLogin(**kwargs):
