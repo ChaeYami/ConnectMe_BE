@@ -23,6 +23,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",  # 이거 상단에 있어야 합니다.
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     "user",
     "place",
     "meeting",
+    "chat",
 ]
 
 REST_FRAMEWORK = {
@@ -73,6 +75,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ConnectMe.wsgi.application"
+
+
+# Channels
+ASGI_APPLICATION = "ConnectMe.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database
