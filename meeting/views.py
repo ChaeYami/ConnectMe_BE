@@ -117,8 +117,16 @@ class MeetingCommentDetailView(APIView):
     def delete(self, request, comment_id, meeting_id):
         comment = get_object_or_404(MeetingComment, id=comment_id)
         if request.user == comment.user:
-            comment.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            if comment.reply.all():
+                serializer = MeetingCommentCreateSerializer(comment, {"content":"삭제된 댓글 입니다."})
+                if serializer.is_valid():
+                    serializer.save(content="삭제된 댓글 입니다.")
+                    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                comment.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
