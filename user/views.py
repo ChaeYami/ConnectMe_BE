@@ -142,8 +142,50 @@ class ProfileView(APIView):
         
         
 # ================================ 프로필 끝 ================================
-        
-    
+
+
+
+# ================================ 비밀번호 재설정 시작 ================================
+
+# 이메일 보내기
+class PasswordResetView(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "비밀번호 재설정 이메일"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 비밀번호 재설정 토큰 확인
+class PasswordTokenCheckView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            user_id = force_str(urlsafe_b64decode(uidb64))
+            user = get_object_or_404(User, id=user_id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response(
+                    {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            return Response(
+                {"uidb64": uidb64, "token": token}, status=status.HTTP_200_OK
+            )
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response(
+                {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+# 비밀번호 재설정
+class SetNewPasswordView(APIView):
+    def put(self, request):
+        serializer = SetNewPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "비밀번호 재설정 완료"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ================================ 비밀번호 재설정 끝 ================================
+
     
 
 # ================================ 친구맺기 시작 ================================
@@ -196,7 +238,6 @@ class FriendRejectView(APIView):
         friend_request.save()
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
-    
     
 
 # ================================ 친구맺기 끝 ================================

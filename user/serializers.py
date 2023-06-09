@@ -196,28 +196,6 @@ class UserDelSerializer(serializers.ModelSerializer):
         model = User
         fields = ("is_active",)
 
-# ==============================================================================================================
-class EmailThread(threading.Thread):
-    def __init__(self, email):
-        self.email = email
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.email.send()
-
-
-class Util:
-    @staticmethod
-    def send_email(message):
-        email = EmailMessage(
-            subject=message["email_subject"],
-            body=message["email_body"],
-            to=[message["to_email"]],
-        )
-        EmailThread(email).start()
-
-
-# ==============================================================================================================
 
 # 비밀번호 변경 serializer
 class ChangePasswordSerializer(serializers.ModelSerializer):
@@ -289,6 +267,24 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return instance
     
 # ================================ 비밀번호 재설정 시작 ================================ 
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
+class Util:
+    @staticmethod
+    def send_email(message):
+        email = EmailMessage(
+            subject=message["email_subject"],
+            body=message["email_body"],
+            to=[message["to_email"]],
+        )
+        EmailThread(email).start()
 
 # 비밀번호 찾기 serializer
 class PasswordResetSerializer(serializers.Serializer):

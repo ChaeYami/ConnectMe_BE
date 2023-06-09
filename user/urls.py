@@ -6,15 +6,19 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
+    # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
-    
-    path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/ : 프로필
-    
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
     
+    path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
+    
     # friend
-    path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'),
-    path('friend/<int:friend_request_id>/accept/', views.FriendAcceptView.as_view(), name='friend_request_accept_view'),
-    path('friend/<int:friend_request_id>/reject/', views.FriendRejectView.as_view(), name='friend_request_reject_view'),
+    path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
+    path('friend/<int:friend_request_id>/accept/', views.FriendAcceptView.as_view(), name='friend_request_accept_view'),# user/friend/id/accept/ : 친구신청 수락
+    path('friend/<int:friend_request_id>/reject/', views.FriendRejectView.as_view(), name='friend_request_reject_view'),# user/friend/id/reject/ : 친구신청 거절
+    
+    # password
+    path("password/email/", views.PasswordResetView.as_view(), name="password_reset"),  # /user/password/email : 비밀번호 찾기 (이메일 보내기)
+    path("password/reset/",views.SetNewPasswordView.as_view(),name="password_reset_confirm"),  # /user/password/reset/비밀번호 재설정
 ]
