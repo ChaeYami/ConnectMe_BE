@@ -42,6 +42,7 @@ class User(AbstractBaseUser):
     joined_at = models.DateTimeField("가입일", auto_now_add=True)
     warning = models.IntegerField("신고횟수", default=0)
     is_blocked = models.BooleanField("차단여부", default=False)
+    is_certify = models.BooleanField("번호인증여부", default=False)
     
     is_staff = models.BooleanField("스태프", default=False)
     is_admin = models.BooleanField("관리자", default=False)
@@ -116,3 +117,9 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.account, self.user.nickname
+    
+    
+    
+class ProfileAlbum(models.Model):
+    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="%Y/%m/%d")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')

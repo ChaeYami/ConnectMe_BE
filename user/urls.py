@@ -11,7 +11,9 @@ urlpatterns = [
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
     
+    # profile
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
+    path("/<int:user_id>/image/", views.ProfileAlbumView.as_view(), name="profile_album_view"), # /user/id/image : 사진첩
     
     # friend
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
@@ -21,4 +23,6 @@ urlpatterns = [
     # password
     path("password/email/", views.PasswordResetView.as_view(), name="password_reset"),  # /user/password/email : 비밀번호 찾기 (이메일 보내기)
     path("password/reset/",views.SetNewPasswordView.as_view(),name="password_reset_confirm"),  # /user/password/reset/비밀번호 재설정
+    
+    
 ]
