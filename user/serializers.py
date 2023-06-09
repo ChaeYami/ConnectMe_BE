@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import User, Profile, Friend
+from user.models import ProfileAlbum, User, Profile, Friend
 from user.validators import (
     password_validator,
     password_pattern,
@@ -406,6 +406,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
+# 앨범
+class ProfileAlbumSerializer(serializers.ModelSerializer):
+    # 이미지 url로 반환
+    album_img = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = ProfileAlbum
+        fields = ["image", ]
     
 # ================================ 친구신청 시작 ================================
     

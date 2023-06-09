@@ -17,6 +17,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from user.serializers import (
     ChangePasswordSerializer,
     FriendSerializer,
+    ProfileAlbumSerializer,
     SignupSerializer,
     CustomTokenObtainPairSerializer,
     UserDelSerializer,
@@ -27,7 +28,7 @@ from user.serializers import (
     UserUpdateSerializer,
 )
 
-from .models import Friend, User, Profile
+from .models import Friend, ProfileAlbum, User, Profile
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
@@ -138,7 +139,30 @@ class ProfileView(APIView):
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
         
-        
+class ProfileAlbumView(APIView):
+    permission_classes = [IsAuthenticated]
+    # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
+    def get_object(self, user_id):
+        return get_object_or_404(User, id=user_id)
+    
+    # 사진첩 보기
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        album_img = get_object_or_404(ProfileAlbum, user = user_id)
+        serializer = ProfileAlbumSerializer(album_img)
+        return Response(serializer.data, status=status.HTTP_200_OK)     
+    
+    # # 사진 올리기
+    # def post(self, request, user_id):
+    #     user = get_object_or_404(User, id = request.user.id)
+    #     album_img = get_object_or_404(ProfileAlbum, user = user_id)
+    #     serializer = ProfileAlbumSerializer(album_img)
+    #     if serializer.is_valid():
+    #        serializer.save()
+    #        return Response({"message" : "등록 완료!"} , status=status.HTTP_201_CREATED)
+       
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)      
         
         
 # ================================ 프로필 끝 ================================
