@@ -26,7 +26,6 @@ class UserManager(BaseUserManager):
         user = self.create_user(account = account, password=password, **extra_fields)
 
         user.is_admin = True
-        user.is_staff = True
         user.is_active = True
         user.save(using=self._db)
         return user
@@ -48,7 +47,7 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField("관리자", default=False)
     is_active = models.BooleanField("활성화", default=True) 
     
-    friends = models.ManyToManyField("self", related_name='friends', blank=True)
+    friends = models.ManyToManyField("self", related_name='friends', blank=True) # user_friends : 친구 상태 테이블
 
     
     objects = UserManager()
@@ -70,12 +69,17 @@ class User(AbstractBaseUser):
         return self.is_admin
     
 # ================================ 유저 모델 끝 ================================ 
-    
+ 
+ 
+'''
+user_friend : 친구신청 상태 테이블
+user_friends : 친구 상태 테이블
+'''   
 class Friend(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_friend_requests')
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_friend_requests')
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+    status = models.CharField(max_length=20, choices=[('pending', '신청중'), ('accepted', '수락됨'), ('rejected', '거절됨')], default='신청중')
 
     
 # ================================ 프로필 시작 ================================ 

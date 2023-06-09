@@ -16,7 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from user.serializers import (
     ChangePasswordSerializer,
-    ProfileUpdateSerializer,
+    FriendSerializer,
     SignupSerializer,
     CustomTokenObtainPairSerializer,
     UserDelSerializer,
@@ -116,7 +116,7 @@ class ProfileView(APIView):
     
     # 프로필 보기
     def get(self, request, user_id):
-        profile = get_object_or_404(Profile)
+        profile = get_object_or_404(Profile, user = user_id)
         user = get_object_or_404(User, id=user_id)
         serializer = ProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -142,36 +142,68 @@ class ProfileView(APIView):
         
         
 # ================================ 프로필 끝 ================================
-        
-    
+
+
+
+# ================================ 비밀번호 재설정 시작 ================================
+
+# 이메일 보내기
+class PasswordResetView(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "비밀번호 재설정 이메일"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 비밀번호 재설정 토큰 확인
+class PasswordTokenCheckView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            user_id = force_str(urlsafe_b64decode(uidb64))
+            user = get_object_or_404(User, id=user_id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response(
+                    {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
+                )
+
+            return Response(
+                {"uidb64": uidb64, "token": token}, status=status.HTTP_200_OK
+            )
+
+        except DjangoUnicodeDecodeError as identifier:
+            return Response(
+                {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+# 비밀번호 재설정
+class SetNewPasswordView(APIView):
+    def put(self, request):
+        serializer = SetNewPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "비밀번호 재설정 완료"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ================================ 비밀번호 재설정 끝 ================================
+
     
 
-# ================================ 친구신청 시작 ================================
+# ================================ 친구맺기 시작 ================================
 
+# 친구신청
 class FriendView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request ,user_id):
+    def post(self, request, user_id):
         from_user = request.user
         to_user = get_object_or_404(User, id=user_id)
-        if from_user == to_user:
-            return Response({"message": "자기 자신에게 친구 신청할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if from_user.friends.filter(id=user_id).exists():
-            return Response({"message": "이미 친구입니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if from_user.sent_friend_requests.filter(to_user=to_user).exists():
-            return Response({"message": "이미 친구 신청을 보냈습니다."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if from_user.received_friend_requests.filter(from_user=to_user).exists():
-            return Response({"message": "상대방이 이미 친구 신청을 보냈습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = FriendSerializer(data={'from_user': from_user, 'to_user': to_user})
+        serializer.is_valid(raise_exception=True)
+        friend_request = serializer.save()
 
-        friend_request = Friend(from_user=from_user, to_user=to_user)
-        friend_request.save()
-        
         return Response({"message": "친구 신청을 보냈습니다."}, status=status.HTTP_201_CREATED)
 
-
+# 친구신청 수락
 class FriendAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -191,7 +223,7 @@ class FriendAcceptView(APIView):
        
         return Response({"message": "친구 신청을 수락했습니다."}, status=status.HTTP_200_OK)
 
-
+# 친구신청 거절
 class FriendRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -207,6 +239,5 @@ class FriendRejectView(APIView):
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
-    
 
-# ================================ 친구신청 시작 ================================
+# ================================ 친구맺기 끝 ================================
