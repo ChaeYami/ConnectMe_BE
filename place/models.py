@@ -29,7 +29,7 @@ class PlaceComment(models.Model):
         User, on_delete=models.CASCADE, related_name='place_comment_user', verbose_name='작성자')
     place = models.ForeignKey(
         Place, on_delete=models.CASCADE, related_name='place_comment_place', verbose_name='게시글')
-    content = models.TextField(verbose_name='내용')
+    content = models.TextField(verbose_name='내용', null=True)
     # 대댓글
     main_comment = models.ForeignKey(
         'self', on_delete=models.CASCADE, null=True, verbose_name='상위댓글', related_name='reply')
