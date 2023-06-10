@@ -33,5 +33,6 @@ class PlaceComment(models.Model):
     # 대댓글
     main_comment = models.ForeignKey(
         'self', on_delete=models.CASCADE, null=True, verbose_name='상위댓글', related_name='reply')
+    deep = models.PositiveBigIntegerField(null=True, default=0, verbose_name='댓글단계')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성날짜')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정날짜')
