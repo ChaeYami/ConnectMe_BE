@@ -8,7 +8,7 @@ class PlaceImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceImage
-        fields = ["image", ]
+        fields = ["id", "image"]
         
 # ================================ 이미지 시리얼라이저 끝 ================================
 
@@ -21,11 +21,10 @@ class PlaceSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         image = obj.place_image_place.all()
         return PlaceImageSerializer(instance=image, many=True).data
-    
-    
+
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'content', 'created_at', 'updated_at', 'image', 'bookmark','like']
+        fields = ['id', 'user', 'title','category', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
         
         
 # place 생성 시리얼라이저        
@@ -89,7 +88,7 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PlaceComment
-        fields = ['id', 'user', 'place', 'content', 'main_comment', 'created_at', 'updated_at', 'reply']
+        fields = ['id', 'user', 'place', 'content', 'main_comment', 'deep', 'created_at', 'updated_at', 'reply']
         
     def get_reply(self, instance):
         serializer = self.__class__(instance.reply, many=True)
@@ -107,7 +106,7 @@ class PlaceCreateCommentSerializer(serializers.ModelSerializer):
     content = serializers.CharField(allow_blank=False, allow_null=False)
     class Meta:
         model = PlaceComment
-        fields = ['content', 'main_comment']
+        fields = ['id', 'content']
         
 
 # place 댓글 삭제 시리얼라이저
