@@ -44,6 +44,16 @@ class User(AbstractBaseUser):
     is_blocked = models.BooleanField("차단여부", default=False)
     is_certify = models.BooleanField("번호인증여부", default=False)
     
+    SIGNUP_TYPES = [
+        ("normal", "일반"),
+        ("kakao", "카카오"),
+        ("google", "구글"),
+        ("naver", "네이버"),
+    ]
+    signup_type = models.CharField(
+        "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="normal"
+    )
+    
     is_staff = models.BooleanField("스태프", default=False)
     is_admin = models.BooleanField("관리자", default=False)
     is_active = models.BooleanField("활성화", default=True) 
@@ -92,7 +102,7 @@ class Profile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
     
-    mbti_choices = [
+    MBTI = [
         ('ENFJ','ENFJ'),
         ('ENFP','ENFP'),
         ('ENTJ','ENTJ'),
@@ -110,7 +120,7 @@ class Profile(models.Model):
         ('ISTJ','ISTJ'),
         ('ISTP','ISTP'),
     ]
-    mbti = models.CharField("MBTI", choices=mbti_choices, max_length=4, blank=True, null=True)
+    mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True)
     age = models.IntegerField("나이", default = 0, blank=True, null= True)
     introduce = models.CharField("자기소개", max_length=225, default=None, blank=True, null= True)
     
@@ -128,12 +138,12 @@ class ProfileAlbum(models.Model):
     
     
     
-# 소셜 로그인
-class OauthId(models.Model):
-    access_token = models.CharField("토큰", max_length=255)
-    provider = models.CharField("구분자", max_length=255)
+# # 소셜 로그인
+# class OauthId(models.Model):
+#     access_token = models.CharField("토큰", max_length=255)
+#     provider = models.CharField("구분자", max_length=255)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
 
-    def __str__(self):
-        return f"[아이디]{self.user.username}, [소셜 도메인]{self.provider}"
+#     def __str__(self):
+#         return f"[아이디]{self.user.username}, [소셜 도메인]{self.provider}"
