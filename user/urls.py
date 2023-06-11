@@ -9,7 +9,12 @@ urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
+    
+    # social login
+    path("login/kakao/", views.KakaoLoginView.as_view(), name="kakao_login_view"),
+    path("login/naver/", views.NaverLoginView.as_view(), name="naver_login_view"),
     
     # profile
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
