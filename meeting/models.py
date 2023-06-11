@@ -30,3 +30,9 @@ class MettingCommentReply(models.Model):
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
 # ================================ 모임 대댓글 모델 끝 ================================ 
+
+# ================================ 모임 다중 이미지 시작 ================================ 
+class MeetingImage(models.Model):
+    meeting = models.ForeignKey(Meeting, verbose_name="미팅", on_delete=models.CASCADE, related_name="meeting_image")
+    image = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="meeting_%Y/%m/%d")
+# ================================ 모임 다중 이미지 끝 ================================ 
