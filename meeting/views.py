@@ -12,13 +12,15 @@ from meeting.serializer import (
     MeetingCommentReplyCreateSerializer,
     )
 
+
+from rest_framework import status, generics
+from rest_framework import filters
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.generics import get_object_or_404
 
-
-# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크 시작 ================================
+# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작 ================================
 
 
 class MeetingView(APIView):
@@ -34,7 +36,7 @@ class MeetingView(APIView):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = MeetingCreateSerializer(data=request.data)
+        serializer = MeetingCreateSerializer(data=request.data, context = {"request":request})
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -53,7 +55,7 @@ class MeetingDetialView(APIView):
     def patch(self, request, meeting_id):
         meeting = get_object_or_404(Meeting, id=meeting_id)
         if request.user == meeting.user:
-            serializer = MeetingCreateSerializer(meeting, data=request.data)
+            serializer = MeetingCreateSerializer(meeting, data=request.data, context = {"request":request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -83,7 +85,14 @@ class MeetingBookmarkView(APIView):
             meeting.bookmark.add(request.user)
             return Response('북마크', status=status.HTTP_200_OK)
         
-# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크 끝 ================================
+    #북마크한 모임 글 보기
+    def get(self, request):
+        user = request.user
+        meeting = user.bookmark_meeting.all()
+        serializer = MeetingListSerializer(meeting, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 끝 ================================
 
 # ================================ 모임 댓글 작성, 수정, 삭제 시작 ================================
 
@@ -134,7 +143,6 @@ class MeetingCommentDetailView(APIView):
 
 # ================================ 모임 대댓글 작성, 수정, 삭제 시작 ================================
 
-
 class MeetingCommentReplyView(APIView):
     
     #모임 대댓글 작성
@@ -171,3 +179,11 @@ class MeetingCommentReplyDetailView(APIView):
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 # ================================ 모임 대댓글 작성, 수정, 삭제 끝 ================================
+
+# ================================ 모임 검색 기능 시작 ================================
+class MeetingSearchView(generics.ListAPIView):
+    queryset = Meeting.objects.all()
+    serializer_class = MeetingDetailSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title','content','comment__content','mettingcommentreply__content']
+# ================================ 모임 검색 기능 끝 ================================

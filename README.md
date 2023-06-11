@@ -52,7 +52,7 @@
 ***
 💜 ERD
 ------
-![Connect ME (1)](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/e7ba74ef-c301-4e78-987e-857fdc38a552)
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/3aaad154-63e2-4dc4-bbd6-4e6e5fbf0169)
 
 
 💚 와이어프레임
