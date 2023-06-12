@@ -149,8 +149,8 @@ class VerifyEmailView(APIView):
 #         user = get_object_or_404(User, id = request.user.id)
         
 #         try:
-#             phone_number = request.data["phone_number"]
-#             if not User.objects.filter(phone_number=phone_number).exists():
+#             phone = request.data["phone"]
+#             if not User.objects.filter(phone=phone).exists():
 #                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 #             else:
@@ -186,6 +186,37 @@ class ChangePasswordView(APIView):
     
 # ================================ 프로필 시작 ================================
 
+# 친구추천 (작성된 프로필 기반)
+class ProfileListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self,request,filter):
+        # 지역
+        if filter == 'region':
+            user = get_object_or_404(Profile, user_id = request.user.id)
+            prefer_region = user.prefer_region
+            profiles = Profile.objects.filter(prefer_region = prefer_region)
+            serializer = ProfileSerializer(profiles, many = True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # mbti
+        elif filter == 'mbti':
+            user = get_object_or_404(Profile, user_id = request.user.id)
+            mbti = user.mbti
+            profiles = Profile.objects.filter(mbti = mbti)
+            serializer = ProfileSerializer(profiles, many = True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # 나이
+        elif filter == 'age':
+            user = get_object_or_404(Profile, user_id = request.user.id)
+            age = user.age
+            profiles = Profile.objects.filter(age = age)
+            serializer = ProfileSerializer(profiles, many = True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+# 개인 공개 프로필
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
@@ -254,11 +285,11 @@ class ProfileAlbumView(APIView):
 
 #     def post(self, request):
 #         try:
-#             phone_number = request.data["phone_number"]
-#             if not User.objects.filter(phone_number=phone_number).exists():
+#             phone = request.data["phone"]
+#             if not User.objects.filter(phone=phone).exists():
 #                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             user = User.objects.get(phone_number=phone_number)
+#             user = User.objects.get(phone=phone)
 #             ConfirmPhoneNumber.objects.create(user=user)
 #             return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
 
@@ -271,16 +302,16 @@ class ProfileAlbumView(APIView):
 
 #     def post(self, request):
 #         try:
-#             phone_number = request.data["phone_number"]
+#             phone = request.data["phone"]
 #             auth_number = request.data["auth_number"]
 
-#             user = get_object_or_404(User, phone_number=phone_number)
-#             confirm_phone_number = ConfirmPhoneNumber.objects.filter(user=user).last()
+#             user = get_object_or_404(User, phone=phone)
+#             confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
 
-#             if confirm_phone_number.expired_at < timezone.now():
+#             if confirm_phone.expired_at < timezone.now():
 #                 return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             if confirm_phone_number.auth_number != int(auth_number):
+#             if confirm_phone.auth_number != int(auth_number):
 #                 return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
 
 #             return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)

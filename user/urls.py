@@ -22,6 +22,8 @@ urlpatterns = [
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
     path("<int:user_id>/image/", views.ProfileAlbumView.as_view(), name="profile_album_view"), # /user/id/image : 사진첩
     
+    path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ),
+    
     # friend
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
     path('friend/<int:friend_request_id>/accept/', views.FriendAcceptView.as_view(), name='friend_request_accept_view'),# user/friend/id/accept/ : 친구신청 수락
