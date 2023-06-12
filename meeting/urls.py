@@ -21,4 +21,6 @@ urlpatterns = [
          views.MeetingSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 제목과 내용 댓글 대댓글 중 키워드가 있는 모임을 찾음.
      path('bookmark_list/',
           views.MeetingBookmarkView.as_view(),), #/meeting/bookmark_list/ 북마크 한 모임 글 리스트 
+     path('<int:meeting_id>/meeting_image/<int:image_id>/',
+          views.MeetingImageDetailView.as_view(),),
 ]
