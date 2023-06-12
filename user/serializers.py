@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import User, Profile, Friend
+from user.models import ProfileAlbum, User, Profile, Friend
 from user.validators import (
     password_validator,
     password_pattern,
@@ -196,28 +196,6 @@ class UserDelSerializer(serializers.ModelSerializer):
         model = User
         fields = ("is_active",)
 
-# ==============================================================================================================
-class EmailThread(threading.Thread):
-    def __init__(self, email):
-        self.email = email
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.email.send()
-
-
-class Util:
-    @staticmethod
-    def send_email(message):
-        email = EmailMessage(
-            subject=message["email_subject"],
-            body=message["email_body"],
-            to=[message["to_email"]],
-        )
-        EmailThread(email).start()
-
-
-# ==============================================================================================================
 
 # 비밀번호 변경 serializer
 class ChangePasswordSerializer(serializers.ModelSerializer):
@@ -289,6 +267,24 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return instance
     
 # ================================ 비밀번호 재설정 시작 ================================ 
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
+class Util:
+    @staticmethod
+    def send_email(message):
+        email = EmailMessage(
+            subject=message["email_subject"],
+            body=message["email_body"],
+            to=[message["to_email"]],
+        )
+        EmailThread(email).start()
 
 # 비밀번호 찾기 serializer
 class PasswordResetSerializer(serializers.Serializer):
@@ -410,6 +406,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
+# 앨범
+class ProfileAlbumSerializer(serializers.ModelSerializer):
+    # 이미지 url로 반환
+    album_img = serializers.ImageField(use_url=True)
+
+    class Meta:
+        model = ProfileAlbum
+        fields = ["image", ]
     
 # ================================ 친구신청 시작 ================================
     

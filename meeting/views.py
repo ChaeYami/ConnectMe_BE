@@ -1,6 +1,7 @@
 from meeting.models import (
     Meeting,
     MeetingComment,
+    MettingCommentReply,
     )
 
 from meeting.serializer import (
@@ -8,15 +9,18 @@ from meeting.serializer import (
     MeetingCreateSerializer,
     MeetingDetailSerializer,
     MeetingCommentCreateSerializer,
+    MeetingCommentReplyCreateSerializer,
     )
+
+
+from rest_framework import status, generics
+from rest_framework import filters
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.generics import get_object_or_404
 
-
-# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크 ================================
+# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작 ================================
 
 
 class MeetingView(APIView):
@@ -32,7 +36,7 @@ class MeetingView(APIView):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = MeetingCreateSerializer(data=request.data)
+        serializer = MeetingCreateSerializer(data=request.data, context = {"request":request})
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -51,7 +55,7 @@ class MeetingDetialView(APIView):
     def patch(self, request, meeting_id):
         meeting = get_object_or_404(Meeting, id=meeting_id)
         if request.user == meeting.user:
-            serializer = MeetingCreateSerializer(meeting, data=request.data)
+            serializer = MeetingCreateSerializer(meeting, data=request.data, context = {"request":request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -70,6 +74,7 @@ class MeetingDetialView(APIView):
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 class MeetingBookmarkView(APIView):
+    
     #모임 글 북마크하기
     def post(self, request, meeting_id):
         meeting = get_object_or_404(Meeting, id=meeting_id)
@@ -80,21 +85,30 @@ class MeetingBookmarkView(APIView):
             meeting.bookmark.add(request.user)
             return Response('북마크', status=status.HTTP_200_OK)
         
-# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크 끝 ================================
+    #북마크한 모임 글 보기
+    def get(self, request):
+        user = request.user
+        meeting = user.bookmark_meeting.all()
+        serializer = MeetingListSerializer(meeting, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+# ================================ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 끝 ================================
 
-# ================================ 모임 댓글 작성, 수정, 삭제 ================================
+# ================================ 모임 댓글 작성, 수정, 삭제 시작 ================================
 
 class MeetingCommentView(APIView):
+    
     #모임 댓글 작성하기
     def post(self, request, meeting_id):
         serializer = MeetingCommentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, meeting_id=meeting_id)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"meesage":"작성완료"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class MeetingCommentDetailView(APIView):
+    
     #모임 댓글 수정
     def put(self, request, comment_id, meeting_id):
         comment = get_object_or_404(MeetingComment, id= comment_id)
@@ -102,7 +116,7 @@ class MeetingCommentDetailView(APIView):
             serializer = MeetingCommentCreateSerializer(comment, request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({"meesage":"수정완료"}, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -112,9 +126,64 @@ class MeetingCommentDetailView(APIView):
     def delete(self, request, comment_id, meeting_id):
         comment = get_object_or_404(MeetingComment, id=comment_id)
         if request.user == comment.user:
-            comment.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            if comment.reply.all():
+                serializer = MeetingCommentCreateSerializer(comment, {"content":"삭제된 댓글 입니다."})
+                if serializer.is_valid():
+                    serializer.save(content="삭제된 댓글 입니다.")
+                    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                comment.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 # ================================ 모임 댓글 작성, 수정, 삭제 끝 ================================
+
+# ================================ 모임 대댓글 작성, 수정, 삭제 시작 ================================
+
+class MeetingCommentReplyView(APIView):
+    
+    #모임 대댓글 작성
+    def post(self, request, comment_id, meeting_id):
+        serializer = MeetingCommentReplyCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, meeting_id=meeting_id, comment_id=comment_id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MeetingCommentReplyDetailView(APIView):
+    
+    #모임 대댓글 수정
+    def put(self, request, comment_id, meeting_id, reply_id):
+        reply = get_object_or_404(MettingCommentReply, id=reply_id)
+        if request.user == reply.user:
+            serializer = MeetingCommentReplyCreateSerializer(reply, request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+    
+    #모임 대댓글 삭제
+    def delete(self, request, comment_id, meeting_id, reply_id):
+        reply = get_object_or_404(MettingCommentReply, id=reply_id)
+        if request.user == reply.user:
+            reply.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+# ================================ 모임 대댓글 작성, 수정, 삭제 끝 ================================
+
+# ================================ 모임 검색 기능 시작 ================================
+class MeetingSearchView(generics.ListAPIView):
+    queryset = Meeting.objects.all()
+    serializer_class = MeetingDetailSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title','content','comment__content','mettingcommentreply__content']
+# ================================ 모임 검색 기능 끝 ================================
