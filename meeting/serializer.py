@@ -20,8 +20,8 @@ class MeetingImageSerializer(serializers.ModelSerializer):
 
 # ================================ 댓글, 대댓글 Nested Serializer 시작 ================================
 # 따로 위에 올려놓은 이유는 모임 글 상세에 Nested Serializer 사용하기 위함입니다.
-# 모임 대댓글 리스트
 
+# 모임 대댓글 리스트
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     def get_user(self, obj):
