@@ -37,9 +37,32 @@ from my_settings import (
     GOOGLE_LOGIN_API_KEY
 )
 
-from .models import Friend, ProfileAlbum, User, Profile
+from .models import (
+    ConfirmPhoneNumber, Friend, ProfileAlbum, User, Profile
+)
 
 import requests
+
+
+
+# sms 인증번호 발송 view - 회원가입 / 아이디 찾기 모두 사용
+class CertifyPhoneView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            if not User.objects.filter(phone=phone).exists():
+                return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                user = User.objects.get(phone=phone)
+                ConfirmPhoneNumber.objects.create(user=user)
+                user.is_certify = True
+                return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
@@ -53,6 +76,30 @@ class Util:
         )
         EmailThread(email).start()
         
+############## 회원가입 sms 인증번호 확인 ##############
+class ConfirmPhoneNumberView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            auth_number = request.data["auth_number"]
+
+            user = get_object_or_404(User, phone=phone)
+            confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
+
+            if confirm_phone.expired_at < timezone.now():
+                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if confirm_phone.auth_number != int(auth_number):
+                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+
+            return Response({"message": "전화번호 인증이 완료되었습니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
+############## 회원가입, 개인정보 view ##############
 class UserView(APIView):
     permission_classes = [AllowAny]
     
@@ -121,7 +168,7 @@ class UserView(APIView):
         else:
             return Response({"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST)
 
-# 이메일 인증
+############## 회원가입 이메일 인증 ##############
 class VerifyEmailView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -140,27 +187,9 @@ class VerifyEmailView(APIView):
             return redirect("인증완료 프론트 html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
-       
-# 전화번호 인증
-# class CertifyPhoneView(APIView):
-#     permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         user = get_object_or_404(User, id = request.user.id)
-        
-#         try:
-#             phone = request.data["phone"]
-#             if not User.objects.filter(phone=phone).exists():
-#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             else:
-#                 ConfirmPhoneNumber.objects.create(user=user)
-#                 user.is_certify = True
-#                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
 
-#         except:
-#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST) 
-        
 
 # ================================ 회원가입, 회원정보 끝 ================================
 
@@ -186,7 +215,7 @@ class ChangePasswordView(APIView):
     
 # ================================ 프로필 시작 ================================
 
-# 친구추천 (작성된 프로필 기반)
+############## 친구추천 (작성된 프로필 기반) ##############
 class ProfileListView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -195,7 +224,7 @@ class ProfileListView(APIView):
         if filter == 'region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
-            profiles = Profile.objects.filter(prefer_region = prefer_region)
+            profiles = Profile.objects.filter(prefer_region = prefer_region).exclude(id=request.user.id)
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -203,7 +232,7 @@ class ProfileListView(APIView):
         elif filter == 'mbti':
             user = get_object_or_404(Profile, user_id = request.user.id)
             mbti = user.mbti
-            profiles = Profile.objects.filter(mbti = mbti)
+            profiles = Profile.objects.filter(mbti = mbti).exclude(id=request.user.id)
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -211,12 +240,12 @@ class ProfileListView(APIView):
         elif filter == 'age':
             user = get_object_or_404(Profile, user_id = request.user.id)
             age = user.age
-            profiles = Profile.objects.filter(age = age)
+            profiles = Profile.objects.filter(age = age).exclude(id=request.user.id)
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
 
-# 개인 공개 프로필
+############## 개인 공개 프로필 ##############
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
@@ -247,6 +276,7 @@ class ProfileView(APIView):
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
         
+############## 프로필 앨범 ##############
 class ProfileAlbumView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
@@ -276,56 +306,37 @@ class ProfileAlbumView(APIView):
 # ================================ 프로필 끝 ================================
 
 
-
 # ================================ 아이디 찾기 시작 ================================
 
-# 아이디 찾기 휴대폰 sms 발송
-# class FindAccountView(APIView):
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         try:
-#             phone = request.data["phone"]
-#             if not User.objects.filter(phone=phone).exists():
-#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-#             user = User.objects.get(phone=phone)
-#             ConfirmPhoneNumber.objects.create(user=user)
-#             return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
-
-#         except:
-#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
-
 # 아이디 찾기 인증번호 확인
-# class ConfirmPhoneNumberView(APIView):
-#     permission_classes = [AllowAny]
+class ConfirmAccountView(APIView):
+    permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         try:
-#             phone = request.data["phone"]
-#             auth_number = request.data["auth_number"]
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            auth_number = request.data["auth_number"]
 
-#             user = get_object_or_404(User, phone=phone)
-#             confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
+            user = get_object_or_404(User, phone=phone)
+            confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
 
-#             if confirm_phone.expired_at < timezone.now():
-#                 return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            if confirm_phone.expired_at < timezone.now():
+                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             if confirm_phone.auth_number != int(auth_number):
-#                 return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+            if confirm_phone.auth_number != int(auth_number):
+                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
 
-#             return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)
+            return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)
 
-#         except:
-#             return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
 
 # ================================ 아이디 찾기 끝 ================================
 
 
-
 # ================================ 비밀번호 재설정 시작 ================================
 
-# 이메일 보내기
+############## 이메일 보내기 ##############
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
@@ -334,7 +345,7 @@ class PasswordResetView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 비밀번호 재설정 토큰 확인
+############## 비밀번호 재설정 토큰 확인 ##############
 class PasswordTokenCheckView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -354,7 +365,7 @@ class PasswordTokenCheckView(APIView):
                 {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
 
-# 비밀번호 재설정
+############## 비밀번호 재설정 ##############
 class SetNewPasswordView(APIView):
     def put(self, request):
         serializer = SetNewPasswordSerializer(data=request.data)
@@ -368,7 +379,7 @@ class SetNewPasswordView(APIView):
 
 # ================================ 친구맺기 시작 ================================
 
-# 친구신청
+############## 친구신청 ##############
 class FriendView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -381,7 +392,7 @@ class FriendView(APIView):
 
         return Response({"message": "친구 신청을 보냈습니다."}, status=status.HTTP_201_CREATED)
 
-# 친구신청 수락
+############## 친구신청 수락 ##############
 class FriendAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -401,7 +412,7 @@ class FriendAcceptView(APIView):
        
         return Response({"message": "친구 신청을 수락했습니다."}, status=status.HTTP_200_OK)
 
-# 친구신청 거절
+############## 친구신청 거절 ##############
 class FriendRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -424,7 +435,7 @@ class FriendRejectView(APIView):
 
 # ================================ 소셜 로그인 시작 ================================
 
-# 카카오로그인
+############## 카카오로그인 ##############
 class KakaoLoginView(APIView):
 
     def get(self, request):
@@ -460,7 +471,7 @@ class KakaoLoginView(APIView):
         }
         return SocialLogin(**data)
     
-# 네이버로그인
+############## 네이버로그인 ##############
 class NaverLoginView(APIView):
 
     def get(self, request):
@@ -490,7 +501,7 @@ class NaverLoginView(APIView):
         return SocialLogin(**data)
 
 
-# 구글로그인
+############## 구글로그인 ##############
 class GoogleLoginView(APIView):
 
     def get(self, request):
@@ -511,7 +522,7 @@ class GoogleLoginView(APIView):
         return SocialLogin(**data)
 
 
-# 로그인
+############## 로그인 ##############
 def SocialLogin(**kwargs):
     data = {key: value for key, value in kwargs.items() if value is not None}
     email = data.get("email")

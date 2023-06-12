@@ -12,7 +12,15 @@ import hmac
 import time
 import requests
 
+from decouple import config
+
 from random import randint
+
+from my_settings import (
+    NAVER_ACCESS_KEY_ID, 
+    NAVER_SMS_SECRET_KEY, 
+    SERVICE_ID
+)
 
 
 # ================================ 유저 모델 시작 ================================ 
@@ -145,50 +153,50 @@ class ProfileAlbum(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')
     
     
-# 휴대폰 번호 확인
-# class ConfirmPhoneNumber(models.Model):
-#     auth_number = models.IntegerField("인증 번호", default=0, validators=[MaxValueValidator(9999)])
-#     expired_at = models.DateTimeField("만료일")
+# 휴대폰 번호 확인 (문자인증)
+class ConfirmPhoneNumber(models.Model):
+    auth_number = models.IntegerField("인증 번호", default=0, validators=[MaxValueValidator(9999)])
+    expired_at = models.DateTimeField("만료")
 
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
 
-#     def save(self, *args, **kwargs):
-#         self.auth_number = randint(1000, 10000)
-#         self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
-#         super().save(*args, **kwargs)
-#         self.send_sms()
+    def save(self, *args, **kwargs):
+        self.auth_number = randint(1000, 10000)
+        self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
+        super().save(*args, **kwargs)
+        self.send_sms()
 
-#     def send_sms(self):
-#         timestamp = str(int(time.time() * 1000))
-#         access_key = NAVER_ACCESS_KEY_ID
-#         secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
-#         service_id = SERVICE_ID
-#         method = "POST"
-#         uri = f"/sms/v2/services/{service_id}/messages"
-#         message = method + " " + uri + "\n" + timestamp + "\n" + access_key
-#         message = bytes(message, "UTF-8")
-#         signing_key = base64.b64encode(
-#             hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
-#         )
+    def send_sms(self):
+        timestamp = str(int(time.time() * 1000))
+        access_key = NAVER_ACCESS_KEY_ID
+        secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
+        service_id = SERVICE_ID
+        method = "POST"
+        uri = f"/sms/v2/services/{service_id}/messages"
+        message = method + " " + uri + "\n" + timestamp + "\n" + access_key
+        message = bytes(message, "UTF-8")
+        signing_key = base64.b64encode(
+            hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
+        )
 
-#         url = f"https://sens.apigw.ntruss.com/sms/v2/services/{service_id}/messages"
+        url = f"https://sens.apigw.ntruss.com/sms/v2/services/{service_id}/messages"
 
-#         data = {
-#             "type": "SMS",
-#             "from": f'{FROM_PHONE_NUMBER}',
-#             "content": f"Connect ME 인증 번호는 [{self.auth_number}]입니다.",
-#             "messages": [{"to": f"{self.user.phone_number}"}],
-#         }
+        data = {
+            "type": "SMS",
+            "from": f'{config("FROM_PHONE_NUMBER")}',
+            "content": f"Connect ME 인증 번호는 [{self.auth_number}]입니다.",
+            "messages": [{"to": f"{self.user.phone_number}"}],
+        }
 
-#         headers = {
-#             "Content-Type": "application/json; charset=utf-8",
-#             "x-ncp-apigw-timestamp": timestamp,
-#             "x-ncp-iam-access-key": access_key,
-#             "x-ncp-apigw-signature-v2": signing_key,
-#         }
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "x-ncp-apigw-timestamp": timestamp,
+            "x-ncp-iam-access-key": access_key,
+            "x-ncp-apigw-signature-v2": signing_key,
+        }
 
-#         requests.post(url, json=data, headers=headers)
+        requests.post(url, json=data, headers=headers)
 
-#     def __str__(self):
-#         return f"[휴대폰 번호]{self.user.phone_number}"
+    def __str__(self):
+        return f"[휴대폰 번호]{self.user.phone_number}"
 

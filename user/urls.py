@@ -8,10 +8,16 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
-    path("verify-email/b'<str:uidb64>'/<str:token>/", views.VerifyEmailView.as_view(), name="verify-email"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
+    path("verify-email/b'<str:uidb64>'/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
+    
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
+    
+    # sms 
+    path("send-phone/", views.CertifyPhoneView.as_view, name = "certify_phone_view"), # /user/send-phone/ : sms 인증번호 발송
+    path("vertify-phone/signin/",views.ConfirmPhoneNumberView.as_view(), name = "vertify_phone_view"), # /user/vertify-phone/signin/ : 회원가입 전화번호 인증
+    path("vertify-phone/account/", views.ConfirmAccountView.as_view, name = "find_account_view"), # /user/vertify-phone/account/ : 아이디 찾기 sms 인증
     
     # social login
     path("login/kakao/", views.KakaoLoginView.as_view(), name="kakao_login_view"),
@@ -22,7 +28,8 @@ urlpatterns = [
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
     path("<int:user_id>/image/", views.ProfileAlbumView.as_view(), name="profile_album_view"), # /user/id/image : 사진첩
     
-    path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ),
+    # recommend
+    path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천
     
     # friend
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
