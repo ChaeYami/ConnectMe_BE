@@ -1,6 +1,7 @@
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import DjangoUnicodeDecodeError, force_str, force_bytes
 from django.shortcuts import redirect
@@ -30,10 +31,10 @@ from user.serializers import (
 )
 
 from my_settings import (
-    KAKAO_REST_API_KEY,
-    NAVER_API_KEY,
-    NAVER_SECRET_KEY,
-    GOOGLE_API_KEY
+    KAKAO_LOGIN_API_KEY,
+    NAVER_LOGIN_API_KEY,
+    NAVER_LOGIN_SECRET_KEY,
+    GOOGLE_LOGIN_API_KEY
 )
 
 from .models import Friend, ProfileAlbum, User, Profile
@@ -42,6 +43,16 @@ import requests
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
+class Util:
+    @staticmethod
+    def send_email(message):
+        email = EmailMessage(
+            subject=message["email_subject"],
+            body=message["email_body"],
+            to=[message["to_email"]],
+        )
+        EmailThread(email).start()
+        
 class UserView(APIView):
     permission_classes = [AllowAny]
     
@@ -60,12 +71,26 @@ class UserView(APIView):
     # 회원가입
     def post(self,request):
         serializer = SignupSerializer(data=request.data)
-        
-        
         if serializer.is_valid():
-           serializer.save()
-           return Response({"message" : "회원가입 완료!"} , status=status.HTTP_201_CREATED)
-       
+            user = serializer.save()
+
+            # 토큰 생성
+            uid = urlsafe_b64encode(force_bytes(user.pk))
+            token = PasswordResetTokenGenerator().make_token(user)
+
+            # 이메일 전송
+            email = user.email
+            backend_url = "localhost:8000"
+            authurl = f"http://{backend_url}/user/verify-email/{uid}/{token}/"
+            email_body =  f"{user.name}님 안녕하세요! \n 아래 링크를 클릭해 회원가입을 완료해주세요. \n {authurl}"
+            message = {
+                "email_body": email_body,
+                "to_email": email,
+                "email_subject": "이메일 인증",
+            }
+            Util.send_email(message)
+
+            return Response({"message": "가입완료!"}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -96,6 +121,47 @@ class UserView(APIView):
         else:
             return Response({"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST)
 
+# 이메일 인증
+class VerifyEmailView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            # URL에 포함된 uid를 디코딩하여 사용자 식별
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        token_generator = PasswordResetTokenGenerator()
+        # 사용자가 존재하고 토큰이 유효한지 확인
+        if user is not None and token_generator.check_token(user, token):
+            # 이메일 인증 완료 처리 - 유저 활성화
+            user.is_active = True
+            user.save()
+            return redirect("인증완료 프론트 html")
+        else:
+            return redirect("잘못되었거나 만료된 링크 프론트 html")
+       
+# 전화번호 인증
+# class CertifyPhoneView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         user = get_object_or_404(User, id = request.user.id)
+        
+#         try:
+#             phone_number = request.data["phone_number"]
+#             if not User.objects.filter(phone_number=phone_number).exists():
+#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+#             else:
+#                 ConfirmPhoneNumber.objects.create(user=user)
+#                 user.is_certify = True
+#                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+#         except:
+#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST) 
+        
+
 # ================================ 회원가입, 회원정보 끝 ================================
 
 
@@ -116,6 +182,7 @@ class ChangePasswordView(APIView):
             return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     
 # ================================ 프로필 시작 ================================
 
@@ -172,10 +239,56 @@ class ProfileAlbumView(APIView):
            return Response({"message" : "등록 완료!"} , status=status.HTTP_201_CREATED)
        
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)      
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)     
         
         
 # ================================ 프로필 끝 ================================
+
+
+
+# ================================ 아이디 찾기 시작 ================================
+
+# 아이디 찾기 휴대폰 sms 발송
+# class FindAccountView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         try:
+#             phone_number = request.data["phone_number"]
+#             if not User.objects.filter(phone_number=phone_number).exists():
+#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+#             user = User.objects.get(phone_number=phone_number)
+#             ConfirmPhoneNumber.objects.create(user=user)
+#             return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+#         except:
+#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+
+# 아이디 찾기 인증번호 확인
+# class ConfirmPhoneNumberView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         try:
+#             phone_number = request.data["phone_number"]
+#             auth_number = request.data["auth_number"]
+
+#             user = get_object_or_404(User, phone_number=phone_number)
+#             confirm_phone_number = ConfirmPhoneNumber.objects.filter(user=user).last()
+
+#             if confirm_phone_number.expired_at < timezone.now():
+#                 return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+#             if confirm_phone_number.auth_number != int(auth_number):
+#                 return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+
+#             return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)
+
+#         except:
+#             return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+# ================================ 아이디 찾기 끝 ================================
 
 
 
@@ -284,14 +397,14 @@ class FriendRejectView(APIView):
 class KakaoLoginView(APIView):
 
     def get(self, request):
-        return Response(KAKAO_REST_API_KEY, status=status.HTTP_200_OK)
+        return Response(KAKAO_LOGIN_API_KEY, status=status.HTTP_200_OK)
 
     def post(self, request):
         auth_code = request.data.get("code")
         kakao_token_api = "https://kauth.kakao.com/oauth/token"
         data = {
             "grant_type": "authorization_code",
-            "client_id": KAKAO_REST_API_KEY,
+            "client_id": KAKAO_LOGIN_API_KEY,
             "redirect_uri": "http://127.0.0.1:5500/index.html",
             "code": auth_code,
         }
@@ -320,13 +433,13 @@ class KakaoLoginView(APIView):
 class NaverLoginView(APIView):
 
     def get(self, request):
-        return Response(NAVER_API_KEY, status=status.HTTP_200_OK)
+        return Response(NAVER_LOGIN_API_KEY, status=status.HTTP_200_OK)
 
     def post(self, request):
         code = request.data.get("naver_code")
         state = request.data.get("state")
         access_token = requests.post(
-            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_API_KEY}&client_secret={NAVER_SECRET_KEY}&state={state}",
+            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_LOGIN_API_KEY}&client_secret={NAVER_LOGIN_SECRET_KEY}&state={state}",
             headers={"Accept": "application/json"},
         )
         access_token = access_token.json().get("access_token")
@@ -350,7 +463,7 @@ class NaverLoginView(APIView):
 class GoogleLoginView(APIView):
 
     def get(self, request):
-        return Response(GOOGLE_API_KEY, status=status.HTTP_200_OK)
+        return Response(GOOGLE_LOGIN_API_KEY, status=status.HTTP_200_OK)
 
     def post(self, request):
         access_token = request.data["access_token"]
@@ -369,20 +482,15 @@ class GoogleLoginView(APIView):
 
 # 로그인
 def SocialLogin(**kwargs):
-    # 각각 소셜 로그인에서 email, nickname, login_type등을 받아옴!!
-    data = {k: v for k, v in kwargs.items() if v is not None}
-    # none인 값들은 빼줌
+    data = {key: value for key, value in kwargs.items() if value is not None}
     email = data.get("email")
     signup_type = data.get("signup_type")
-    # 그 중 email이 없으면 회원가입이 불가능하므로
-    # 프론트에서 메시지를 띄워주고, 다시 로그인 페이지로 이동시키기
     if not email:
         return Response(
             {"error": "해당 계정에 email정보가 없습니다."}, status=status.HTTP_400_BAD_REQUEST
         )
     try:
         user = User.objects.get(email=email)
-        # 로그인 타입까지 같으면, 토큰 발행해서 프론트로 보내주기
         if signup_type == user.signup_type:
             refresh = RefreshToken.for_user(user)
             access_token = CustomTokenObtainPairSerializer.get_token(user)
@@ -390,20 +498,18 @@ def SocialLogin(**kwargs):
                 {"refresh": str(refresh), "access": str(access_token.access_token)},
                 status=status.HTTP_200_OK,
             )
-        # 유저의 다른 소셜계정으로 로그인한 유저라면, 해당 로그인 타입을 보내줌.
-        # (프론트에서 "{signup_type}으로 로그인한 계정이 있습니다!" alert 띄워주기)
         else:
             return Response(
                 {"error": f"{user.signup_type}으로 이미 가입된 계정이 있습니다!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    # 유저가 존재하지 않는다면 회원가입시키기
+    # 유저가 존재하지 않는다면 회원가입
     except User.DoesNotExist:
         new_user = User.objects.create(**data)
-        # pw는 사용불가로 지정
+        # 비밀번호 사용 불가
         new_user.set_unusable_password()
         new_user.save()
-        # 이후 토큰 발급해서 프론트로
+        # 토큰 발급
         refresh = RefreshToken.for_user(new_user)
         access_token = CustomTokenObtainPairSerializer.get_token(new_user)
         return Response(
@@ -411,6 +517,5 @@ def SocialLogin(**kwargs):
             status=status.HTTP_200_OK,
         )
         
-        
-        
 # ================================ 소셜 로그인 끝 ================================
+
