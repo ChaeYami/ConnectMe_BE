@@ -232,6 +232,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+    
         current_password = self.context.get("request").user.password
         confirm_password = data.get("confirm_password")
         password = data.get("password")

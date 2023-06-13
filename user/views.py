@@ -145,19 +145,22 @@ class UserView(APIView):
     def patch (self, request):
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
-        
+        if user.signup_type == 'normal': 
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
+            
+            else:
+                return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response( {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
     
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
     def delete(self, request):
         user = get_object_or_404(User, id=request.user.id)
-        datas = request.data.copy()  # request.data → request.data.copy() 변경
-        # request.data는 Django의 QueryDict 객체로서 변경이 불가능하여 복사하여 수정한 후 전달하는 방법을 이용!
+        datas = request.data.copy()  
         datas["is_active"] = False
         serializer = UserDelSerializer(user, data=datas)
         if user.check_password(request.data.get("password")):
@@ -189,8 +192,6 @@ class VerifyEmailView(APIView):
             return redirect("잘못되었거나 만료된 링크 프론트 html")
 
 
-
-
 # ================================ 회원가입, 회원정보 끝 ================================
 
 
@@ -205,13 +206,15 @@ class ChangePasswordView(APIView):
 
     def put(self, request):
         user = get_object_or_404(User, id=request.user.id)
-        serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+        if user.signup_type == 'normal':
+            serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else : 
+            return Response({"message" : "소셜로그인 가입자는 비밀번호 변경을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
     
 # ================================ 프로필 시작 ================================
 
@@ -340,10 +343,14 @@ class ConfirmAccountView(APIView):
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-        if serializer.is_valid():
-            return Response({"message": "비밀번호 재설정 이메일"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        email = serializer.email
+        user = get_object_or_404(User, email = email)
+        if user.signup_type == 'normal':
+            if serializer.is_valid():
+                return Response({"message": "비밀번호 재설정 이메일을 발송했습니다."}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else : 
+            return Response({"message" : "소셜로그인 가입자는 비밀번호 재설정을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 ############## 비밀번호 재설정 토큰 확인 ##############
 class PasswordTokenCheckView(APIView):
@@ -494,10 +501,11 @@ class NaverLoginView(APIView):
         )
         user_data = user_data.json().get("response")
         data = {
-            "email": user_data.get("email"),
-            "nickname": user_data.get("nickname"),
+            # "email": user_data.get("email"),
+            "nickname": user_data["nickname"],
             "signup_type": "naver",
         }
+        print(user_data["nickname"])
         return SocialLogin(**data)
 
 
