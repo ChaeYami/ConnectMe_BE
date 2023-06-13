@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "place",
     "meeting",
     "chat",
+    "counsel",
     'django_filters',
 ]
 

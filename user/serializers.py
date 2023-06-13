@@ -414,7 +414,7 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProfileAlbum
-        fields = ["image", ]
+        fields = "__all__"
     
 # ================================ 친구신청 시작 ================================
     
