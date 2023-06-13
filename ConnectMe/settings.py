@@ -23,22 +23,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",  # 이거 상단에 있어야 합니다.
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    'django_cleanup.apps.CleanupConfig',
-    "rest_framework",
-    "corsheaders",
-    "rest_framework_simplejwt",
-    "user",
-    "place",
-    "meeting",
-    "chat",
-    'django_filters',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheader',
+    'rest_framework_simplejwt',
+    'counsel.apps.CounselConfig',
 ]
 
 REST_FRAMEWORK = {
@@ -122,9 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "ko-kor"
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = "Asia/Seoul"
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
