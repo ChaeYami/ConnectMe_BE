@@ -10,6 +10,7 @@ from meeting.serializer import (
     MeetingDetailSerializer,
     MeetingCommentCreateSerializer,
     MeetingCommentReplyCreateSerializer,
+    MeetingImage,
     )
 
 
@@ -35,7 +36,6 @@ class MeetingView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
-        
         serializer = MeetingCreateSerializer(data=request.data, context = {"request":request})
         if serializer.is_valid():
             serializer.save(user=request.user)
@@ -187,3 +187,14 @@ class MeetingSearchView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['title','content','comment__content','mettingcommentreply__content']
 # ================================ 모임 검색 기능 끝 ================================
+
+# ================================ 모임 이미지 수정 삭제 시작 ================================
+class MeetingImageDetailView(APIView):
+    def delete(self, request, meeting_id, image_id):
+        image = get_object_or_404(MeetingImage, id=image_id)
+        meeting = get_object_or_404(Meeting, id=meeting_id)
+        if request.user == meeting.user:
+            image.delete()
+            return Response({"message":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)     
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
