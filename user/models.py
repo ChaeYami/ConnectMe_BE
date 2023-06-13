@@ -149,8 +149,8 @@ class Profile(models.Model):
     
     
 class ProfileAlbum(models.Model):
-    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="%Y/%m/%d")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='user_album')
+    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="album_%Y/%m/%d")
     
     
 # 휴대폰 번호 확인 (문자인증)
