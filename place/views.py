@@ -1,7 +1,15 @@
 from django.shortcuts import render
 
 from place.models import Place, PlaceComment, PlaceImage
-from place.serializers import PlaceCommentSerializer, PlaceSerializer, PlaceCreateSerializer, PlaceCreateCommentSerializer, PlaceUpdateSerializer, PlaceDeleteCommentSerializer, PlaceImageSerializer
+from place.serializers import (
+    PlaceCommentSerializer, 
+    PlaceSerializer, 
+    PlaceCreateSerializer, 
+    PlaceCreateCommentSerializer, 
+    PlaceUpdateSerializer, 
+    PlaceDeleteCommentSerializer, 
+    PlaceImageSerializer,
+    PlaceDetailSerializer)
 
 from user.models import User
 
@@ -45,9 +53,9 @@ class PlaceDetailView(APIView):
     # 장소 추천 상세보기
     def get(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
-        query = place.place_comment_place.filter(main_comment=None)
+        query = place.place_comment_place.filter(main_comment=None).order_by('-updated_at')
         
-        place_serializer = PlaceSerializer(place).data
+        place_serializer = PlaceDetailSerializer(place).data
         comment_serializer = PlaceCommentSerializer(query, many=True).data
 
         return Response({'place':place_serializer, 'comment':comment_serializer})
@@ -103,8 +111,8 @@ class PlaceimageView(APIView):
     # 이미지 추가하기
     def post(self, request, place_id, place_image_id):
         place = get_object_or_404(Place, id=place_id)
-        for data in request.data.getlist("image"):
-            PlaceImage.objects.create(place=place, image=request.data['image'])
+        for data in request.data.getlist('image'):
+            PlaceImage.objects.create(place=place, image=data)
         return Response(status.HTTP_200_OK)
     
     # 이미지 수정하기
@@ -205,7 +213,7 @@ class PlaceCommentDetailView(APIView):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
     # 댓글 수정
-    def put(self, request, place_id, place_comment_id):  
+    def put(self, request, place_id, place_comment_id):
         comment = get_object_or_404(PlaceComment, id=place_comment_id)
         if request.user == comment.user:
             serializer = PlaceCreateCommentSerializer(
@@ -223,18 +231,19 @@ class PlaceCommentDetailView(APIView):
         login = request.user
         comment = PlaceComment.objects.filter(main_comment=place_comment_id)
         writer = get_object_or_404(PlaceComment, id=place_comment_id)
-        if login == writer.user:
-            serializer = PlaceDeleteCommentSerializer(
-                writer, data=request.data)
-            if serializer.is_valid():
-                if comment:
-                    serializer.save(content=None)
-                    return Response(serializer.data, status.HTTP_200_OK)
+        place = get_object_or_404(Place, id=place_id)
+        if writer in place.place_comment_place.all():
+            if login == writer.user:
+                serializer = PlaceDeleteCommentSerializer(writer, data=request.data)
+                if serializer.is_valid():
+                    if comment:
+                        serializer.save(content=None)
+                        return Response(serializer.data, status.HTTP_200_OK)
+                    else:
+                        writer.delete()
+                        return Response(status.HTTP_200_OK)
                 else:
-                    writer.delete()
-                    return Response(status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
