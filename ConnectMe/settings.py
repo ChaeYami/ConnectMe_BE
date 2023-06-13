@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "chat",
     "counsel",
     'django_filters',
+  'counsel.apps.CounselConfig',
+
 ]
 
 REST_FRAMEWORK = {
@@ -123,9 +125,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "ko-kor"
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = "Asia/Seoul"
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
