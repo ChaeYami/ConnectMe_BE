@@ -128,8 +128,8 @@ class UserView(APIView):
 
             # 이메일 전송
             email = user.email
-            backend_url = "localhost:8000"
-            authurl = f"http://{backend_url}/user/verify-email/{uid}/{token}/"
+            BACKEND_BASE_URL = "localhost:8000"
+            authurl = f"http://{BACKEND_BASE_URL}/user/verify-email/{uid}/{token}/"
             email_body =  f"{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 회원가입을 완료해주세요. \n{authurl}"
             message = {
                 "email_body": email_body,
