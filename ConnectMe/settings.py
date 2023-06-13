@@ -40,8 +40,6 @@ INSTALLED_APPS = [
     "chat",
     "counsel",
     'django_filters',
-  'counsel.apps.CounselConfig',
-
 ]
 
 REST_FRAMEWORK = {

@@ -2,7 +2,6 @@
 from django.shortcuts import render, get_object_or_404, redirect # 검색 조건을 기반으로 객체를 가져오는 함수입니다. 객체가 존재하지 않을 경우
 from .models import Question                                                               #404 에러 페이지를 반환합니다.
 from datetime import timezone
-from .forms import QuestionForm
 
 
 def index(request):
