@@ -42,6 +42,7 @@ from .models import (
 )
 
 import requests
+import uuid
 
 
 
@@ -471,10 +472,14 @@ class KakaoLoginView(APIView):
             },
         )
         user_data = user_data.json()
+        new_account = 'K' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
+            "account" : new_account,
             "email": user_data.get("kakao_account").get("email"),
             "nickname": user_data.get("properties").get("nickname"),
             "signup_type": "kakao",
+            "is_active" : True
+            
         }
         return SocialLogin(**data)
     
@@ -500,7 +505,9 @@ class NaverLoginView(APIView):
             },
         )
         user_data = user_data.json().get("response")
+        new_account = 'N' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
+            "account" : new_account,
             # "email": user_data.get("email"),
             "nickname": user_data["nickname"],
             "signup_type": "naver",
@@ -522,10 +529,13 @@ class GoogleLoginView(APIView):
             headers={"Authorization": f"Bearer {access_token}"},
         )
         user_data = user_data.json()
+        new_account = 'G' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
+            "account" : new_account,
             "email": user_data.get("email"),
             "nickname": user_data.get("name"),
             "signup_type": "google",
+            "is_active" : True
         }
         return SocialLogin(**data)
 
