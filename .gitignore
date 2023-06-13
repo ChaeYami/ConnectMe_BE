@@ -1,7 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,visualstudiocode,pycharm,python,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,visualstudiocode,pycharm,python,django
 
+**/migrations/*.py
+!**/migrations/__init__.py
 my_settings.py
+ConnectMe/my_settings.py
+
 
 ### Django ###
 *.log

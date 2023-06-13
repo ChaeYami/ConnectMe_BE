@@ -15,8 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
+from counsel import views
 
+#cunsel에서 볼 수 있는 화면 
+#url 매핑
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('counsel/', include('counsel.urls')), 
 ]
