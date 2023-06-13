@@ -55,36 +55,48 @@ for page in range(1, int(pages)):
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
         
-        title = soup.select('dl.restName > dd')[0].text.strip().split('[')[0]
-        category = soup.select('dl.restType > dd')[0].text.strip()
-        content = soup.select('#info_ps_f')[0].text.strip()
-        address = soup.select('dl.restAdd > dd.add2')[0].text.strip()[6:]
-        image_elements = soup.select('#id_restphoto_list_ul > div > li')
-        score = soup.select('span.total')[0].text.strip()
-        price = soup.select('div.restPrice > p.price')[0].text.strip()
-        hour = soup.select('ul.tableTopA > li:nth-child(1) > dl > dd')[0].text.strip()
-        holiday = soup.select('ul.tableTopA > li:nth-child(3) > dl > dd')[0].text.strip()
-        image_list = []
-        
-        
-        for image in image_elements:
-            image_src = image.find('img')['src']
-            img = base_url+image_src
-            image_list.append(img)
+        try:
+            title = soup.select('div.areaBasic > dl.restName > dd')[0].text.strip()
+            category = soup.select('dl.restType > dd')[0].text.strip()
+            content = soup.select('#info_ps_f')[0].text.strip()
+            address = soup.select('dl.restAdd > dd.add2')[0].text.strip()
+            image_elements = soup.select('#id_restphoto_list_ul > div > li')
+            score = soup.select('span.total')[0].text.strip()
+            price = soup.select('div.restPrice > p.price')[0].text.strip()
+            hour = soup.select('ul.tableTopA > li:nth-child(1) > dl > dd')[0].text.strip()
+            holiday = soup.select('ul.tableTopA > li:nth-child(3) > dl > dd')[0].text.strip()
+            image_list = []
             
-        writer.writerow([
-            title, 
-            category, 
-            content,
-            address,
-            image_list, 
-            score, 
-            price, 
-            hour, 
-            holiday
-            ])
+            if address:
+                address = address[6:]
+            else:
+                address = soup.select('dl.restAdd > dd.add1')[0].text.strip()
+                
+                
+            if '[' in title:
+                title = title.split('[')[0]
+            else:
+                title
+                
             
-        
+            for image in image_elements:
+                image_src = image.find('img')['src']
+                img = base_url+image_src
+                image_list.append(img)
+                
+            writer.writerow([
+                title, 
+                category, 
+                content,
+                address,
+                image_list, 
+                score, 
+                price, 
+                hour, 
+                holiday
+                ])
+        except:
+            pass
         # 페이지 닫기
         driver.close()
         # 페이지 뒤로가기
