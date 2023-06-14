@@ -276,7 +276,7 @@ class ProfileView(APIView):
         
         if user == request.user:
             profile = get_object_or_404(Profile, id = user_id)
-            serializer = ProfileSerializer(profile, data=request.data)
+            serializer = ProfileSerializer(profile, data=request.data, partial = True)
             if serializer.is_valid():
                 serializer.save()
                 return Response({"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK)

@@ -407,6 +407,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
+    def update(self, instance, validated_data):
+        profile = super().update(instance, validated_data)
+        
+        profile.save()
+        return profile
+        
 # 앨범
 class ProfileAlbumSerializer(serializers.ModelSerializer):
     # 이미지 url로 반환
