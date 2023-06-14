@@ -407,11 +407,24 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
         
-    def update(self, instance, validated_data):
-        profile = super().update(instance, validated_data)
         
-        profile.save()
-        return profile
+    def update(self, instance, validated_data):
+        got_ages = validated_data['age']
+        
+        if got_ages >= 10:
+            got_ages = str(got_ages)[:1]+'0 대'
+            instance.age_range = got_ages
+        else:
+            instance.age_range = '10대 이하'
+            
+        instance.mbti = validated_data.get('mbti', instance.mbti)
+        instance.prefer_region = validated_data.get('prefer_region', instance.prefer_region)
+        instance.age = validated_data.get('age', instance.age)
+        instance.introduce = validated_data.get('introduce', instance.introduce)
+        instance.profile_img = validated_data.get('profile_img', instance.profile_img)
+        instance.save()
+        return instance
+
         
 # 앨범
 class ProfileAlbumSerializer(serializers.ModelSerializer):
