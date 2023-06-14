@@ -26,7 +26,7 @@ urlpatterns = [
     
     # profile
     path("profile/<int:user_id>/", views.ProfileView.as_view(), name="profile_view"), # /user/profile/id/ : 프로필
-    path("<int:user_id>/image/", views.ProfileAlbumView.as_view(), name="profile_album_view"), # /user/id/image : 사진첩
+    path("<int:user_id>/image/<int:image_id>/", views.ProfileAlbumView.as_view(), name="profile_album_view"), # /user/id/image : 사진첩
     
     # recommend
     path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천

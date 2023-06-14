@@ -13,7 +13,7 @@ filename = "place.csv"
 f = open(filename,"w",encoding="utf-8-sig",newline="")
 writer = csv.writer(f)
 # 제목 행 추가
-row = "name category content address images score price hour holiday".split()
+row = "name category sort content address images score price hour holiday".split()
 writer.writerow(row)
 
 # 페이지 수 확인후 반복
@@ -57,7 +57,7 @@ for page in range(1, int(pages)):
         
         try:
             title = soup.select('div.areaBasic > dl.restName > dd')[0].text.strip()
-            category = soup.select('dl.restType > dd')[0].text.strip()
+            sort = soup.select('dl.restType > dd')[0].text.strip()
             content = soup.select('#info_ps_f')[0].text.strip()
             address = soup.select('dl.restAdd > dd.add2')[0].text.strip()
             image_elements = soup.select('#id_restphoto_list_ul > div > li')
@@ -66,6 +66,7 @@ for page in range(1, int(pages)):
             hour = soup.select('ul.tableTopA > li:nth-child(1) > dl > dd')[0].text.strip()
             holiday = soup.select('ul.tableTopA > li:nth-child(3) > dl > dd')[0].text.strip()
             image_list = []
+            category = ''
             
             if address:
                 address = address[6:]
@@ -78,6 +79,15 @@ for page in range(1, int(pages)):
             else:
                 title
                 
+                
+            if '카페' in sort:
+                if sort[-2:] == '카페':
+                    category = '카페'
+                else:
+                    category = '술'
+            else:
+                category = '밥'
+                
             
             for image in image_elements:
                 image_src = image.find('img')['src']
@@ -86,7 +96,8 @@ for page in range(1, int(pages)):
                 
             writer.writerow([
                 title, 
-                category, 
+                category,
+                sort, 
                 content,
                 address,
                 image_list, 

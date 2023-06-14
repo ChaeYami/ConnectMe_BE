@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
 
+BACKEND = 'http://127.0.0.1:8000'
+
 # ================================ 이미지 시리얼라이저 시작 ================================
 class PlaceImageSerializer(serializers.ModelSerializer):
     # 이미지 url로 반환
@@ -21,7 +23,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         img = obj.place_image_place.first()
         if img:
-            return {'id':img.id, 'url':'http://127.0.0.1:8000'+img.image.url}
+            return {'id':img.id, 'url':BACKEND+img.image.url}
         else:
             return img
     
@@ -38,7 +40,7 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
         images = obj.place_image_place.all()
         img = []
         for image in images:
-            img.append({'id':image.id, 'url':'http://127.0.0.1:8000'+image.image.url})
+            img.append({'id':image.id, 'url':BACKEND+image.image.url})
         return img
     
     class Meta:
@@ -84,7 +86,7 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
         images = obj.place_image_place.all()
         img = []
         for image in images:
-            img.append({'id':image.id, 'url':'http://127.0.0.1:8000'+image.image.url})
+            img.append({'id':image.id, 'url':BACKEND+image.image.url})
         return img
     
     class Meta:
@@ -128,7 +130,9 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_name', 'place', 'content', 'main_comment', 'deep', 'created_at', 'updated_at', 'reply']
         
     def get_reply(self, instance):
-        serializer = self.__class__(instance.reply, many=True)
+        # reply 전부 불러와서 updated_at을 최신순으로 정렬
+        sorted_reply = sorted(instance.reply.all(), key=lambda x: x.updated_at, reverse=True)
+        serializer = self.__class__(sorted_reply, many=True)
         serializer.bind('', self)
         return serializer.data
     
