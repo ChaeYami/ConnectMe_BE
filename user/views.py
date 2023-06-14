@@ -248,6 +248,13 @@ class ProfileListView(APIView):
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
+        # 전체
+        elif filter == 'all':
+            user = get_object_or_404(Profile, user_id = request.user.id)
+            profiles = Profile.objects.all().exclude(id=request.user.id)
+            serializer = ProfileSerializer(profiles, many = True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
 
 ############## 개인 공개 프로필 ##############
 class ProfileView(APIView):
