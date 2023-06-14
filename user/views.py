@@ -251,7 +251,14 @@ class ProfileListView(APIView):
 
 ############## 개인 공개 프로필 ##############
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    
+    def get_permissions(self):
+        if self.request.method == "PATCH":
+            return [IsAuthenticated(),]
+        else:
+            return super(ProfileView, self).get_permissions()
+        
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
     def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
