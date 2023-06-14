@@ -46,6 +46,7 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.is_active = True
         user.save(using=self._db)
+        Profile.objects.create(user = user)
         return user
     
 # 유저모델
