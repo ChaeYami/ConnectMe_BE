@@ -578,13 +578,17 @@ def SocialLogin(**kwargs):
             )
     # 유저가 존재하지 않는다면 회원가입
     except User.DoesNotExist:
-        new_user = User.objects.create(**data)
+        user = User.objects.create(**data)
         # 비밀번호 사용 불가
-        new_user.set_unusable_password()
-        new_user.save()
+        user.set_unusable_password()
+        user.save()
+        
+        # Profile 객체 생성
+        Profile.objects.create(user=user)
+        
         # 토큰 발급
-        refresh = RefreshToken.for_user(new_user)
-        access_token = CustomTokenObtainPairSerializer.get_token(new_user)
+        refresh = RefreshToken.for_user(user)
+        access_token = CustomTokenObtainPairSerializer.get_token(user)
         return Response(
             {"refresh": str(refresh), "access": str(access_token.access_token)},
             status=status.HTTP_200_OK,
