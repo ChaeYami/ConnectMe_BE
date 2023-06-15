@@ -19,7 +19,8 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from user.serializers import (
     ChangePasswordSerializer,
-    FriendListSerializer,
+    FriendsListSerializer,
+    RequestListSerializer,
     FriendSerializer,
     ProfileAlbumSerializer,
     SignupSerializer,
@@ -470,7 +471,7 @@ class FriendRejectView(APIView):
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
-# 친구신청목록
+############## 친구신청목록 ##############
 class RequestList(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -478,8 +479,22 @@ class RequestList(APIView):
         list = Friend.objects.filter(
             Q(to_user_id=user.id) | Q(from_user_id=user.id)
             ).exclude(status='accepted')
-        serializer = FriendListSerializer(list, many=True)
+        serializer = RequestListSerializer(list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class FriendsListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = get_object_or_404(User, id = request.user.id)
+
+        friend_requests = Friend.objects.filter(
+            Q(from_user=user) | Q(to_user=user),
+            status='accepted'
+        )
+        serializer = RequestListSerializer(friend_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
         
 
 # ================================ 친구맺기 끝 ================================

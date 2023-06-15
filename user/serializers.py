@@ -482,7 +482,7 @@ class FriendSerializer(serializers.Serializer):
         return friend_request
     
     
-class FriendListSerializer(serializers.ModelSerializer):
+class RequestListSerializer(serializers.ModelSerializer):
     from_account = serializers.SerializerMethodField()
     to_account = serializers.SerializerMethodField()
     from_nickname = serializers.SerializerMethodField()
@@ -501,6 +501,17 @@ class FriendListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Friend
+        fields = "__all__"
+    
+class FriendsListSerializer(serializers.ModelSerializer):
+    friends = serializers.SerializerMethodField()
+    
+    def get_friends(self, obj):
+        friends = obj.friends.all()
+
+        
+    class Meta:
+        model = User
         fields = "__all__"
     
 # ================================ 친구신청 끝 ================================
