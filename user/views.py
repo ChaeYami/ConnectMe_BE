@@ -482,7 +482,8 @@ class RequestList(APIView):
         serializer = RequestListSerializer(list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
+    
+############## 친구목록 ##############
 class FriendsListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -495,7 +496,24 @@ class FriendsListView(APIView):
         serializer = RequestListSerializer(friend_requests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+############## 친구삭제 ##############
+class FriendDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, friend_id):
+        friend = get_object_or_404(Friend, id=friend_id)
         
+        user1 = User.objects.get(id=friend.from_user_id)
+        user2 = User.objects.get(id=friend.to_user_id)
+        if friend.from_user != request.user and friend.to_user != request.user:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+        # 친구 삭제
+        friend.delete()
+        user1.friends.remove(user2)
+
+        return Response({"message": "친구를 삭제했습니다."}, status=status.HTTP_200_OK)
+
 
 # ================================ 친구맺기 끝 ================================
 
