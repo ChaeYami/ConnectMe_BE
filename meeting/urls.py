@@ -10,17 +10,21 @@ urlpatterns = [
     path('<int:meeting_id>/bookmark/',
          views.MeetingBookmarkView.as_view(),), # /meeting/<int:meeting_id>/bookmark/ 모임 글 북마크
     path('<int:meeting_id>/comment/',
-         views.MeetingCommentView.as_view(),), # /meeting/<int:meeting_id>/comment/ 모임 댓글 작성
+         views.MeetingCommentView.as_view(),), # /meeting/<int:meeting_id>/comment/ 모임 댓글 작성, 목록
     path('<int:meeting_id>/comment/<int:comment_id>/',
          views.MeetingCommentDetailView.as_view(),), # /meeting/<int:meeting_id>/comment/<int:comment_id>/ 모임 댓글 수정 삭제
     path('<int:meeting_id>/comment/<int:comment_id>/reply/',
-         views.MeetingCommentReplyView.as_view(),), # /meeting/<int:meeting_id>/comment/<int:comment_id>/reply/ 모임 대댓글 작성
-    path('<int:meeting_id>/comment/<int:comment_id>/reply/<int:reply_id>/',
-         views.MeetingCommentReplyDetailView.as_view(),), # /meeting/<int:meeting_id>/comment/<int:comment_id>/reply/<int:reply_id>/ 모임 대댓글 수정 삭제 
-    path('search_api/',
-         views.MeetingSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 제목과 내용 댓글 대댓글 중 키워드가 있는 모임을 찾음.
+         views.MeetingCommentReplyView.as_view(),), # /meeting/<int:meeting_id>/comment/<int:comment_id>/reply/ 모임 대댓글 작성, 목록
+    path('<int:meeting_id>/comment/reply/<int:reply_id>/',
+         views.MeetingCommentReplyDetailView.as_view(),), # /meeting/<int:meeting_id>/comment/reply/<int:reply_id>/ 모임 대댓글 수정 삭제 
+    path('search_title/',
+         views.MeetingTitleSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 제목을 검색
+     path('search_content/',
+         views.MeetingContentSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 내용을 검색
+     path('search_user/',
+         views.MeetingUserSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 작성자를 검색
      path('bookmark_list/',
           views.MeetingBookmarkView.as_view(),), #/meeting/bookmark_list/ 북마크 한 모임 글 리스트 
      path('<int:meeting_id>/meeting_image/<int:image_id>/',
-          views.MeetingImageDetailView.as_view(),),
+          views.MeetingImageDetailView.as_view(),), #/meeting/<int:meeting_id>/meeting_image/<int:image_id> 이미지 삭제
 ]
