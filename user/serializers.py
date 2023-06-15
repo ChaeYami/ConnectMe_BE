@@ -112,6 +112,10 @@ class SignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
             )
+            
+         # 휴대폰 번호 존재여부와 blank 허용
+        if (User.objects.filter(phone=phone).exists() and not phone == ""):
+            raise serializers.ValidationError(detail={"phone": "이미 사용중인 휴대폰 번호 이거나 탈퇴한 휴대폰 번호입니다."})
 
         return data
     
@@ -135,13 +139,12 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email","phone")
+        fields = ("name","phone")
         extra_kwargs = {
-            "email": {
+            "name": {
                 "error_messages": {
-                    "required": "이메일을 입력해주세요.",
-                    "invalid": "알맞은 형식의 이메일을 입력해주세요.",
-                    "blank": "이메일을 입력해주세요.",
+                    "required": "이름을 입력해주세요.",
+                    "blank": "이름을 입력해주세요.",
                 }
             },
             "phone": {
@@ -165,7 +168,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     
     def update(self, instance, validated_data):
-        instance.email = validated_data.get("email", instance.email)
+        instance.email = validated_data.get("name", instance.email)
         instance.phone = validated_data.get("phone", instance.phone)
         instance.save()
         
@@ -303,7 +306,7 @@ class PasswordResetSerializer(serializers.Serializer):
             token = PasswordResetTokenGenerator().make_token(user)
 
             frontend_site = "127.0.0.1:5500"
-            absurl = f"http://{frontend_site}/user/set_password.html?id=${uidb64}&token=${token}"
+            absurl = f"http://{frontend_site}/set_password.html?id=${uidb64}&token=${token}"
 
             email_body = "비밀번호 재설정을 위해 아래 링크를 클릭해주세요. \n " + absurl
             message = {

@@ -188,7 +188,7 @@ class VerifyEmailView(APIView):
             # 이메일 인증 완료 처리 - 유저 활성화
             user.is_active = True
             user.save()
-            return redirect("인증완료 프론트 html")
+            return redirect("http://127.0.0.1:5500/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
 
@@ -364,14 +364,14 @@ class ConfirmAccountView(APIView):
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-        email = serializer.email
-        user = get_object_or_404(User, email = email)
-        if user.signup_type == 'normal':
-            if serializer.is_valid():
+        if serializer.is_valid():
+            email = serializer.validated_data.get('email')
+            user = get_object_or_404(User, email=email)
+            if user.signup_type == 'normal':
                 return Response({"message": "비밀번호 재설정 이메일을 발송했습니다."}, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else : 
-            return Response({"message" : "소셜로그인 가입자는 비밀번호 재설정을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message": "소셜로그인 가입자는 비밀번호 재설정을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ############## 비밀번호 재설정 토큰 확인 ##############
 class PasswordTokenCheckView(APIView):
