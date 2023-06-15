@@ -31,6 +31,7 @@ from user.serializers import (
     SetNewPasswordSerializer,
     EmailThread,
     UserUpdateSerializer,
+    ProfileRegionSerializer,
 )
 
 from my_settings import (
@@ -643,3 +644,19 @@ def SocialLogin(**kwargs):
         
 # ================================ 소셜 로그인 끝 ================================
 
+# ================================ 현재 지역 시작 ================================
+
+class RegionView(APIView):
+    def patch(self, request):
+        user = get_object_or_404(User, id=int(request.data['user']))
+        profile = get_object_or_404(Profile, user=user)
+        
+        serializer = ProfileRegionSerializer(profile, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+# ================================ 현재 지역 끝 ================================
