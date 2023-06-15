@@ -438,6 +438,21 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
         model = ProfileAlbum
         fields = "__all__"
     
+    
+# 현재 지역
+class ProfileRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ("current_region",)
+    
+    def update(self, instance, validated_data):
+        instance.current_region = validated_data.get("current_region", instance.current_region)
+        instance.save()
+        
+        return instance
+        
+    
+    
 # ================================ 친구신청 시작 ================================
     
 class FriendSerializer(serializers.Serializer):

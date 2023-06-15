@@ -41,5 +41,8 @@ urlpatterns = [
     path("password/email/", views.PasswordResetView.as_view(), name="password_reset"),  # /user/password/email : 비밀번호 찾기 (이메일 보내기)
     path("password/reset/",views.SetNewPasswordView.as_view(),name="password_reset_confirm"),  # /user/password/reset/비밀번호 재설정
     
+    # current_region
+    path("region/", views.RegionView.as_view(), name="region_view"), # /user/region/ : 현재 지역 입력값
+    
     
 ]

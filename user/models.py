@@ -117,6 +117,7 @@ class Friend(models.Model):
 class Profile(models.Model):
     profile_img = models.ImageField("프로필사진", null=True, blank=True, default=None, upload_to="profile_img/")
     prefer_region = models.CharField("선호지역", max_length=10 , default="전국", blank=True) 
+    current_region = models.CharField("현재지역", max_length=255, blank=True, null=True)
     # 자바스크립트에서 도/특별시/광역시를 고르면 해당하는 시/군/구를 고르게 한 다음 해당 시/군/구만 텍스트로 보내올 예정 (탁근님이 할 거임 쿠다사이)
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")

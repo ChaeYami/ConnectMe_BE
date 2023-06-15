@@ -77,7 +77,7 @@ class PlaceDetailView(APIView):
         place = get_object_or_404(Place, id=place_id)
 
         if request.user.is_staff:
-            serializer = PlaceUpdateSerializer(place, data=request.data)
+            serializer = PlaceUpdateSerializer(place, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status.HTTP_200_OK)
