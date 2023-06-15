@@ -408,7 +408,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
+        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "age_range", "introduce")
         
         
     def update(self, instance, validated_data):
@@ -451,7 +451,7 @@ class FriendSerializer(serializers.Serializer):
         slug_field='account'
     )
     status = serializers.CharField(read_only=True)
-
+    
     def validate(self, data):
         from_user = data['from_user']
         to_user = data['to_user']
@@ -469,7 +469,10 @@ class FriendSerializer(serializers.Serializer):
             raise serializers.ValidationError("상대방이 이미 친구 신청을 보냈습니다.")
         
         return data
-
+    class Meta:
+            model = Friend
+            fields = "__all__"
+            
     def create(self, validated_data):
         friend_request = Friend.objects.create(
             from_user=validated_data['from_user'],
@@ -477,6 +480,28 @@ class FriendSerializer(serializers.Serializer):
             status='pending'
         )
         return friend_request
+    
+    
+class FriendListSerializer(serializers.ModelSerializer):
+    from_account = serializers.SerializerMethodField()
+    to_account = serializers.SerializerMethodField()
+    from_nickname = serializers.SerializerMethodField()
+    to_nickname = serializers.SerializerMethodField()
+
+    
+    def get_from_account(self,obj):
+        return obj.from_user.account
+    def get_to_account(self,obj):
+        return obj.to_user.account
+    
+    def get_from_nickname(self,obj):
+        return obj.from_user.nickname
+    def get_to_nickname(self,obj):
+        return obj.to_user.nickname
+    
+    class Meta:
+        model = Friend
+        fields = "__all__"
     
 # ================================ 친구신청 끝 ================================
     

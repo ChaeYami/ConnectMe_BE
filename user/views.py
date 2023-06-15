@@ -6,6 +6,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import DjangoUnicodeDecodeError, force_str, force_bytes
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
+from django.db.models import Q
 
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from user.serializers import (
     ChangePasswordSerializer,
+    FriendListSerializer,
     FriendSerializer,
     ProfileAlbumSerializer,
     SignupSerializer,
@@ -228,7 +230,10 @@ class ProfileListView(APIView):
         if filter == 'region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
-            profiles = Profile.objects.filter(prefer_region = prefer_region).exclude(id=request.user.id)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(prefer_region = prefer_region).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -236,22 +241,31 @@ class ProfileListView(APIView):
         elif filter == 'mbti':
             user = get_object_or_404(Profile, user_id = request.user.id)
             mbti = user.mbti
-            profiles = Profile.objects.filter(mbti = mbti).exclude(id=request.user.id)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(mbti = mbti).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # 나이
-        elif filter == 'age':
+        elif filter == 'age_range':
             user = get_object_or_404(Profile, user_id = request.user.id)
-            age = user.age
-            profiles = Profile.objects.filter(age = age).exclude(id=request.user.id)
+            age_range = user.age_range
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(age_range = age_range).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # 전체
         elif filter == 'all':
             user = get_object_or_404(Profile, user_id = request.user.id)
-            profiles = Profile.objects.all().exclude(id=request.user.id)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.all().exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
             
@@ -456,6 +470,17 @@ class FriendRejectView(APIView):
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
+# 친구신청목록
+class RequestList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = get_object_or_404(User, id = request.user.id)
+        list = Friend.objects.filter(
+            Q(to_user_id=user.id) | Q(from_user_id=user.id)
+            ).exclude(status='accepted')
+        serializer = FriendListSerializer(list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
 
 # ================================ 친구맺기 끝 ================================
 
