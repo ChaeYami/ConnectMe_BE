@@ -19,7 +19,6 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from user.serializers import (
     ChangePasswordSerializer,
-    FriendsListSerializer,
     RequestListSerializer,
     FriendSerializer,
     ProfileAlbumSerializer,

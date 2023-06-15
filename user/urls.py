@@ -35,8 +35,8 @@ urlpatterns = [
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
     path('friend/<int:friend_request_id>/accept/', views.FriendAcceptView.as_view(), name='friend_request_accept_view'),# user/friend/id/accept/ : 친구신청 수락
     path('friend/<int:friend_request_id>/reject/', views.FriendRejectView.as_view(), name='friend_request_reject_view'),# user/friend/id/reject/ : 친구신청 거절
-    path('friend/request-list/', views.RequestList.as_view(), name="received_list"),
-    path('friend/list/', views.FriendsListView.as_view(), name = "friends_list"),
+    path('friend/request-list/', views.RequestList.as_view(), name="received_list"), # user/friend/request-list : 친구신청목록
+    path('friend/list/', views.FriendsListView.as_view(), name = "friends_list"), # user/friend/list/ : 친구목록
     
     # password
     path("password/email/", views.PasswordResetView.as_view(), name="password_reset"),  # /user/password/email : 비밀번호 찾기 (이메일 보내기)

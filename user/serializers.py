@@ -406,6 +406,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_nickname(self, obj):
         return obj.user.nickname
     
+    
+    
     class Meta:
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "age_range", "introduce")
@@ -502,17 +504,7 @@ class RequestListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friend
         fields = "__all__"
-    
-class FriendsListSerializer(serializers.ModelSerializer):
-    friends = serializers.SerializerMethodField()
-    
-    def get_friends(self, obj):
-        friends = obj.friends.all()
 
-        
-    class Meta:
-        model = User
-        fields = "__all__"
     
 # ================================ 친구신청 끝 ================================
     
