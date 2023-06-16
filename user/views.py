@@ -114,13 +114,13 @@ class UserView(APIView):
             return super(UserView, self).get_permissions()
     
     # 개인정보 보기
-    def get(self, request):
+    def get(self, request): # /user/
         user = get_object_or_404(User, id = request.user.id)
         serializer = SignupSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     # 회원가입
-    def post(self,request):
+    def post(self,request): # /user/
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -146,7 +146,7 @@ class UserView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # 회원정보수정
-    def patch (self, request):
+    def patch (self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
         if user.signup_type == 'normal': 
@@ -162,7 +162,7 @@ class UserView(APIView):
     
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
-    def delete(self, request):
+    def delete(self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         datas = request.data.copy()  
         datas["is_active"] = False

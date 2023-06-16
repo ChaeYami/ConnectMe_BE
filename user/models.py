@@ -198,7 +198,7 @@ class ConfirmPhoneNumber(models.Model):
         data = {
             "type": "SMS",
             "from": f'{config("FROM_PHONE_NUMBER")}',
-            "content": f"Connect ME 인증 번호는 [{self.auth_number}]입니다.",
+            "content": f"[Connect ME] 인증 번호 : [{self.auth_number}]\n인증번호를 입력해주세요 (제한시간:5분).",
             "messages": [{"to": f"{self.user.phone}"}],
         }
 
