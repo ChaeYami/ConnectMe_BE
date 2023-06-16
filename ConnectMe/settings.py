@@ -18,7 +18,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -178,6 +178,8 @@ SIMPLE_JWT = {
 
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5500']
 
 AUTH_USER_MODEL = "user.User"
 

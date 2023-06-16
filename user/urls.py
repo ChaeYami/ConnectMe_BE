@@ -15,9 +15,9 @@ urlpatterns = [
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
     
     # sms 
-    path("send-phone/", views.CertifyPhoneView.as_view, name = "certify_phone_view"), # /user/send-phone/ : sms 인증번호 발송
-    path("vertify-phone/signin/",views.ConfirmPhoneNumberView.as_view(), name = "vertify_phone_view"), # /user/vertify-phone/signin/ : 회원가입 전화번호 인증
-    path("vertify-phone/account/", views.ConfirmAccountView.as_view, name = "find_account_view"), # /user/vertify-phone/account/ : 아이디 찾기 sms 인증
+    path("phone/send/", views.CertifyPhoneView.as_view(), name = "certify_phone_view"), # /user/phone/send/ : sms 인증번호 발송
+    path("phone/vertify/signin/",views.ConfirmPhoneNumberView.as_view(), name = "vertify_phone_view"), # /user/phone/vertify/signin/ : 회원가입 전화번호 인증
+    path("phone/verify/account/", views.ConfirmAccountView.as_view(), name = "find_account_view"), # /user/phone/verify/account/ : 아이디 찾기 sms 인증
     
     # social login
     path("login/kakao/", views.KakaoLoginView.as_view(), name="kakao_login_view"),
@@ -37,7 +37,7 @@ urlpatterns = [
     path('friend/<int:friend_request_id>/reject/', views.FriendRejectView.as_view(), name='friend_request_reject_view'),# user/friend/id/reject/ : 친구신청 거절
     path('friend/request-list/', views.RequestList.as_view(), name="received_list"), # user/friend/request-list : 친구신청목록
     path('friend/list/', views.FriendsListView.as_view(), name = "friends_list"), # user/friend/list/ : 친구목록
-    path('friends/<int:friend_id>/delete/', views.FriendDeleteView.as_view(), name='friend-delete'),
+    path('friend/<int:friend_id>/delete/', views.FriendDeleteView.as_view(), name='friend-delete'), # user/friend/id/delete/ : 친구삭제
     
     # password
     path("password/email/", views.PasswordResetView.as_view(), name="password_reset"),  # /user/password/email : 비밀번호 찾기 (이메일 보내기)

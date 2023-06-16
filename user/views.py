@@ -358,6 +358,7 @@ class ConfirmAccountView(APIView):
 
             user = get_object_or_404(User, phone=phone)
             confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
+            print(confirm_phone.auth_number)
 
             if confirm_phone.expired_at < timezone.now():
                 return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
@@ -365,7 +366,7 @@ class ConfirmAccountView(APIView):
             if confirm_phone.auth_number != int(auth_number):
                 return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
 
-            return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)
+            return Response({"message": f"회원님의 아이디는 {user.account}입니다."}, status=status.HTTP_200_OK)
 
         except:
             return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)

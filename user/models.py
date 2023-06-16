@@ -188,7 +188,7 @@ class ConfirmPhoneNumber(models.Model):
             "type": "SMS",
             "from": f'{config("FROM_PHONE_NUMBER")}',
             "content": f"Connect ME 인증 번호는 [{self.auth_number}]입니다.",
-            "messages": [{"to": f"{self.user.phone_number}"}],
+            "messages": [{"to": f"{self.user.phone}"}],
         }
 
         headers = {
@@ -201,5 +201,5 @@ class ConfirmPhoneNumber(models.Model):
         requests.post(url, json=data, headers=headers)
 
     def __str__(self):
-        return f"[휴대폰 번호]{self.user.phone_number}"
+        return f"[휴대폰 번호]{self.user.phone}"
 
