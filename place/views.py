@@ -98,7 +98,7 @@ class PlaceDetailView(APIView):
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
         
 
-class PlaceimageView(APIView):
+class PlaceImageView(APIView):
     
     permission_classes = [IsAdminUser]
     
