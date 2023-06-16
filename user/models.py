@@ -44,10 +44,22 @@ class UserManager(BaseUserManager):
         user = self.create_user(account = account, password=password, **extra_fields)
 
         user.is_admin = True
+        user.is_staff = True
         user.is_active = True
         user.save(using=self._db)
         Profile.objects.create(user = user)
         return user
+    
+    # staff
+    def create_staffuser(self, account,  password = None, **extra_fields):
+        user = self.create_user(account = account, password=password, **extra_fields)
+        
+        user.is_staff = True
+        user.is_active = True
+        user.save(using=self._db)
+        Profile.objects.create(user = user)
+        return user
+
     
 # 유저모델
 class User(AbstractBaseUser):
@@ -79,7 +91,6 @@ class User(AbstractBaseUser):
     
     friends = models.ManyToManyField("self", related_name='friends', blank=True) # user_friends : 친구 상태 테이블
 
-    
     objects = UserManager()
     
     USERNAME_FIELD = "account"
