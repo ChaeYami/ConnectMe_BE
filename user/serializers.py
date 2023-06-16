@@ -187,6 +187,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["account"] = user.account
         token["phone"] = user.phone
         token["nickname"] = user.nickname
+        token["is_staff"] = user.is_staff
         return token
 
     def get_user(self, validated_data):

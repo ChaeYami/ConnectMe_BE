@@ -92,18 +92,6 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
         exclude = ['user', 'bookmark', 'like']
-
-    # def update(self, instance, validated_data):
-    #     instance.title = validated_data.get('title', instance.title)
-    #     instance.content = validated_data.get('content', instance.content)
-    #     instance.category = validated_data.get('category', instance.category)
-    #     instance.address = validated_data.get('address', instance.address)
-    #     instance.score = validated_data.get('score', instance.score)
-    #     instance.price = validated_data.get('price', instance.price)
-    #     instance.hour = validated_data.get('hour', instance.hour)
-    #     instance.holiday = validated_data.get('holiday', instance.holiday)
-    #     instance.save()
-    #     return instance
     
 # ================================ 게시글 시리얼라이저 끝 ================================
 
