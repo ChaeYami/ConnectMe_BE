@@ -41,32 +41,12 @@ from my_settings import (
 )
 
 from .models import (
-    ConfirmPhoneNumber, Friend, ProfileAlbum, User, Profile
+    CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
 )
 
 import requests
 import uuid
 
-
-
-# sms 인증번호 발송 view - 회원가입 / 아이디 찾기 모두 사용
-class CertifyPhoneView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        try:
-            phone = request.data["phone"]
-            if not User.objects.filter(phone=phone).exists():
-                return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-            else:
-                user = User.objects.get(phone=phone)
-                ConfirmPhoneNumber.objects.create(user=user)
-                user.is_certify = True
-                return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
-
-        except:
-            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
@@ -80,28 +60,7 @@ class Util:
         )
         EmailThread(email).start()
         
-############## 회원가입 sms 인증번호 확인 ##############
-class ConfirmPhoneNumberView(APIView):
-    permission_classes = [AllowAny]
 
-    def post(self, request):
-        try:
-            phone = request.data["phone"]
-            auth_number = request.data["auth_number"]
-
-            user = get_object_or_404(User, phone=phone)
-            confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
-
-            if confirm_phone.expired_at < timezone.now():
-                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-            if confirm_phone.auth_number != int(auth_number):
-                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
-
-            return Response({"message": "전화번호 인증이 완료되었습니다."}, status=status.HTTP_200_OK)
-
-        except:
-            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
         
 ############## 회원가입, 개인정보 view ##############
 class UserView(APIView):
@@ -141,6 +100,7 @@ class UserView(APIView):
             }
             Util.send_email(message)
 
+
             return Response({"message": "가입완료!"}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -160,7 +120,6 @@ class UserView(APIView):
             return Response( {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST)
             
     
-    
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
     def delete(self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
@@ -174,6 +133,51 @@ class UserView(APIView):
             
         else:
             return Response({"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+############## 회원가입 sms 인증 ##############
+
+# 인증번호 발송
+class CertifyPhoneSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            # 인증모델 생성로직
+            CertifyPhoneSignup.objects.create(phone=phone)
+
+            return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        
+# 인증번호 확인
+class ConfirmPhoneSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            auth_number = request.data["auth_number"]
+
+            confirm_phone = CertifyPhoneSignup.objects.filter(phone=phone).last()
+
+            if confirm_phone.expired_at < timezone.now():
+                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if confirm_phone.auth_number != int(auth_number):
+                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+
+            
+            confirm_phone.is_certify=True
+            confirm_phone.save()
+            
+            return Response({"message": "전화번호 인증이 완료되었습니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 ############## 회원가입 이메일 인증 ##############
 class VerifyEmailView(APIView):
@@ -199,9 +203,11 @@ class VerifyEmailView(APIView):
 # ================================ 회원가입, 회원정보 끝 ================================
 
 
+
 # ================================ 로그인 ================================
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
     
     
 # ================================ 비밀번호 변경 ================================
@@ -219,6 +225,8 @@ class ChangePasswordView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else : 
             return Response({"message" : "소셜로그인 가입자는 비밀번호 변경을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
     
 # ================================ 프로필 시작 ================================
 
@@ -347,8 +355,28 @@ class ProfileAlbumView(APIView):
 
 # ================================ 아이디 찾기 시작 ================================
 
-# 아이디 찾기 인증번호 확인
-class ConfirmAccountView(APIView):
+############## sms 인증번호 발송 ##############
+class CertifyPhoneAccountView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            if not User.objects.filter(phone=phone).exists():
+                return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                user = User.objects.get(phone=phone)
+                CertifyPhoneAccount.objects.create(user=user)
+                user.is_certify = True
+                return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+############## 인증번호 확인 ##############
+class ConfirmPhoneAccountView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -357,7 +385,7 @@ class ConfirmAccountView(APIView):
             auth_number = request.data["auth_number"]
 
             user = get_object_or_404(User, phone=phone)
-            confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
+            confirm_phone = CertifyPhoneAccount.objects.filter(user=user).last()
             print(confirm_phone.auth_number)
 
             if confirm_phone.expired_at < timezone.now():

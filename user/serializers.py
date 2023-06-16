@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import ProfileAlbum, User, Profile, Friend
+from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup
 from user.validators import (
     password_validator,
     password_pattern,
@@ -29,6 +29,7 @@ from django.conf import settings
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
     joined_at = serializers.SerializerMethodField()
+    
     
     def get_joined_at(self, obj):
         return obj.joined_at.strftime("%Y년 %m월 %d일")
@@ -84,6 +85,14 @@ class SignupSerializer(serializers.ModelSerializer):
         password = data.get("password")
         nickname = data.get("nickname")
         phone = data.get("phone")
+        
+        # CertifyPhoneSignup 모델에 인증받은 번호가 있는지 확인
+        certification = CertifyPhoneSignup.objects.filter(Q(phone=phone) & Q(is_certify=True))
+        
+        if not certification.exists():
+            raise serializers.ValidationError(
+                detail={"certify": "전화번호 인증을 진행해주세요."}
+            )
         
     # 아이디 유효성 검사
         if account_validator(account):
@@ -327,12 +336,8 @@ class PasswordResetSerializer(serializers.Serializer):
 
 # 비밀번호 재설정 serializer
 class SetNewPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(
-        write_only=True,
-    )
-    repassword = serializers.CharField(
-        write_only=True,
-    )
+    password = serializers.CharField(write_only=True,)
+    repassword = serializers.CharField(write_only=True,)
     token = serializers.CharField(
         max_length=100,
         write_only=True,

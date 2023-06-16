@@ -15,9 +15,12 @@ urlpatterns = [
     path("password/change/", views.ChangePasswordView.as_view(), name="password_change_view"), #/user/password/change/ : 비밀번호 변경
     
     # sms 
-    path("phone/send/", views.CertifyPhoneView.as_view(), name = "certify_phone_view"), # /user/phone/send/ : sms 인증번호 발송
-    path("phone/vertify/signin/",views.ConfirmPhoneNumberView.as_view(), name = "vertify_phone_view"), # /user/phone/vertify/signin/ : 회원가입 전화번호 인증
-    path("phone/verify/account/", views.ConfirmAccountView.as_view(), name = "find_account_view"), # /user/phone/verify/account/ : 아이디 찾기 sms 인증
+    path("phone/send/signup/",views.CertifyPhoneSignupView.as_view(), name = "certify_phone_signup_view"), # /user/phone/send/signin/ : 회원가입 sms 인증번호 발송
+    path("phone/confirm/signup/",views.ConfirmPhoneSignupView.as_view(), name = "confirm_phone_signup_view"), # /user/phone/confirm/signin/ : 회원가입 sms 인증번호 발송
+    
+    path("phone/send/account", views.CertifyPhoneAccountView.as_view(), name = "certify_phone_account_view"), # /user/phone/send/account : 아이디찾기 sms 인증번호 발송
+    path("phone/confirm/account/", views.ConfirmPhoneAccountView.as_view(), name = "find_account_view"), # /user/phone/confirm/account/ : 아이디 찾기 sms 인증
+
     
     # social login
     path("login/kakao/", views.KakaoLoginView.as_view(), name="kakao_login_view"),
