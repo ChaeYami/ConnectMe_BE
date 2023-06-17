@@ -75,10 +75,10 @@ class User(AbstractBaseUser):
     is_certify = models.BooleanField("번호인증여부", default=False)
     
     SIGNUP_TYPES = [
-        ("normal", "일반"),
-        ("kakao", "카카오"),
-        ("google", "구글"),
-        ("naver", "네이버"),
+        ("일반", "일반"),
+        ("카카오", "카카오"),
+        ("구글", "구글"),
+        ("네이버", "네이버"),
     ]
     signup_type = models.CharField(
         "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="normal"
