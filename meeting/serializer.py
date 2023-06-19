@@ -3,7 +3,7 @@ from rest_framework import serializers
 from meeting.models import (
     Meeting,
     MeetingComment,
-    MettingCommentReply,
+    MeetingCommentReply,
     MeetingImage,
     )
 
@@ -30,7 +30,7 @@ class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
         return obj.user.nickname
     
     class Meta:
-        model = MettingCommentReply
+        model = MeetingCommentReply
         fields = "__all__"
 
 # 모임 댓글 리스트
@@ -129,13 +129,13 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
 # ================================ 모임 대댓글 목록, 작성, 수정 시작 ================================
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MettingCommentReply
+        model = MeetingCommentReply
         fields = "__all__"
 
 # 모임 대댓글 작성 수정
 class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MettingCommentReply
+        model = MeetingCommentReply
         fields = ("content",)
 
 # ================================ 모임 대댓글 작성, 수정 끝 ================================
