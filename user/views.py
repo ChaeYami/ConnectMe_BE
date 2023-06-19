@@ -243,7 +243,7 @@ class ProfileListView(APIView):
     
     def get(self,request,filter):
         # 지역
-        if filter == 'region':
+        if filter == 'prefer_region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
             admin = get_object_or_404(User, is_admin=True)

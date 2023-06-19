@@ -133,6 +133,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
     
     MBTI = [
+        ('ALL','ALL'),
         ('ENFJ','ENFJ'),
         ('ENFP','ENFP'),
         ('ENTJ','ENTJ'),
@@ -150,10 +151,10 @@ class Profile(models.Model):
         ('ISTJ','ISTJ'),
         ('ISTP','ISTP'),
     ]
-    mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True)
-    age = models.IntegerField("나이", default = 0, blank=True, null= True)
-    age_range = models.CharField("나잇대", max_length=20, blank=True, null= True)
-    introduce = models.CharField("자기소개", max_length=225, default=None, blank=True, null= True)
+    mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True, default='ALL')
+    age = models.IntegerField("나이", default = '0', blank=True, null= True)
+    age_range = models.CharField("나잇대", max_length=20, blank=True, null= True, default='ALL')
+    introduce = models.CharField("자기소개", max_length=225, blank=True, null= True,default='')
     
     
     def __str__(self):
