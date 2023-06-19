@@ -12,7 +12,15 @@ import hmac
 import time
 import requests
 
+from decouple import config
+
 from random import randint
+
+from my_settings import (
+    NAVER_ACCESS_KEY_ID, 
+    NAVER_SMS_SECRET_KEY, 
+    SERVICE_ID
+)
 
 
 # ================================ 유저 모델 시작 ================================ 
@@ -38,7 +46,19 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.is_active = True
         user.save(using=self._db)
+        Profile.objects.create(user = user)
         return user
+    
+    # staff
+    def create_staffuser(self, account,  password = None, **extra_fields):
+        user = self.create_user(account = account, password=password, **extra_fields)
+        
+        user.is_staff = True
+        user.is_active = True
+        user.save(using=self._db)
+        Profile.objects.create(user = user)
+        return user
+
     
 # 유저모델
 class User(AbstractBaseUser):
@@ -70,7 +90,6 @@ class User(AbstractBaseUser):
     
     friends = models.ManyToManyField("self", related_name='friends', blank=True) # user_friends : 친구 상태 테이블
 
-    
     objects = UserManager()
     
     USERNAME_FIELD = "account"
@@ -108,6 +127,7 @@ class Friend(models.Model):
 class Profile(models.Model):
     profile_img = models.ImageField("프로필사진", null=True, blank=True, default=None, upload_to="profile_img/")
     prefer_region = models.CharField("선호지역", max_length=10 , default="전국", blank=True) 
+    current_region = models.CharField("현재지역", max_length=255, blank=True, null=True)
     # 자바스크립트에서 도/특별시/광역시를 고르면 해당하는 시/군/구를 고르게 한 다음 해당 시/군/구만 텍스트로 보내올 예정 (탁근님이 할 거임 쿠다사이)
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
@@ -132,6 +152,7 @@ class Profile(models.Model):
     ]
     mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True)
     age = models.IntegerField("나이", default = 0, blank=True, null= True)
+    age_range = models.CharField("나잇대", max_length=20, blank=True, null= True)
     introduce = models.CharField("자기소개", max_length=225, default=None, blank=True, null= True)
     
     
@@ -141,54 +162,107 @@ class Profile(models.Model):
     
     
 class ProfileAlbum(models.Model):
-    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="%Y/%m/%d")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='place_image_place')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='회원', related_name='user_album')
+    album_img = models.ImageField(blank=True, null=True, verbose_name='이미지', upload_to="album_%Y/%m/%d")
+
+# ================================ 프로필 끝 ================================ 
+
+
+# ================================ sms 인증 모델 ================================ 
+
+# 회원가입 sms 인증번호 발송
+class CertifyPhoneSignup(models.Model):
+    phone = models.CharField("전화번호", max_length=11)
+    auth_number = models.IntegerField("인증 번호", default=0, validators=[MaxValueValidator(9999)])
+    expired_at = models.DateTimeField("만료")
+    is_certify = models.BooleanField("인증여부", default=False)
+
+    def save(self, *args, **kwargs):
+        self.auth_number = randint(1000, 10000)
+        self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
+        super().save(*args, **kwargs)
+        self.send_sms()
+
+    def send_sms(self):
+        timestamp = str(int(time.time() * 1000))
+        access_key = NAVER_ACCESS_KEY_ID
+        secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
+        service_id = SERVICE_ID
+        method = "POST"
+        uri = f"/sms/v2/services/{service_id}/messages"
+        message = method + " " + uri + "\n" + timestamp + "\n" + access_key
+        message = bytes(message, "UTF-8")
+        signing_key = base64.b64encode(
+            hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
+        )
+
+        url = f"https://sens.apigw.ntruss.com/sms/v2/services/{service_id}/messages"
+
+        data = {
+            "type": "SMS",
+            "from": f'{config("FROM_PHONE_NUMBER")}',
+            "content": f"[Connect ME] 인증 번호 : [{self.auth_number}]\n인증번호를 입력해주세요. (제한시간:5분)",
+            "messages": [{"to": f"{self.phone}"}],
+        }
+
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "x-ncp-apigw-timestamp": timestamp,
+            "x-ncp-iam-access-key": access_key,
+            "x-ncp-apigw-signature-v2": signing_key,
+        }
+
+        requests.post(url, json=data, headers=headers)
+
+    def __str__(self):
+        return f"[휴대폰 번호]{self.phone}"
+
+
     
-    
-# 휴대폰 번호 확인
-# class ConfirmPhoneNumber(models.Model):
-#     auth_number = models.IntegerField("인증 번호", default=0, validators=[MaxValueValidator(9999)])
-#     expired_at = models.DateTimeField("만료일")
+# 아이디찾기 sms 인증번호 발송
+class CertifyPhoneAccount(models.Model):
+    auth_number = models.IntegerField("인증 번호", default=0, validators=[MaxValueValidator(9999)])
+    expired_at = models.DateTimeField("만료")
 
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
 
-#     def save(self, *args, **kwargs):
-#         self.auth_number = randint(1000, 10000)
-#         self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
-#         super().save(*args, **kwargs)
-#         self.send_sms()
+    def save(self, *args, **kwargs):
+        self.auth_number = randint(1000, 10000)
+        self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
+        super().save(*args, **kwargs)
+        self.send_sms()
 
-#     def send_sms(self):
-#         timestamp = str(int(time.time() * 1000))
-#         access_key = NAVER_ACCESS_KEY_ID
-#         secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
-#         service_id = SERVICE_ID
-#         method = "POST"
-#         uri = f"/sms/v2/services/{service_id}/messages"
-#         message = method + " " + uri + "\n" + timestamp + "\n" + access_key
-#         message = bytes(message, "UTF-8")
-#         signing_key = base64.b64encode(
-#             hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
-#         )
+    def send_sms(self):
+        timestamp = str(int(time.time() * 1000))
+        access_key = NAVER_ACCESS_KEY_ID
+        secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
+        service_id = SERVICE_ID
+        method = "POST"
+        uri = f"/sms/v2/services/{service_id}/messages"
+        message = method + " " + uri + "\n" + timestamp + "\n" + access_key
+        message = bytes(message, "UTF-8")
+        signing_key = base64.b64encode(
+            hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
+        )
 
-#         url = f"https://sens.apigw.ntruss.com/sms/v2/services/{service_id}/messages"
+        url = f"https://sens.apigw.ntruss.com/sms/v2/services/{service_id}/messages"
 
-#         data = {
-#             "type": "SMS",
-#             "from": f'{FROM_PHONE_NUMBER}',
-#             "content": f"Connect ME 인증 번호는 [{self.auth_number}]입니다.",
-#             "messages": [{"to": f"{self.user.phone_number}"}],
-#         }
+        data = {
+            "type": "SMS",
+            "from": f'{config("FROM_PHONE_NUMBER")}',
+            "content": f"[Connect ME] 인증 번호 : [{self.auth_number}]\n인증번호를 입력해주세요. (제한시간:5분)",
+            "messages": [{"to": f"{self.user.phone}"}],
+        }
 
-#         headers = {
-#             "Content-Type": "application/json; charset=utf-8",
-#             "x-ncp-apigw-timestamp": timestamp,
-#             "x-ncp-iam-access-key": access_key,
-#             "x-ncp-apigw-signature-v2": signing_key,
-#         }
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "x-ncp-apigw-timestamp": timestamp,
+            "x-ncp-iam-access-key": access_key,
+            "x-ncp-apigw-signature-v2": signing_key,
+        }
 
-#         requests.post(url, json=data, headers=headers)
+        requests.post(url, json=data, headers=headers)
 
-#     def __str__(self):
-#         return f"[휴대폰 번호]{self.user.phone_number}"
+    def __str__(self):
+        return f"[휴대폰 번호]{self.user.phone}"
 

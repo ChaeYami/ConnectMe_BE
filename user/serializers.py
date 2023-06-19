@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import ProfileAlbum, User, Profile, Friend
+from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup
 from user.validators import (
     password_validator,
     password_pattern,
@@ -29,6 +29,7 @@ from django.conf import settings
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
     joined_at = serializers.SerializerMethodField()
+    
     
     def get_joined_at(self, obj):
         return obj.joined_at.strftime("%Y년 %m월 %d일")
@@ -85,6 +86,14 @@ class SignupSerializer(serializers.ModelSerializer):
         nickname = data.get("nickname")
         phone = data.get("phone")
         
+        # CertifyPhoneSignup 모델에 인증받은 번호가 있는지 확인
+        certification = CertifyPhoneSignup.objects.filter(Q(phone=phone) & Q(is_certify=True))
+        
+        if not certification.exists():
+            raise serializers.ValidationError(
+                detail={"certify": "전화번호 인증을 진행해주세요."}
+            )
+        
     # 아이디 유효성 검사
         if account_validator(account):
             raise serializers.ValidationError(
@@ -112,6 +121,10 @@ class SignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
             )
+            
+         # 휴대폰 번호 존재여부와 blank 허용
+        if (User.objects.filter(phone=phone).exists() and not phone == ""):
+            raise serializers.ValidationError(detail={"phone": "이미 사용중인 휴대폰 번호 이거나 탈퇴한 휴대폰 번호입니다."})
 
         return data
     
@@ -135,13 +148,12 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email","phone")
+        fields = ("name","phone")
         extra_kwargs = {
-            "email": {
+            "name": {
                 "error_messages": {
-                    "required": "이메일을 입력해주세요.",
-                    "invalid": "알맞은 형식의 이메일을 입력해주세요.",
-                    "blank": "이메일을 입력해주세요.",
+                    "required": "이름을 입력해주세요.",
+                    "blank": "이름을 입력해주세요.",
                 }
             },
             "phone": {
@@ -165,7 +177,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     
     def update(self, instance, validated_data):
-        instance.email = validated_data.get("email", instance.email)
+        instance.email = validated_data.get("name", instance.email)
         instance.phone = validated_data.get("phone", instance.phone)
         instance.save()
         
@@ -184,6 +196,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["account"] = user.account
         token["phone"] = user.phone
         token["nickname"] = user.nickname
+        token["is_staff"] = user.is_staff
         return token
 
     def get_user(self, validated_data):
@@ -232,6 +245,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+    
         current_password = self.context.get("request").user.password
         confirm_password = data.get("confirm_password")
         password = data.get("password")
@@ -302,7 +316,7 @@ class PasswordResetSerializer(serializers.Serializer):
             token = PasswordResetTokenGenerator().make_token(user)
 
             frontend_site = "127.0.0.1:5500"
-            absurl = f"http://{frontend_site}/user/set_password.html?id=${uidb64}&token=${token}"
+            absurl = f"http://{frontend_site}/set_password.html?id=${uidb64}&token=${token}"
 
             email_body = "비밀번호 재설정을 위해 아래 링크를 클릭해주세요. \n " + absurl
             message = {
@@ -322,12 +336,8 @@ class PasswordResetSerializer(serializers.Serializer):
 
 # 비밀번호 재설정 serializer
 class SetNewPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(
-        write_only=True,
-    )
-    repassword = serializers.CharField(
-        write_only=True,
-    )
+    password = serializers.CharField(write_only=True,)
+    repassword = serializers.CharField(write_only=True,)
     token = serializers.CharField(
         max_length=100,
         write_only=True,
@@ -402,9 +412,30 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_nickname(self, obj):
         return obj.user.nickname
     
+    
+    
     class Meta:
         model = Profile
-        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "introduce")
+        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "age_range", "introduce")
+        
+        
+    def update(self, instance, validated_data):
+        got_ages = validated_data['age']
+        
+        if got_ages >= 10:
+            got_ages = str(got_ages)[:1]+'0 대'
+            instance.age_range = got_ages
+        else:
+            instance.age_range = '10대 이하'
+            
+        instance.mbti = validated_data.get('mbti', instance.mbti)
+        instance.prefer_region = validated_data.get('prefer_region', instance.prefer_region)
+        instance.age = validated_data.get('age', instance.age)
+        instance.introduce = validated_data.get('introduce', instance.introduce)
+        instance.profile_img = validated_data.get('profile_img', instance.profile_img)
+        instance.save()
+        return instance
+
         
 # 앨범
 class ProfileAlbumSerializer(serializers.ModelSerializer):
@@ -413,7 +444,22 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProfileAlbum
-        fields = ["image", ]
+        fields = "__all__"
+    
+    
+# 현재 지역
+class ProfileRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ("current_region",)
+    
+    def update(self, instance, validated_data):
+        instance.current_region = validated_data.get("current_region", instance.current_region)
+        instance.save()
+        
+        return instance
+        
+    
     
 # ================================ 친구신청 시작 ================================
     
@@ -428,7 +474,7 @@ class FriendSerializer(serializers.Serializer):
         slug_field='account'
     )
     status = serializers.CharField(read_only=True)
-
+    
     def validate(self, data):
         from_user = data['from_user']
         to_user = data['to_user']
@@ -446,7 +492,10 @@ class FriendSerializer(serializers.Serializer):
             raise serializers.ValidationError("상대방이 이미 친구 신청을 보냈습니다.")
         
         return data
-
+    class Meta:
+            model = Friend
+            fields = "__all__"
+            
     def create(self, validated_data):
         friend_request = Friend.objects.create(
             from_user=validated_data['from_user'],
@@ -454,6 +503,29 @@ class FriendSerializer(serializers.Serializer):
             status='pending'
         )
         return friend_request
+    
+    
+class RequestListSerializer(serializers.ModelSerializer):
+    from_account = serializers.SerializerMethodField()
+    to_account = serializers.SerializerMethodField()
+    from_nickname = serializers.SerializerMethodField()
+    to_nickname = serializers.SerializerMethodField()
+
+    
+    def get_from_account(self,obj):
+        return obj.from_user.account
+    def get_to_account(self,obj):
+        return obj.to_user.account
+    
+    def get_from_nickname(self,obj):
+        return obj.from_user.nickname
+    def get_to_nickname(self,obj):
+        return obj.to_user.nickname
+    
+    class Meta:
+        model = Friend
+        fields = "__all__"
+
     
 # ================================ 친구신청 끝 ================================
     

@@ -13,6 +13,11 @@ class Place(models.Model):
     title = models.CharField(max_length=50, verbose_name='제목')
     content = models.TextField(verbose_name='내용')
     category = models.CharField(max_length=20, verbose_name='카테고리', choices=CHOICES)
+    address = models.CharField(max_length=255, verbose_name='주소')
+    score = models.FloatField(verbose_name='별점')
+    price = models.CharField(max_length=50, verbose_name='가격')
+    hour = models.CharField(max_length=50, verbose_name='영업시간')
+    holiday = models.CharField(max_length=50, verbose_name='휴일')
     bookmark = models.ManyToManyField(
         User, related_name='place_bookmark', verbose_name='북마크')
     like = models.ManyToManyField(

@@ -6,6 +6,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import DjangoUnicodeDecodeError, force_str, force_bytes
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
+from django.db.models import Q
 
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 
 from user.serializers import (
     ChangePasswordSerializer,
+    RequestListSerializer,
     FriendSerializer,
     ProfileAlbumSerializer,
     SignupSerializer,
@@ -28,6 +30,7 @@ from user.serializers import (
     SetNewPasswordSerializer,
     EmailThread,
     UserUpdateSerializer,
+    ProfileRegionSerializer,
 )
 
 from my_settings import (
@@ -37,9 +40,13 @@ from my_settings import (
     GOOGLE_LOGIN_API_KEY
 )
 
-from .models import Friend, ProfileAlbum, User, Profile
+from .models import (
+    CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
+)
 
 import requests
+import uuid
+
 
 
 # ================================ 회원가입, 회원정보 시작 ================================
@@ -53,6 +60,9 @@ class Util:
         )
         EmailThread(email).start()
         
+
+        
+############## 회원가입, 개인정보 view ##############
 class UserView(APIView):
     permission_classes = [AllowAny]
     
@@ -63,13 +73,13 @@ class UserView(APIView):
             return super(UserView, self).get_permissions()
     
     # 개인정보 보기
-    def get(self, request):
+    def get(self, request): # /user/
         user = get_object_or_404(User, id = request.user.id)
         serializer = SignupSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     # 회원가입
-    def post(self,request):
+    def post(self,request): # /user/
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -80,8 +90,8 @@ class UserView(APIView):
 
             # 이메일 전송
             email = user.email
-            backend_url = "localhost:8000"
-            authurl = f"http://{backend_url}/user/verify-email/{uid}/{token}/"
+            BACKEND_BASE_URL = "localhost:8000"
+            authurl = f"http://{BACKEND_BASE_URL}/user/verify-email/{uid}/{token}/"
             email_body =  f"{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 회원가입을 완료해주세요. \n{authurl}"
             message = {
                 "email_body": email_body,
@@ -90,27 +100,30 @@ class UserView(APIView):
             }
             Util.send_email(message)
 
+
             return Response({"message": "가입완료!"}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # 회원정보수정
-    def patch (self, request):
+    def patch (self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
-        
+        if user.signup_type == 'normal': 
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
+            
+            else:
+                return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response( {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
-    def delete(self, request):
+    def delete(self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
-        datas = request.data.copy()  # request.data → request.data.copy() 변경
-        # request.data는 Django의 QueryDict 객체로서 변경이 불가능하여 복사하여 수정한 후 전달하는 방법을 이용!
+        datas = request.data.copy()  
         datas["is_active"] = False
         serializer = UserDelSerializer(user, data=datas)
         if user.check_password(request.data.get("password")):
@@ -120,8 +133,53 @@ class UserView(APIView):
             
         else:
             return Response({"message": f"패스워드가 다릅니다"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+############## 회원가입 sms 인증 ##############
 
-# 이메일 인증
+# 인증번호 발송
+class CertifyPhoneSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            # 인증모델 생성로직
+            CertifyPhoneSignup.objects.create(phone=phone)
+
+            return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        
+# 인증번호 확인
+class ConfirmPhoneSignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            auth_number = request.data["auth_number"]
+
+            confirm_phone = CertifyPhoneSignup.objects.filter(phone=phone).last()
+
+            if confirm_phone.expired_at < timezone.now():
+                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if confirm_phone.auth_number != int(auth_number):
+                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+
+            
+            confirm_phone.is_certify=True
+            confirm_phone.save()
+            
+            return Response({"message": "전화번호 인증이 완료되었습니다."}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+############## 회원가입 이메일 인증 ##############
 class VerifyEmailView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -137,37 +195,19 @@ class VerifyEmailView(APIView):
             # 이메일 인증 완료 처리 - 유저 활성화
             user.is_active = True
             user.save()
-            return redirect("인증완료 프론트 html")
+            return redirect("http://127.0.0.1:5500/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
-       
-# 전화번호 인증
-# class CertifyPhoneView(APIView):
-#     permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         user = get_object_or_404(User, id = request.user.id)
-        
-#         try:
-#             phone = request.data["phone"]
-#             if not User.objects.filter(phone=phone).exists():
-#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-#             else:
-#                 ConfirmPhoneNumber.objects.create(user=user)
-#                 user.is_certify = True
-#                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
-
-#         except:
-#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST) 
-        
 
 # ================================ 회원가입, 회원정보 끝 ================================
+
 
 
 # ================================ 로그인 ================================
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
     
     
 # ================================ 비밀번호 변경 ================================
@@ -176,17 +216,21 @@ class ChangePasswordView(APIView):
 
     def put(self, request):
         user = get_object_or_404(User, id=request.user.id)
-        serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+        if user.signup_type == 'normal':
+            serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "비밀번호 변경이 완료되었습니다! 다시 로그인해주세요."}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else : 
+            return Response({"message" : "소셜로그인 가입자는 비밀번호 변경을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
     
 # ================================ 프로필 시작 ================================
 
-# 친구추천 (작성된 프로필 기반)
+############## 친구추천 (작성된 프로필 기반) ##############
 class ProfileListView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -195,7 +239,10 @@ class ProfileListView(APIView):
         if filter == 'region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
-            profiles = Profile.objects.filter(prefer_region = prefer_region)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(prefer_region = prefer_region).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -203,22 +250,45 @@ class ProfileListView(APIView):
         elif filter == 'mbti':
             user = get_object_or_404(Profile, user_id = request.user.id)
             mbti = user.mbti
-            profiles = Profile.objects.filter(mbti = mbti)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(mbti = mbti).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # 나이
-        elif filter == 'age':
+        elif filter == 'age_range':
             user = get_object_or_404(Profile, user_id = request.user.id)
-            age = user.age
-            profiles = Profile.objects.filter(age = age)
+            age_range = user.age_range
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.filter(age_range = age_range).exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
+        # 전체
+        elif filter == 'all':
+            user = get_object_or_404(Profile, user_id = request.user.id)
+            admin = get_object_or_404(User, is_admin=True)
+            profiles = Profile.objects.all().exclude(
+                Q(id=request.user.id) | Q(id = admin.id)
+                )
+            serializer = ProfileSerializer(profiles, many = True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
 
-# 개인 공개 프로필
+############## 개인 공개 프로필 ##############
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    
+    def get_permissions(self):
+        if self.request.method == "PATCH":
+            return [IsAuthenticated(),]
+        else:
+            return super(ProfileView, self).get_permissions()
+        
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
     def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
@@ -236,7 +306,7 @@ class ProfileView(APIView):
         
         if user == request.user:
             profile = get_object_or_404(Profile, id = user_id)
-            serializer = ProfileSerializer(profile, data=request.data)
+            serializer = ProfileSerializer(profile, data=request.data, partial = True)
             if serializer.is_valid():
                 serializer.save()
                 return Response({"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
@@ -247,94 +317,107 @@ class ProfileView(APIView):
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
         
+############## 프로필 앨범 ##############
 class ProfileAlbumView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
-    def get_object(self, user_id):
+    def get_object(self, user_id, image_id):
         return get_object_or_404(User, id=user_id)
     
     # 사진첩 보기
-    def get(self, request, user_id):
+    def get(self, request, user_id, image_id):
         user = get_object_or_404(User, id=user_id)
-        album_img = get_object_or_404(ProfileAlbum, user = user_id)
-        serializer = ProfileAlbumSerializer(album_img)
+        img = ProfileAlbum.objects.filter(user=user)
+        serializer = ProfileAlbumSerializer(img, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)     
     
     # 사진 올리기
-    def post(self, request, user_id):
-        user = get_object_or_404(User, id = request.user.id)
-        album_img = get_object_or_404(ProfileAlbum, user = user_id)
-        serializer = ProfileAlbumSerializer(album_img)
-        if serializer.is_valid():
-           serializer.save()
-           return Response({"message" : "등록 완료!"} , status=status.HTTP_201_CREATED)
-       
+    def post(self, request, user_id, image_id):
+        user = get_object_or_404(User, id=request.user.id)
+        for data in request.data.getlist('album_img'):
+            ProfileAlbum.objects.create(user=user, album_img=data)
+        return Response(status.HTTP_200_OK)
+     
+    # 사진 삭제하기
+    def delete(self, request, user_id, image_id):
+        user = get_object_or_404(User, id=user_id)
+        img = get_object_or_404(ProfileAlbum, id=image_id)
+        
+        if request.user==user:
+            img.delete()
+            return Response(status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)     
+            return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
         
 # ================================ 프로필 끝 ================================
 
 
-
 # ================================ 아이디 찾기 시작 ================================
 
-# 아이디 찾기 휴대폰 sms 발송
-# class FindAccountView(APIView):
-#     permission_classes = [AllowAny]
+############## sms 인증번호 발송 ##############
+class CertifyPhoneAccountView(APIView):
+    permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         try:
-#             phone = request.data["phone"]
-#             if not User.objects.filter(phone=phone).exists():
-#                 return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            if not User.objects.filter(phone=phone).exists():
+                return Response({"message": "등록된 휴대폰 번호가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             user = User.objects.get(phone=phone)
-#             ConfirmPhoneNumber.objects.create(user=user)
-#             return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+            else:
+                user = User.objects.get(phone=phone)
+                CertifyPhoneAccount.objects.create(user=user)
+                user.is_certify = True
+                return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
 
-#         except:
-#             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+        
 
-# 아이디 찾기 인증번호 확인
-# class ConfirmPhoneNumberView(APIView):
-#     permission_classes = [AllowAny]
+############## 인증번호 확인 ##############
+class ConfirmPhoneAccountView(APIView):
+    permission_classes = [AllowAny]
 
-#     def post(self, request):
-#         try:
-#             phone = request.data["phone"]
-#             auth_number = request.data["auth_number"]
+    def post(self, request):
+        try:
+            phone = request.data["phone"]
+            auth_number = request.data["auth_number"]
 
-#             user = get_object_or_404(User, phone=phone)
-#             confirm_phone = ConfirmPhoneNumber.objects.filter(user=user).last()
+            user = get_object_or_404(User, phone=phone)
+            confirm_phone = CertifyPhoneAccount.objects.filter(user=user).last()
+            print(confirm_phone.auth_number)
 
-#             if confirm_phone.expired_at < timezone.now():
-#                 return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            if confirm_phone.expired_at < timezone.now():
+                return Response({"message": "인증 번호 시간이 지났습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-#             if confirm_phone.auth_number != int(auth_number):
-#                 return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
+            if confirm_phone.auth_number != int(auth_number):
+                return Response({"message": "인증 번호가 틀립니다. 다시 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST,)
 
-#             return Response({"message": f"회원님의 아이디는 {user.username}입니다."}, status=status.HTTP_200_OK)
+            return Response({"message": f"회원님의 아이디는 {user.account}입니다."}, status=status.HTTP_200_OK)
 
-#         except:
-#             return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "인증번호를 확인해주세요."}, status=status.HTTP_400_BAD_REQUEST)
 
 # ================================ 아이디 찾기 끝 ================================
 
 
-
 # ================================ 비밀번호 재설정 시작 ================================
 
-# 이메일 보내기
+############## 이메일 보내기 ##############
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
-            return Response({"message": "비밀번호 재설정 이메일"}, status=status.HTTP_200_OK)
+            email = serializer.validated_data.get('email')
+            user = get_object_or_404(User, email=email)
+            if user.signup_type == 'normal':
+                return Response({"message": "비밀번호 재설정 이메일을 발송했습니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "소셜로그인 가입자는 비밀번호 재설정을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# 비밀번호 재설정 토큰 확인
+############## 비밀번호 재설정 토큰 확인 ##############
 class PasswordTokenCheckView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -354,7 +437,7 @@ class PasswordTokenCheckView(APIView):
                 {"message": "링크가 유효하지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
 
-# 비밀번호 재설정
+############## 비밀번호 재설정 ##############
 class SetNewPasswordView(APIView):
     def put(self, request):
         serializer = SetNewPasswordSerializer(data=request.data)
@@ -368,7 +451,7 @@ class SetNewPasswordView(APIView):
 
 # ================================ 친구맺기 시작 ================================
 
-# 친구신청
+############## 친구신청 ##############
 class FriendView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -381,7 +464,7 @@ class FriendView(APIView):
 
         return Response({"message": "친구 신청을 보냈습니다."}, status=status.HTTP_201_CREATED)
 
-# 친구신청 수락
+############## 친구신청 수락 ##############
 class FriendAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -401,7 +484,7 @@ class FriendAcceptView(APIView):
        
         return Response({"message": "친구 신청을 수락했습니다."}, status=status.HTTP_200_OK)
 
-# 친구신청 거절
+############## 친구신청 거절 ##############
 class FriendRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -417,6 +500,49 @@ class FriendRejectView(APIView):
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
+############## 친구신청목록 ##############
+class RequestList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = get_object_or_404(User, id = request.user.id)
+        list = Friend.objects.filter(
+            Q(to_user_id=user.id) | Q(from_user_id=user.id)
+            ).exclude(status='accepted')
+        serializer = RequestListSerializer(list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+############## 친구목록 ##############
+class FriendsListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = get_object_or_404(User, id = request.user.id)
+
+        friend_requests = Friend.objects.filter(
+            Q(from_user=user) | Q(to_user=user),
+            status='accepted'
+        )
+        serializer = RequestListSerializer(friend_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+############## 친구삭제 ##############
+class FriendDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, friend_id):
+        friend = get_object_or_404(Friend, id=friend_id)
+        
+        user1 = User.objects.get(id=friend.from_user_id)
+        user2 = User.objects.get(id=friend.to_user_id)
+        if friend.from_user != request.user and friend.to_user != request.user:
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+        # 친구 삭제
+        friend.delete()
+        user1.friends.remove(user2)
+
+        return Response({"message": "친구를 삭제했습니다."}, status=status.HTTP_200_OK)
+
 
 # ================================ 친구맺기 끝 ================================
 
@@ -424,7 +550,7 @@ class FriendRejectView(APIView):
 
 # ================================ 소셜 로그인 시작 ================================
 
-# 카카오로그인
+############## 카카오로그인 ##############
 class KakaoLoginView(APIView):
 
     def get(self, request):
@@ -453,14 +579,18 @@ class KakaoLoginView(APIView):
             },
         )
         user_data = user_data.json()
+        new_account = 'K' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
+            "account" : new_account,
             "email": user_data.get("kakao_account").get("email"),
             "nickname": user_data.get("properties").get("nickname"),
             "signup_type": "kakao",
+            "is_active" : True
+            
         }
         return SocialLogin(**data)
     
-# 네이버로그인
+############## 네이버로그인 ##############
 class NaverLoginView(APIView):
 
     def get(self, request):
@@ -482,15 +612,18 @@ class NaverLoginView(APIView):
             },
         )
         user_data = user_data.json().get("response")
+        new_account = 'N' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
-            "email": user_data.get("email"),
-            "nickname": user_data.get("nickname"),
+            "account" : new_account,
+            # "email": user_data.get("email"),
+            "nickname": user_data["nickname"],
             "signup_type": "naver",
         }
+        print(user_data["nickname"])
         return SocialLogin(**data)
 
 
-# 구글로그인
+############## 구글로그인 ##############
 class GoogleLoginView(APIView):
 
     def get(self, request):
@@ -503,15 +636,18 @@ class GoogleLoginView(APIView):
             headers={"Authorization": f"Bearer {access_token}"},
         )
         user_data = user_data.json()
+        new_account = 'G' + str(uuid.uuid4()).replace('-', '')[:10]
         data = {
+            "account" : new_account,
             "email": user_data.get("email"),
             "nickname": user_data.get("name"),
             "signup_type": "google",
+            "is_active" : True
         }
         return SocialLogin(**data)
 
 
-# 로그인
+############## 로그인 ##############
 def SocialLogin(**kwargs):
     data = {key: value for key, value in kwargs.items() if value is not None}
     email = data.get("email")
@@ -536,13 +672,17 @@ def SocialLogin(**kwargs):
             )
     # 유저가 존재하지 않는다면 회원가입
     except User.DoesNotExist:
-        new_user = User.objects.create(**data)
+        user = User.objects.create(**data)
         # 비밀번호 사용 불가
-        new_user.set_unusable_password()
-        new_user.save()
+        user.set_unusable_password()
+        user.save()
+        
+        # Profile 객체 생성
+        Profile.objects.create(user=user)
+        
         # 토큰 발급
-        refresh = RefreshToken.for_user(new_user)
-        access_token = CustomTokenObtainPairSerializer.get_token(new_user)
+        refresh = RefreshToken.for_user(user)
+        access_token = CustomTokenObtainPairSerializer.get_token(user)
         return Response(
             {"refresh": str(refresh), "access": str(access_token.access_token)},
             status=status.HTTP_200_OK,
@@ -550,3 +690,19 @@ def SocialLogin(**kwargs):
         
 # ================================ 소셜 로그인 끝 ================================
 
+# ================================ 현재 지역 시작 ================================
+
+class RegionView(APIView):
+    def patch(self, request):
+        user = get_object_or_404(User, id=int(request.data['user']))
+        profile = get_object_or_404(Profile, user=user)
+        
+        serializer = ProfileRegionSerializer(profile, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+# ================================ 현재 지역 끝 ================================
