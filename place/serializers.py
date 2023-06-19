@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
+from .validators import score_validator
 
 BACKEND = 'http://127.0.0.1:8000'
 
@@ -54,7 +55,67 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Place
-        exclude = ['user', 'bookmark', 'like']
+        exclude = ['user', 'bookmark', 'like', 'created_at', 'updated_at']
+        extra_kwargs = {
+            "title": {
+                "error_messages": {
+                    "required": "제목은 필수 입력 사항입니다.",
+                    "blank": "제목은 필수 입력 사항입니다.",
+                }
+            },
+            "content" : {
+                "error_messages" : {
+                    "required" : "내용은 필수 입력 사항입니다.",
+                    "blank" : "내용은 필수 입력 사항입니다."
+                }
+            },
+            "category" : {
+                "error_messages" : {
+                    "required" : "카테고리는 필수 입력 사항입니다.",
+                    "blank" : "카테고리는 필수 입력 사항입니다."
+                }
+            },
+            "address" : {
+                "error_messages" : {
+                    "required" : "주소는 필수 입력 사항입니다.",
+                    "blank" : "주소는 필수 입력 사항입니다."
+                }
+            },
+            "score" : {
+                "error_messages" : {
+                    "required" : "별점은 필수 입력 사항입니다.",
+                    "blank" : "별점은 필수 입력 사항입니다.",
+                    "invalid": "별점은 0~5.0 이하의 숫자만 입력할 수 있습니다.",
+                }
+            },
+            "price" : {
+                "error_messages" : {
+                    "required" : "가격은 필수 입력 사항입니다.",
+                    "blank" : "가격은 필수 입력 사항입니다."
+                }
+            },
+            "hour" : {
+                "error_messages" : {
+                    "required" : "영업시간은 필수 입력 사항입니다.",
+                    "blank" : "영업시간은 필수 입력 사항입니다."
+                }
+            },
+            "holiday" : {
+                "error_messages" : {
+                    "required" : "휴일은 필수 입력 사항입니다.",
+                    "blank" : "휴일은 필수 입력 사항입니다."
+                }
+            },
+            }
+        
+    def validate(self,data):
+        score = data.get("score")
+        
+        if score_validator(score):
+            raise serializers.ValidationError(
+                detail={"score": "별점은 0~5.0 이하의 숫자만 입력할 수 있습니다."}
+            )
+        return data
         
     def create(self, validated_data):
         instance = Place.objects.create(**validated_data)

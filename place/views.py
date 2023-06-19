@@ -196,6 +196,15 @@ class PlaceCommentDetailView(APIView):
 
     permission_classes = [IsAuthenticated]
     
+    # 단일 댓글 가져오기
+    def get(self, request, place_id, place_comment_id):
+        comment = get_object_or_404(PlaceComment, id=place_comment_id)
+        serializer = PlaceCreateCommentSerializer(comment)
+        if serializer.is_valid:
+            return Response(serializer.data, status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    
     # 대댓글 작성
     def post(self, request, place_id, place_comment_id):  
         upside_comment = get_object_or_404(PlaceComment, id=place_comment_id)
