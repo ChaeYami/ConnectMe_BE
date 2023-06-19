@@ -31,7 +31,7 @@ class PlaceImage(models.Model):
 
 class PlaceComment(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='place_comment_user', verbose_name='작성자')
+        User, on_delete=models.CASCADE, related_name='place_comment_user', verbose_name='댓글작성자')
     place = models.ForeignKey(
         Place, on_delete=models.CASCADE, related_name='place_comment_place', verbose_name='게시글')
     content = models.TextField(verbose_name='내용', null=True)
