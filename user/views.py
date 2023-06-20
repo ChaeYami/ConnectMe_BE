@@ -505,8 +505,7 @@ class FriendRejectView(APIView):
         if friend_request.status != 'pending':
             return Response({"message": "이미 처리된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        friend_request.status = 'rejected'
-        friend_request.save()
+        friend_request.delete()
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
