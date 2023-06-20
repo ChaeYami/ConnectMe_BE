@@ -81,6 +81,8 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
             MeetingImage.objects.create(meeting=instance, image=image_data)
         return instance
 
+    
+
 # 모임 글 수정
 class MeetingUpdateSerializer(serializers.ModelSerializer):
 

@@ -24,9 +24,12 @@ class CounselReplyCreateSerializer(serializers.ModelSerializer):
 # 대댓글
 class CounselReplySerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    reply_like_count = serializers.SerializerMethodField()
     comment_created_at = serializers.DateTimeField(
         format="%y-%m-%d %H:%M", read_only=True
     )
+    def get_reply_like_count(self, obj):
+        return obj.like.count()
 
     def get_user(self, obj):
         return {"nickname": obj.user.nickname, "pk": obj.user.pk}
@@ -40,12 +43,16 @@ class CounselReplySerializer(serializers.ModelSerializer):
 class CounselCommentSerializer(serializers.ModelSerializer):
     reply = CounselReplySerializer(many=True)
     user = serializers.SerializerMethodField()
+    comment_like_count = serializers.SerializerMethodField()
     comment_created_at = serializers.DateTimeField(
         format="%y-%m-%d %H:%M", read_only=True
     )
 
     def get_user(self, obj):
         return obj.user.account
+    
+    def get_comment_like_count(self, obj):
+        return obj.like.count()
 
     class Meta:
         model = CounselComment
@@ -86,7 +93,7 @@ class CounselCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Counsel
-        exclude = ['user', 'bookmark', 'like', 'created_at', 'updated_at']
+        exclude = ['user', 'like', 'created_at', 'updated_at']
         extra_kwargs={
             "title": {
                 "error_messages": {
