@@ -149,14 +149,9 @@ class SignupSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("name","phone")
+        fields = ("phone",)
         extra_kwargs = {
-            "name": {
-                "error_messages": {
-                    "required": "이름을 입력해주세요.",
-                    "blank": "이름을 입력해주세요.",
-                }
-            },
+            
             "phone": {
                 "error_messages": {
                     "required": "전화번호를 입력해주세요.",
@@ -169,6 +164,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         phone = data.get("phone")
         current_phone = self.context.get("request").user.phone
+        
+        # CertifyPhoneSignup 모델에 인증받은 번호가 있는지 확인
+        certification = CertifyPhoneSignup.objects.filter(Q(phone=phone) & Q(is_certify=True))
+        
+        if not certification.exists():
+            raise serializers.ValidationError(
+                detail={"certify": "전화번호 인증을 진행해주세요."}
+            )
 
         # 휴대폰 번호 존재여부와 blank 허용
         if (User.objects.filter(phone=phone).exclude(phone=current_phone).exists() and not phone == ""):
@@ -178,7 +181,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     
     def update(self, instance, validated_data):
-        instance.email = validated_data.get("name", instance.email)
         instance.phone = validated_data.get("phone", instance.phone)
         instance.save()
         
