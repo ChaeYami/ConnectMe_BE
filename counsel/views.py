@@ -24,13 +24,13 @@ from .serializers import(
 # ================================ 게시글 시작 ================================ 
 
 class CounselView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     
-    # def get_permissions(self):
-    #     if self.request.method == "POST":
-    #         return [IsAuthenticated(),]
-    #     else:
-    #         return super(CounselDetailView, self).get_permissions()
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAuthenticated(),]
+        else:
+            return super(CounselView, self).get_permissions()
         
     # 글목록
     def get(self, request):
@@ -88,6 +88,7 @@ class CounselDetailView(APIView):
 # 게시글 좋아요
 class CounselLikeView(APIView):
     permission_classes = [IsAuthenticated]
+    
     def post(self, request, counsel_id):
         counsel = get_object_or_404(Counsel, id=counsel_id)
         if request.user in counsel.like.all():
@@ -102,15 +103,15 @@ class CounselLikeView(APIView):
 # ================================ 댓글 시작 ================================ 
 
 class CounselCommentView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     
-    # def get_permissions(self):
-    #     if self.request.method == "PUT" or self.request.method == "DELETE":
-    #         return [IsAuthenticated(),]
-    #     elif self.request.method == "POST":
-    #         return [IsAuthenticated(),]
-    #     else:
-    #         return super(CounselDetailView, self).get_permissions()
+    def get_permissions(self):
+        if self.request.method == "PUT" or self.request.method == "DELETE":
+            return [IsAuthenticated(),]
+        elif self.request.method == "POST":
+            return [IsAuthenticated(),]
+        else:
+            return super(CounselDetailView, self).get_permissions()
         
     
     # 댓글리스트
@@ -171,15 +172,15 @@ class CounselCommentLikelView(APIView):
 # ================================ 대댓글 시작 ================================ 
 
 class CounselReplyView(APIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     
-    # def get_permissions(self):
-    #     if self.request.method == "PUT" or self.request.method == "DELETE":
-    #         return [IsAuthenticated(),]
-    #     elif self.request.method == "POST":
-    #         return [IsAuthenticated(),]
-    #     else:
-    #         return super(CounselDetailView, self).get_permissions()
+    def get_permissions(self):
+        if self.request.method == "PUT" or self.request.method == "DELETE":
+            return [IsAuthenticated(),]
+        elif self.request.method == "POST":
+            return [IsAuthenticated(),]
+        else:
+            return super(CounselDetailView, self).get_permissions()
         
     # 대댓글 리스트
     def get(self, request, counsel_id, counsel_comment_id):
