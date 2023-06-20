@@ -30,7 +30,7 @@ class CounselView(APIView):
         if self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselView, self).get_permissions()
         
     # 글목록
     def get(self, request):
@@ -88,6 +88,7 @@ class CounselDetailView(APIView):
 # 게시글 좋아요
 class CounselLikeView(APIView):
     permission_classes = [IsAuthenticated]
+    
     def post(self, request, counsel_id):
         counsel = get_object_or_404(Counsel, id=counsel_id)
         if request.user in counsel.like.all():
@@ -110,7 +111,7 @@ class CounselCommentView(APIView):
         elif self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselCommentView, self).get_permissions()
         
     
     # 댓글리스트
@@ -179,7 +180,7 @@ class CounselReplyView(APIView):
         elif self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselReplyView, self).get_permissions()
         
     # 대댓글 리스트
     def get(self, request, counsel_id, counsel_comment_id):
