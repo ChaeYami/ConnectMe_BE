@@ -75,10 +75,10 @@ class User(AbstractBaseUser):
     is_certify = models.BooleanField("번호인증여부", default=False)
     
     SIGNUP_TYPES = [
-        ("normal", "일반"),
-        ("kakao", "카카오"),
-        ("google", "구글"),
-        ("naver", "네이버"),
+        ("일반", "일반"),
+        ("카카오", "카카오"),
+        ("구글", "구글"),
+        ("네이버", "네이버"),
     ]
     signup_type = models.CharField(
         "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="normal"
@@ -133,6 +133,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
     
     MBTI = [
+        ('ALL','ALL'),
         ('ENFJ','ENFJ'),
         ('ENFP','ENFP'),
         ('ENTJ','ENTJ'),
@@ -150,10 +151,10 @@ class Profile(models.Model):
         ('ISTJ','ISTJ'),
         ('ISTP','ISTP'),
     ]
-    mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True)
-    age = models.IntegerField("나이", default = 0, blank=True, null= True)
-    age_range = models.CharField("나잇대", max_length=20, blank=True, null= True)
-    introduce = models.CharField("자기소개", max_length=225, default=None, blank=True, null= True)
+    mbti = models.CharField("MBTI", choices=MBTI, max_length=4, blank=True, null=True, default='ALL')
+    age = models.IntegerField("나이", default = '0', blank=True, null= True)
+    age_range = models.CharField("나잇대", max_length=20, blank=True, null= True, default='ALL')
+    introduce = models.CharField("자기소개", max_length=225, blank=True, null= True,default='')
     
     
     def __str__(self):

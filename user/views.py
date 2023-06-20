@@ -43,6 +43,7 @@ from my_settings import (
 from .models import (
     CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
 )
+from .validators import phone_validator
 
 import requests
 import uuid
@@ -109,7 +110,7 @@ class UserView(APIView):
     def patch (self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
-        if user.signup_type == 'normal': 
+        if user.signup_type == '일반': 
             if serializer.is_valid():
                 serializer.save()
                 return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
@@ -144,10 +145,16 @@ class CertifyPhoneSignupView(APIView):
     def post(self, request):
         try:
             phone = request.data["phone"]
-            # 인증모델 생성로직
-            CertifyPhoneSignup.objects.create(phone=phone)
+    
+            if phone_validator(phone):
+            
+                # 인증모델 생성로직
+                CertifyPhoneSignup.objects.create(phone=phone)
 
-            return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+                return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "휴대폰 번호를 확인해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+                
 
         except:
             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
@@ -216,7 +223,7 @@ class ChangePasswordView(APIView):
 
     def put(self, request):
         user = get_object_or_404(User, id=request.user.id)
-        if user.signup_type == 'normal':
+        if user.signup_type == '일반':
             serializer = ChangePasswordSerializer(user, data=request.data, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
@@ -236,7 +243,7 @@ class ProfileListView(APIView):
     
     def get(self,request,filter):
         # 지역
-        if filter == 'region':
+        if filter == 'prefer_region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
             admin = get_object_or_404(User, is_admin=True)
@@ -411,7 +418,7 @@ class PasswordResetView(APIView):
         if serializer.is_valid():
             email = serializer.validated_data.get('email')
             user = get_object_or_404(User, email=email)
-            if user.signup_type == 'normal':
+            if user.signup_type == '일반':
                 return Response({"message": "비밀번호 재설정 이메일을 발송했습니다."}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "소셜로그인 가입자는 비밀번호 재설정을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
@@ -584,7 +591,7 @@ class KakaoLoginView(APIView):
             "account" : new_account,
             "email": user_data.get("kakao_account").get("email"),
             "nickname": user_data.get("properties").get("nickname"),
-            "signup_type": "kakao",
+            "signup_type": "카카오",
             "is_active" : True
             
         }
@@ -617,7 +624,7 @@ class NaverLoginView(APIView):
             "account" : new_account,
             # "email": user_data.get("email"),
             "nickname": user_data["nickname"],
-            "signup_type": "naver",
+            "signup_type": "네이버",
         }
         print(user_data["nickname"])
         return SocialLogin(**data)
@@ -641,7 +648,7 @@ class GoogleLoginView(APIView):
             "account" : new_account,
             "email": user_data.get("email"),
             "nickname": user_data.get("name"),
-            "signup_type": "google",
+            "signup_type": "구글",
             "is_active" : True
         }
         return SocialLogin(**data)
@@ -667,7 +674,7 @@ def SocialLogin(**kwargs):
             )
         else:
             return Response(
-                {"error": f"{user.signup_type}으로 이미 가입된 계정이 있습니다!"},
+                {"error": f"{user.signup_type}회원가입으로 이미 가입된 계정이 있습니다!"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
     # 유저가 존재하지 않는다면 회원가입

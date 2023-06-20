@@ -1,7 +1,7 @@
 from meeting.models import (
     Meeting,
     MeetingComment,
-    MettingCommentReply,
+    MeetingCommentReply,
     )
 
 from meeting.serializer import (
@@ -154,7 +154,7 @@ class MeetingCommentReplyView(APIView):
 
      #모임 대댓글 목록
     def get(self, request, meeting_id, comment_id):
-        reply = MettingCommentReply.objects.all()
+        reply = MeetingCommentReply.objects.all()
         serializer = MeetingCommentReplyListSerializer(reply, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -171,7 +171,7 @@ class MeetingCommentReplyDetailView(APIView):
     
     #모임 대댓글 수정
     def put(self, request, meeting_id, reply_id):
-        reply = get_object_or_404(MettingCommentReply, id=reply_id)
+        reply = get_object_or_404(MeetingCommentReply, id=reply_id)
         if request.user == reply.user:
             serializer = MeetingCommentReplyCreateSerializer(reply, request.data)
             if serializer.is_valid():
@@ -184,7 +184,7 @@ class MeetingCommentReplyDetailView(APIView):
     
     #모임 대댓글 삭제
     def delete(self, request, meeting_id, reply_id):
-        reply = get_object_or_404(MettingCommentReply, id=reply_id)
+        reply = get_object_or_404(MeetingCommentReply, id=reply_id)
         if request.user == reply.user:
             reply.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

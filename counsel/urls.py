@@ -1,14 +1,18 @@
 from django.urls import path
+from counsel import views
 
-from . import views
 
-app_name = 'counsel'
-
-#ConnetMe/urls.py파일에서 counsel/에 대한 처리를 한 상태에서 counsel/가 아닌
-#빈 문자열을 인자로 넘겨 줌
 urlpatterns = [
-    path('', views.index, name='index'), 
-    path('<int:question_id>/', views.detail, name='detail'),
-    path('answer/user_id/<int:question_id>/', views.user_id, name='user_id'),
-    path('question/user_id/', views.user_id, name='user_id'),
+    path('', views.CounselView.as_view(), name="counsel_view"), 
+    path('<int:counsel_id>/', views.CounselDetailView.as_view(), name="counsel_detail_view"),
+
+    path('<int:counsel_id>/like/', views.CounselLikeView.as_view(), name="counsel_like_view"),
+
+    path('<int:counsel_id>/comment/', views.CounselCommentView.as_view(), name="counsel_comment_view"),
+    path('<int:counsel_id>/comment/<int:counsel_comment_id>/', views.CounselCommentDetailView.as_view(), name="counsel_detail_comment_view"),
+    path('<int:counsel_id>/comment/<int:counsel_comment_id>/like/', views.CounselCommentLikelView.as_view(), name="counsel_comment_like_view"),
+    
+    path('<int:counsel_id>/comment/<int:counsel_comment_id>/reply/', views.CounselReplyView.as_view(), name="counsel_reply_view"),
+    path('<int:counsel_id>/comment/<int:counsel_comment_id>/reply/<int:counsel_reply_id>/', views.CounselReplyDetailView.as_view(), name="counsel_reply_detail_view"),
+    path('<int:counsel_id>/comment/<int:counsel_comment_id>/reply/<int:counsel_reply_id>/like/', views.CounselReplyLikeView.as_view(), name="counsel_reply_like_view"),
 ]

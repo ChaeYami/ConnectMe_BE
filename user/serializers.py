@@ -12,7 +12,7 @@ from rest_framework import serializers, exceptions
 from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup
 from user.validators import (
     password_validator,
-    password_pattern,
+    # password_pattern,
     account_validator,
     nickname_validator,
     phone_validator
@@ -24,7 +24,7 @@ from django.conf import settings
 
 
 
-# ================================ SignupSerializer 회원가입(user serializser) ================================ 
+# ================================ 회원가입(user serializser) ================================ 
 
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
@@ -80,6 +80,7 @@ class SignupSerializer(serializers.ModelSerializer):
             },
         }
     
+    # validator
     def validate(self,data):
         account = data.get("account")
         password = data.get("password")
@@ -94,7 +95,7 @@ class SignupSerializer(serializers.ModelSerializer):
                 detail={"certify": "전화번호 인증을 진행해주세요."}
             )
         
-    # 아이디 유효성 검사
+        # 아이디 유효성 검사
         if account_validator(account):
             raise serializers.ValidationError(
                 detail={"username": "아이디는 5자 이상 20자 이하의 숫자, 영문 대/소문자를 포함해야 합니다."}
@@ -106,11 +107,11 @@ class SignupSerializer(serializers.ModelSerializer):
                 detail={"password": "비밀번호는 8자 이상의 영문 대/소문자와 숫자, 특수문자를 포함해야 합니다."}
             )
 
-        # 비밀번호 유효성 검사
-        if password_pattern(password):
-            raise serializers.ValidationError(
-                detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
-            )
+        # # 비밀번호 유효성 검사
+        # if password_pattern(password):
+        #     raise serializers.ValidationError(
+        #         detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
+        #     )
             
         if phone_validator(phone):
             raise serializers.ValidationError(
@@ -267,9 +268,9 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         if password_validator(password):
             raise serializers.ValidationError(detail={"password": "비밀번호는 8자 이상 16자이하의 영문 대/소문자, 숫자, 특수문자 조합이어야 합니다. "})
 
-        # 비밀번호 문자열 동일여부 검사
-        if password_pattern(password):
-            raise serializers.ValidationError(detail={"password": "비밀번호는 3자리 이상 동일한 영문/사용 사용 불가합니다. "})
+        # # 비밀번호 문자열 동일여부 검사
+        # if password_pattern(password):
+        #     raise serializers.ValidationError(detail={"password": "비밀번호는 3자리 이상 동일한 영문/사용 사용 불가합니다. "})
 
         return data
 
@@ -318,7 +319,7 @@ class PasswordResetSerializer(serializers.Serializer):
             frontend_site = "127.0.0.1:5500"
             absurl = f"http://{frontend_site}/set_password.html?id=${uidb64}&token=${token}"
 
-            email_body = "비밀번호 재설정을 위해 아래 링크를 클릭해주세요. \n " + absurl
+            email_body = "{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
             message = {
                 "email_body": email_body,
                 "to_email": user.email,
@@ -378,10 +379,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
                 )
 
             # 비밀번호 유효성 검사
-            if password_pattern(password):
-                raise serializers.ValidationError(
-                    detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
-                )
+            # if password_pattern(password):
+            #     raise serializers.ValidationError(
+            #         detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
+            #     )
 
             user.set_password(password)
             user.save()
@@ -411,7 +412,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     def get_nickname(self, obj):
         return obj.user.nickname
-    
     
     
     class Meta:
