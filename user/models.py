@@ -182,7 +182,7 @@ class CertifyPhoneSignup(models.Model):
         self.auth_number = randint(1000, 10000)
         self.expired_at = timezone.now() + timezone.timedelta(minutes=5)
         super().save(*args, **kwargs)
-        self.send_sms()
+        # self.send_sms()
 
     def send_sms(self):
         timestamp = str(int(time.time() * 1000))

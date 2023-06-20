@@ -18,8 +18,8 @@ def password_validator(password):
 
 def phone_validator(phone):
     # 11자 숫자
-    phone_validations = r"^[0-9]{10,11}$"
-    if re.search(phone_validations, str(phone)):
+    phone_validations = r"\d{10,11}$"
+    if not re.search(phone_validations, str(phone)):
         return True
     return False
     
