@@ -33,12 +33,14 @@ from user.serializers import (
     ProfileRegionSerializer,
 )
 
-from my_settings import (
-    KAKAO_LOGIN_API_KEY,
-    NAVER_LOGIN_API_KEY,
-    NAVER_LOGIN_SECRET_KEY,
-    GOOGLE_LOGIN_API_KEY
-)
+from decouple import config
+
+# from my_settings import (
+#     KAKAO_LOGIN_API_KEY,
+#     NAVER_LOGIN_API_KEY,
+#     NAVER_LOGIN_SECRET_KEY,
+#     GOOGLE_LOGIN_API_KEY
+# )
 
 from .models import (
     CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
@@ -145,11 +147,13 @@ class CertifyPhoneSignupView(APIView):
     def post(self, request):
         try:
             phone = request.data["phone"]
-    
-            if phone_validator(phone):
+            if not phone_validator(phone):
             
                 # 인증모델 생성로직
-                CertifyPhoneSignup.objects.create(phone=phone)
+                # CertifyPhoneSignup.objects.create(phone=phone)
+                signup = CertifyPhoneSignup(phone=phone)
+                signup.save()
+                signup.send_sms()
 
                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
             else:
@@ -509,8 +513,7 @@ class FriendRejectView(APIView):
         if friend_request.status != 'pending':
             return Response({"message": "이미 처리된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        friend_request.status = 'rejected'
-        friend_request.save()
+        friend_request.delete()
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
@@ -568,14 +571,14 @@ class FriendDeleteView(APIView):
 class KakaoLoginView(APIView):
 
     def get(self, request):
-        return Response(KAKAO_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        return Response(config("KAKAO_LOGIN_API_KEY"), status=status.HTTP_200_OK)
 
     def post(self, request):
         auth_code = request.data.get("code")
         kakao_token_api = "https://kauth.kakao.com/oauth/token"
         data = {
             "grant_type": "authorization_code",
-            "client_id": KAKAO_LOGIN_API_KEY,
+            "client_id": config("KAKAO_LOGIN_API_KEY"),
             "redirect_uri": "http://127.0.0.1:5500/index.html",
             "code": auth_code,
         }
@@ -608,13 +611,14 @@ class KakaoLoginView(APIView):
 class NaverLoginView(APIView):
 
     def get(self, request):
-        return Response(NAVER_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        return Response(config("NAVER_LOGIN_API_KEY"), status=status.HTTP_200_OK)
 
     def post(self, request):
         code = request.data.get("naver_code")
         state = request.data.get("state")
+        NAVERLOGINAPIKEY = config("NAVER_LOGIN_API_KEY")
         access_token = requests.post(
-            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_LOGIN_API_KEY}&client_secret={NAVER_LOGIN_SECRET_KEY}&state={state}",
+            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVERLOGINAPIKEY}&client_secret={NAVERLOGINAPIKEY}&state={state}",
             headers={"Accept": "application/json"},
         )
         access_token = access_token.json().get("access_token")
@@ -641,7 +645,8 @@ class NaverLoginView(APIView):
 class GoogleLoginView(APIView):
 
     def get(self, request):
-        return Response(GOOGLE_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        GOOGLELOGINAPIKEY = config("GOOGLE_LOGIN_API_KEY")
+        return Response(GOOGLELOGINAPIKEY, status=status.HTTP_200_OK)
 
     def post(self, request):
         access_token = request.data["access_token"]
