@@ -110,7 +110,7 @@ class UserView(APIView):
     def patch (self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
-        if user.signup_type == 'normal': 
+        if user.signup_type == '일반': 
             if serializer.is_valid():
                 serializer.save()
                 return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
@@ -118,7 +118,7 @@ class UserView(APIView):
             else:
                 return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response( {"message": "소셜로그인 가입자는 전화번호 변경을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response( {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST)
             
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
@@ -146,17 +146,15 @@ class CertifyPhoneSignupView(APIView):
         try:
             phone = request.data["phone"]
     
-            if not phone_validator(phone):
+            if phone_validator(phone):
             
                 # 인증모델 생성로직
-                # CertifyPhoneSignup.objects.create(phone=phone)
-                signup = CertifyPhoneSignup(phone=phone)
-                signup.save()
-                signup.send_sms()
+                CertifyPhoneSignup.objects.create(phone=phone)
 
                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "휴대폰 번호를 확인해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+                
 
         except:
             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
@@ -207,7 +205,6 @@ class VerifyEmailView(APIView):
             return redirect("http://127.0.0.1:5500/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
-
 
 
 # ================================ 회원가입, 회원정보 끝 ================================
@@ -512,7 +509,8 @@ class FriendRejectView(APIView):
         if friend_request.status != 'pending':
             return Response({"message": "이미 처리된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        friend_request.delete()
+        friend_request.status = 'rejected'
+        friend_request.save()
 
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
     
