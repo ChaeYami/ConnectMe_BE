@@ -30,7 +30,7 @@ class CounselView(APIView):
         if self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselView, self).get_permissions()
         
     # 글목록
     def get(self, request):
@@ -88,14 +88,15 @@ class CounselDetailView(APIView):
 # 게시글 좋아요
 class CounselLikeView(APIView):
     permission_classes = [IsAuthenticated]
+    
     def post(self, request, counsel_id):
         counsel = get_object_or_404(Counsel, id=counsel_id)
         if request.user in counsel.like.all():
             counsel.like.remove(request.user)
-            return Response('좋아요 취소', status=status.HTTP_200_OK)
+            return Response({"message":"좋아요 취소"}, status=status.HTTP_200_OK)
         else:
             counsel.like.add(request.user)
-            return Response('좋아요', status=status.HTTP_202_ACCEPTED)
+            return Response({"message":"좋아요"}, status=status.HTTP_202_ACCEPTED)
 
 # ================================ 게시글 끝 ================================ 
 
@@ -110,7 +111,7 @@ class CounselCommentView(APIView):
         elif self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselCommentView, self).get_permissions()
         
     
     # 댓글리스트
@@ -179,7 +180,7 @@ class CounselReplyView(APIView):
         elif self.request.method == "POST":
             return [IsAuthenticated(),]
         else:
-            return super(CounselDetailView, self).get_permissions()
+            return super(CounselReplyView, self).get_permissions()
         
     # 대댓글 리스트
     def get(self, request, counsel_id, counsel_comment_id):
@@ -199,20 +200,20 @@ class CounselReplyView(APIView):
 
 class CounselReplyDetailView(APIView):
     # 대댓글 수정
-    def put(self, request, counsel_id, counsel_comment_id, counsel_reply_id):
+    def put(self, request, counsel_id, counsel_reply_id):
         reply = get_object_or_404(CounselReply, id=counsel_reply_id)
         if request.user == reply.user:
             serializer = CounselReplyCreateSerializer(reply, request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({"message":"성공."}, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
             
     # 대댓글 삭제
-    def delete(self, request, counsel_id, counsel_comment_id, counsel_reply_id):
+    def delete(self, request, counsel_id, counsel_reply_id):
         reply = get_object_or_404(CounselReply, id=counsel_reply_id)
         if request.user == reply.user:
             reply.delete()
@@ -224,13 +225,13 @@ class CounselReplyDetailView(APIView):
 class CounselReplyLikeView(APIView):
     permission_classes = [IsAuthenticated]
     # 대댓글 좋아요
-    def post(self, request, counsel_id, counsel_comment_id, counsel_reply_id):
-        counselcomment = get_object_or_404(CounselComment, id=counsel_comment_id)
-        if request.user in counselcomment.like.all():
-            counselcomment.like.remove(request.user)
+    def post(self, request, counsel_id, counsel_reply_id):
+        counselreply = get_object_or_404(CounselReply, id=counsel_reply_id)
+        if request.user in counselreply.like.all():
+            counselreply.like.remove(request.user)
             return Response('좋아요 취소', status=status.HTTP_200_OK)
         else:
-            counselcomment.like.add(request.user)
+            counselreply.like.add(request.user)
             return Response('좋아요', status=status.HTTP_202_ACCEPTED)
 
 # ================================ 대댓글 끝 ================================ 
