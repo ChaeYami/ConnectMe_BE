@@ -15,4 +15,5 @@ urlpatterns = [
          name='place_commment_detail_view'),
     path("<int:place_id>/image/<int:place_image_id>/", views.PlaceImageView.as_view(),
          name='place_image_view'),
+    path("search/", views.PlaceSearchView.as_view(), name="place_search_view"),
 ]
