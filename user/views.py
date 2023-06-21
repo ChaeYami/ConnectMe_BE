@@ -331,24 +331,32 @@ class ProfileView(APIView):
 class ProfileAlbumView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
-    def get_object(self, user_id, image_id):
+    def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
     
     # 사진첩 보기
-    def get(self, request, user_id, image_id):
+    def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         img = ProfileAlbum.objects.filter(user=user)
         serializer = ProfileAlbumSerializer(img, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)     
     
     # 사진 올리기
-    def post(self, request, user_id, image_id):
+    def post(self, request, user_id):
         user = get_object_or_404(User, id=request.user.id)
         for data in request.data.getlist('album_img'):
             ProfileAlbum.objects.create(user=user, album_img=data)
         return Response(status.HTTP_200_OK)
      
-    # 사진 삭제하기
+
+        
+class ProfileAlbumDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
+    def get_object(self, user_id, image_id):
+        return get_object_or_404(User, id=user_id)
+    
+        # 사진 삭제하기
     def delete(self, request, user_id, image_id):
         user = get_object_or_404(User, id=user_id)
         img = get_object_or_404(ProfileAlbum, id=image_id)
@@ -358,7 +366,6 @@ class ProfileAlbumView(APIView):
             return Response(status.HTTP_200_OK)
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
-        
         
 # ================================ 프로필 끝 ================================
 
