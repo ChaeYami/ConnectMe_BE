@@ -7,13 +7,15 @@ from place.serializers import (
     PlaceCreateSerializer, 
     PlaceCreateCommentSerializer, 
     PlaceUpdateSerializer, 
-    PlaceDeleteCommentSerializer, 
-    PlaceImageSerializer,
+    PlaceDeleteCommentSerializer,
     PlaceDetailSerializer)
 
 from user.models import User
 
-from rest_framework import status
+from rest_framework import viewsets
+from rest_framework import status, generics
+from rest_framework import filters
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -28,8 +30,8 @@ class PlaceView(APIView):
 
     # 장소 추천 전체보기
     def get(self, request):
-        place = Place.objects.all()
-        serializer = PlaceSerializer(place, many=True)
+        place = Place.objects.all().order_by('-id')
+        serializer = PlaceSerializer(place[:100], many=True)
         return Response(serializer.data)
 
     # 장소 추천 작성하기
@@ -53,7 +55,7 @@ class PlaceDetailView(APIView):
     # 장소 추천 상세보기
     def get(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
-        query = place.place_comment_place.filter(main_comment=None).order_by('-updated_at')
+        query = place.place_comment_place.filter(main_comment=None)
         
         place_serializer = PlaceDetailSerializer(place).data
         comment_serializer = PlaceCommentSerializer(query, many=True).data
@@ -258,4 +260,12 @@ class PlaceCommentDetailView(APIView):
 
 
 # ================================ 장소 댓글 종료 ================================
+# ================================ 장소 검색 시작 ================================
+class PlaceSearchView(generics.ListAPIView):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title',]
+    
+# ================================ 장소 검색 종료 ================================
 

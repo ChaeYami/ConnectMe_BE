@@ -24,7 +24,11 @@ class PlaceSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         img = obj.place_image_place.first()
         if img:
-            return {'id':img.id, 'url':BACKEND+img.image.url}
+            url = img.image.url
+            if 'https' in url:
+                return {'id':img.id, 'url':'https://'+url[16:]}
+            else:
+                return {'id':img.id, 'url':BACKEND+img.image.url}
         else:
             return img
     
@@ -41,7 +45,11 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
         images = obj.place_image_place.all()
         img = []
         for image in images:
-            img.append({'id':image.id, 'url':BACKEND+image.image.url})
+            url = image.image.url
+            if 'https' in url:
+                img.append({'id':image.id, 'url':'https://'+url[16:]})
+            else:
+                img.append({'id':image.id, 'url':BACKEND+image.image.url})
         return img
     
     class Meta:
@@ -147,8 +155,12 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
         images = obj.place_image_place.all()
         img = []
         for image in images:
-            img.append({'id':image.id, 'url':BACKEND+image.image.url})
-        return img
+            url = image.image.url
+            if 'https' in url:
+                return {'id':image.id, 'url':'https://'+url[16:]}
+            else:
+                img.append({'id':image.id, 'url':BACKEND+image.image.url})
+                return img
     
     class Meta:
         model = Place
@@ -179,15 +191,17 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_name', 'place', 'content', 'main_comment', 'deep', 'created_at', 'updated_at', 'reply']
         
     def get_reply(self, instance):
-        # reply 전부 불러와서 updated_at을 최신순으로 정렬
-        sorted_reply = sorted(instance.reply.all(), key=lambda x: x.updated_at, reverse=True)
+        sorted_reply = sorted(instance.reply.all())
         serializer = self.__class__(sorted_reply, many=True)
         serializer.bind('', self)
         return serializer.data
     
     def get_user_name(self, obj):
         user_name = obj.user.account
-        return user_name
+        if obj.content == None:
+            return '사용자'
+        else:
+            return user_name
     
     def get_content(self, obj):
         if obj.content == None:
