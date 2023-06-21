@@ -24,8 +24,8 @@ class MeetingImageSerializer(serializers.ModelSerializer):
 # 모임 대댓글 리스트
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
-    updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
+    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
     def get_user(self, obj):
         return obj.user.nickname
     
@@ -36,8 +36,8 @@ class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
 # 모임 댓글 리스트
 class MeetingCommentListSerializer(serializers.ModelSerializer):
     reply = MeetingCommentReplyListSerializer(many=True) # 대댓글 Nested Serializer
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
-    updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
+    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
     user = serializers.SerializerMethodField()
     def get_user(self, obj):
         return obj.user.nickname
@@ -52,7 +52,7 @@ class MeetingCommentListSerializer(serializers.ModelSerializer):
 # 모임 글 리스트
 class MeetingListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
     comment_count = serializers.SerializerMethodField()
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
 
@@ -64,7 +64,7 @@ class MeetingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("id","title","user","comment_count","created_at","meeting_image","content",)
+        fields = ("id","title","user","comment_count","created_at","meeting_image","content","bookmark")
 
 # 모임 글 작성
 class MeetingCreateSerializer(serializers.ModelSerializer):
@@ -104,8 +104,8 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 
 # 모임 글 상세
 class MeetingDetailSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
-    updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
+    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M분")
     user = serializers.SerializerMethodField()
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
