@@ -16,11 +16,11 @@ from decouple import config
 
 from random import randint
 
-from my_settings import (
-    NAVER_ACCESS_KEY_ID, 
-    NAVER_SMS_SECRET_KEY, 
-    SERVICE_ID
-)
+# from my_settings import (
+#     NAVER_ACCESS_KEY_ID, 
+#     NAVER_SMS_SECRET_KEY, 
+#     SERVICE_ID
+# )
 
 
 # ================================ 유저 모델 시작 ================================ 
@@ -186,9 +186,10 @@ class CertifyPhoneSignup(models.Model):
 
     def send_sms(self):
         timestamp = str(int(time.time() * 1000))
-        access_key = NAVER_ACCESS_KEY_ID
-        secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
-        service_id = SERVICE_ID
+        access_key = config("NAVER_ACCESS_KEY_ID")
+        print(access_key)
+        secret_key = bytes(config("NAVER_SMS_SECRET_KEY"), "UTF-8")
+        service_id = config("SERVICE_ID")
         method = "POST"
         uri = f"/sms/v2/services/{service_id}/messages"
         message = method + " " + uri + "\n" + timestamp + "\n" + access_key
@@ -235,9 +236,9 @@ class CertifyPhoneAccount(models.Model):
 
     def send_sms(self):
         timestamp = str(int(time.time() * 1000))
-        access_key = NAVER_ACCESS_KEY_ID
-        secret_key = bytes(NAVER_SMS_SECRET_KEY, "UTF-8")
-        service_id = SERVICE_ID
+        access_key = config("NAVER_ACCESS_KEY_ID")
+        secret_key = bytes(config("NAVER_SMS_SECRET_KEY"), "UTF-8")
+        service_id = config("SERVICE_ID")
         method = "POST"
         uri = f"/sms/v2/services/{service_id}/messages"
         message = method + " " + uri + "\n" + timestamp + "\n" + access_key
