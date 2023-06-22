@@ -250,9 +250,9 @@ class ProfileListView(APIView):
         if filter == 'prefer_region':
             user = get_object_or_404(Profile, user_id = request.user.id)
             prefer_region = user.prefer_region
-            admin = get_object_or_404(User, is_admin=True)
-            profiles = Profile.objects.filter(prefer_region = prefer_region).exclude(
-                Q(id=request.user.id) | Q(id = admin.id)
+            admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
+            profiles = Profile.objects.filter(prefer_region=prefer_region).exclude(
+                Q(id=request.user.id) | Q(id=admin.id) if admin else Q(id=request.user.id)
                 )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -261,9 +261,9 @@ class ProfileListView(APIView):
         elif filter == 'mbti':
             user = get_object_or_404(Profile, user_id = request.user.id)
             mbti = user.mbti
-            admin = get_object_or_404(User, is_admin=True)
-            profiles = Profile.objects.filter(mbti = mbti).exclude(
-                Q(id=request.user.id) | Q(id = admin.id)
+            admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
+            profiles = Profile.objects.filter(mbti=mbti).exclude(
+                Q(id=request.user.id) | Q(id=admin.id) if admin else Q(id=request.user.id)
                 )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -272,9 +272,9 @@ class ProfileListView(APIView):
         elif filter == 'age_range':
             user = get_object_or_404(Profile, user_id = request.user.id)
             age_range = user.age_range
-            admin = get_object_or_404(User, is_admin=True)
-            profiles = Profile.objects.filter(age_range = age_range).exclude(
-                Q(id=request.user.id) | Q(id = admin.id)
+            admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
+            profiles = Profile.objects.filter(prefer_region=prefer_region).exclude(
+                Q(id=request.user.id) | Q(id=admin.id) if admin else Q(id=request.user.id)
                 )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -282,9 +282,9 @@ class ProfileListView(APIView):
         # 전체
         elif filter == 'all':
             user = get_object_or_404(Profile, user_id = request.user.id)
-            admin = get_object_or_404(User, is_admin=True)
+            admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
             profiles = Profile.objects.all().exclude(
-                Q(id=request.user.id) | Q(id = admin.id)
+                Q(id=request.user.id) | Q(id=admin.id) if admin else Q(id=request.user.id)
                 )
             serializer = ProfileSerializer(profiles, many = True)
             return Response(serializer.data, status=status.HTTP_200_OK)
