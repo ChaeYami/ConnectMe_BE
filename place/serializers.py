@@ -20,6 +20,9 @@ class PlaceImageSerializer(serializers.ModelSerializer):
 # place 전체보기 시리얼라이저
 class PlaceSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
     
     def get_image(self, obj):
         img = obj.place_image_place.first()
@@ -31,15 +34,27 @@ class PlaceSerializer(serializers.ModelSerializer):
                 return {'id':img.id, 'url':BACKEND+img.image.url}
         else:
             return img
+        
+    def get_comment_count(self, obj):
+        return obj.place_comment_place.count()
+    
+    def get_like_count(self, obj):
+        return obj.like.count()
+    
+    def get_bookmark_count(self, obj):
+        return obj.bookmark.count()
     
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
+        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
 
 
 # place 상세보기 시리얼라이저
 class PlaceDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
     
     def get_image(self, obj):
         images = obj.place_image_place.all()
@@ -52,9 +67,18 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
                 img.append({'id':image.id, 'url':BACKEND+image.image.url})
         return img
     
+    def get_comment_count(self, obj):
+        return obj.place_comment_place.count()
+    
+    def get_like_count(self, obj):
+        return obj.like.count()
+    
+    def get_bookmark_count(self, obj):
+        return obj.bookmark.count()
+    
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
+        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
         
         
 # place 생성 시리얼라이저        
@@ -191,8 +215,8 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_name', 'place', 'content', 'main_comment', 'deep', 'created_at', 'updated_at', 'reply']
         
     def get_reply(self, instance):
-        sorted_reply = sorted(instance.reply.all())
-        serializer = self.__class__(sorted_reply, many=True)
+        replies = instance.reply.all()
+        serializer = self.__class__(replies, many=True)
         serializer.bind('', self)
         return serializer.data
     
