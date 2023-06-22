@@ -33,12 +33,14 @@ from user.serializers import (
     ProfileRegionSerializer,
 )
 
-from my_settings import (
-    KAKAO_LOGIN_API_KEY,
-    NAVER_LOGIN_API_KEY,
-    NAVER_LOGIN_SECRET_KEY,
-    GOOGLE_LOGIN_API_KEY
-)
+from decouple import config
+
+# from my_settings import (
+#     KAKAO_LOGIN_API_KEY,
+#     NAVER_LOGIN_API_KEY,
+#     NAVER_LOGIN_SECRET_KEY,
+#     GOOGLE_LOGIN_API_KEY
+# )
 
 from .models import (
     CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
@@ -110,7 +112,7 @@ class UserView(APIView):
     def patch (self, request): # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, context={"request": request}, partial = True)
-        if user.signup_type == 'normal': 
+        if user.signup_type == '일반': 
             if serializer.is_valid():
                 serializer.save()
                 return Response({"message": "수정완료!"}, status=status.HTTP_200_OK)
@@ -118,7 +120,7 @@ class UserView(APIView):
             else:
                 return Response( {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response( {"message": "소셜로그인 가입자는 전화번호 변경을 할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response( {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST)
             
     
     # 회원 탈퇴 (비활성화, 비밀번호 받아서)
@@ -145,7 +147,6 @@ class CertifyPhoneSignupView(APIView):
     def post(self, request):
         try:
             phone = request.data["phone"]
-    
             if not phone_validator(phone):
             
                 # 인증모델 생성로직
@@ -157,6 +158,7 @@ class CertifyPhoneSignupView(APIView):
                 return Response({"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "휴대폰 번호를 확인해주세요"}, status=status.HTTP_400_BAD_REQUEST)
+                
 
         except:
             return Response({"message": "휴대폰 번호를 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST)
@@ -207,7 +209,6 @@ class VerifyEmailView(APIView):
             return redirect("http://127.0.0.1:5500/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
-
 
 
 # ================================ 회원가입, 회원정보 끝 ================================
@@ -331,24 +332,32 @@ class ProfileView(APIView):
 class ProfileAlbumView(APIView):
     permission_classes = [IsAuthenticated]
     # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
-    def get_object(self, user_id, image_id):
+    def get_object(self, user_id):
         return get_object_or_404(User, id=user_id)
     
     # 사진첩 보기
-    def get(self, request, user_id, image_id):
+    def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         img = ProfileAlbum.objects.filter(user=user)
         serializer = ProfileAlbumSerializer(img, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)     
     
     # 사진 올리기
-    def post(self, request, user_id, image_id):
+    def post(self, request, user_id):
         user = get_object_or_404(User, id=request.user.id)
         for data in request.data.getlist('album_img'):
             ProfileAlbum.objects.create(user=user, album_img=data)
         return Response(status.HTTP_200_OK)
      
-    # 사진 삭제하기
+
+        
+class ProfileAlbumDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    # 요청 유저의 정보를 가져올 때 사용할 get_object 인스턴스 정의
+    def get_object(self, user_id, image_id):
+        return get_object_or_404(User, id=user_id)
+    
+        # 사진 삭제하기
     def delete(self, request, user_id, image_id):
         user = get_object_or_404(User, id=user_id)
         img = get_object_or_404(ProfileAlbum, id=image_id)
@@ -358,7 +367,6 @@ class ProfileAlbumView(APIView):
             return Response(status.HTTP_200_OK)
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
-        
         
 # ================================ 프로필 끝 ================================
 
@@ -563,14 +571,14 @@ class FriendDeleteView(APIView):
 class KakaoLoginView(APIView):
 
     def get(self, request):
-        return Response(KAKAO_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        return Response(config("KAKAO_LOGIN_API_KEY"), status=status.HTTP_200_OK)
 
     def post(self, request):
         auth_code = request.data.get("code")
         kakao_token_api = "https://kauth.kakao.com/oauth/token"
         data = {
             "grant_type": "authorization_code",
-            "client_id": KAKAO_LOGIN_API_KEY,
+            "client_id": config("KAKAO_LOGIN_API_KEY"),
             "redirect_uri": "http://127.0.0.1:5500/index.html",
             "code": auth_code,
         }
@@ -603,13 +611,14 @@ class KakaoLoginView(APIView):
 class NaverLoginView(APIView):
 
     def get(self, request):
-        return Response(NAVER_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        return Response(config("NAVER_LOGIN_API_KEY"), status=status.HTTP_200_OK)
 
     def post(self, request):
         code = request.data.get("naver_code")
         state = request.data.get("state")
+        NAVERLOGINAPIKEY = config("NAVER_LOGIN_API_KEY")
         access_token = requests.post(
-            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVER_LOGIN_API_KEY}&client_secret={NAVER_LOGIN_SECRET_KEY}&state={state}",
+            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&code={code}&client_id={NAVERLOGINAPIKEY}&client_secret={NAVERLOGINAPIKEY}&state={state}",
             headers={"Accept": "application/json"},
         )
         access_token = access_token.json().get("access_token")
@@ -636,7 +645,8 @@ class NaverLoginView(APIView):
 class GoogleLoginView(APIView):
 
     def get(self, request):
-        return Response(GOOGLE_LOGIN_API_KEY, status=status.HTTP_200_OK)
+        GOOGLELOGINAPIKEY = config("GOOGLE_LOGIN_API_KEY")
+        return Response(GOOGLELOGINAPIKEY, status=status.HTTP_200_OK)
 
     def post(self, request):
         access_token = request.data["access_token"]

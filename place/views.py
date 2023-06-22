@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Count
 
 from place.models import Place, PlaceComment, PlaceImage
 from place.serializers import (
@@ -7,29 +8,38 @@ from place.serializers import (
     PlaceCreateSerializer, 
     PlaceCreateCommentSerializer, 
     PlaceUpdateSerializer, 
-    PlaceDeleteCommentSerializer, 
-    PlaceImageSerializer,
+    PlaceDeleteCommentSerializer,
     PlaceDetailSerializer)
 
 from user.models import User
 
-from rest_framework import status
+from rest_framework import viewsets
+from rest_framework import status, generics
+from rest_framework import filters
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import get_object_or_404
 
 
+# ================================ 페이지네이션 시작 ================================
+class PlaceBookPagination(LimitOffsetPagination):
+    default_limit = 20
+    
+class PlaceCategoryPagination(LimitOffsetPagination):
+    default_limit = 100
+# ================================ 페이지네이션 끝 ================================
 # ================================ 장소 게시글 시작 ================================
-
 class PlaceView(APIView):
 
     permission_classes = [IsAuthenticated]
 
     # 장소 추천 전체보기
     def get(self, request):
-        place = Place.objects.all()
-        serializer = PlaceSerializer(place, many=True)
+        place = Place.objects.all().order_by('-id')
+        serializer = PlaceSerializer(place[:100], many=True)
         return Response(serializer.data)
 
     # 장소 추천 작성하기
@@ -53,7 +63,7 @@ class PlaceDetailView(APIView):
     # 장소 추천 상세보기
     def get(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
-        query = place.place_comment_place.filter(main_comment=None).order_by('-updated_at')
+        query = place.place_comment_place.filter(main_comment=None)
         
         place_serializer = PlaceDetailSerializer(place).data
         comment_serializer = PlaceCommentSerializer(query, many=True).data
@@ -156,8 +166,8 @@ class PlaceLikeView(APIView):
 class PlaceBookView(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
-        book = user.place_bookmark.all()
-        serializer = PlaceSerializer(book, many=True)
+        book = user.place_bookmark.all().order_by('-id')
+        serializer = PlaceSerializer(book[:4], many=True)
         return Response(serializer.data, status.HTTP_200_OK)
         
 
@@ -258,4 +268,34 @@ class PlaceCommentDetailView(APIView):
 
 
 # ================================ 장소 댓글 종료 ================================
+# ================================ 장소 검색, 정렬 시작 ================================
+# select, search 검색
+class PlaceSearchView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    pagination_class = PlaceBookPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['comment_count', 'like', 'bookmark', 'created_at',]
+    ordering = ['-created_at']
+    search_fields = ['title',]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # 댓글 수를 계산하여 comment_count 필드를 추가
+        # annotate: 계산 후 새 필드를 추가
+        queryset = queryset.annotate(comment_count=Count('place_comment_place'))
+
+        return queryset
+    
+# 카테고리 필터
+class PlaceCategoryView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    pagination_class = PlaceCategoryPagination
+    ordering = ['-created_at']
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['category',]
+    
+# ================================ 장소 검색, 정렬 종료 ================================
 
