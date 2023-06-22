@@ -84,9 +84,9 @@ for page in range(1, int(pages)):
                 if sort[-2:] == '카페':
                     category = '카페'
                 else:
-                    category = '술'
+                    category = '주점'
             else:
-                category = '밥'
+                category = '식사'
                 
             
             for image in image_elements:

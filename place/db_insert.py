@@ -39,12 +39,21 @@ with open(CSV_PATH, newline='', encoding='utf-8-sig') as csvfile:
                 print('중복 데이터')
                 continue
             
+            category = ''
+                        
+            if row['category'] == '밥':
+                category = '식사'
+            elif row['category'] == '술':
+                category = '주점'
+            else:
+                category = row['category']
+            
             user = User.objects.filter(is_admin=True).first()
                         
             place = Place.objects.create(
                 user_id = user.id,
                 title = title,
-                category = row['category'],
+                category = category,
                 sort = row['sort'],
                 content = row['content'],
                 address = address,
