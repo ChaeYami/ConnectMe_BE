@@ -187,7 +187,6 @@ class CertifyPhoneSignup(models.Model):
     def send_sms(self):
         timestamp = str(int(time.time() * 1000))
         access_key = config("NAVER_ACCESS_KEY_ID")
-        print(access_key)
         secret_key = bytes(config("NAVER_SMS_SECRET_KEY"), "UTF-8")
         service_id = config("SERVICE_ID")
         method = "POST"
