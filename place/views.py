@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from place.models import Place, PlaceComment, PlaceImage
 from place.serializers import (
@@ -11,7 +11,7 @@ from place.serializers import (
     PlaceDeleteCommentSerializer,
     PlaceDetailSerializer)
 
-from user.models import User
+from user.models import User, Profile
 
 from rest_framework import viewsets
 from rest_framework import status, generics
@@ -20,26 +20,29 @@ from rest_framework import filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import get_object_or_404
 
 
 # ================================ 페이지네이션 시작 ================================
-class PlaceBookPagination(LimitOffsetPagination):
-    default_limit = 20
+class PlaceBookPagination(PageNumberPagination):
+    page_size = 20
     
-class PlaceCategoryPagination(LimitOffsetPagination):
-    default_limit = 100
+class PlaceCategoryPagination(PageNumberPagination):
+    page_size = 100
 # ================================ 페이지네이션 끝 ================================
 # ================================ 장소 게시글 시작 ================================
 class PlaceView(APIView):
 
     permission_classes = [IsAuthenticated]
+    pagination_class = PlaceBookPagination
 
     # 장소 추천 전체보기
     def get(self, request):
         place = Place.objects.all().order_by('-id')
-        serializer = PlaceSerializer(place[:100], many=True)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(place, request)
+        serializer = PlaceSerializer(result_page, many=True)
         return Response(serializer.data)
 
     # 장소 추천 작성하기
@@ -112,12 +115,6 @@ class PlaceImageView(APIView):
     
     permission_classes = [IsAdminUser]
     
-    # 이미지 가져오기
-    # def get(self, request, place_id, place_image_id):
-    #     place = PlaceImage.objects.filter(place=place_id)
-    #     serializer = PlaceImageSerializer(place, many=True)
-    #     return Response(serializer.data)
-    
     # 이미지 추가하기
     def post(self, request, place_id, place_image_id):
         place = get_object_or_404(Place, id=place_id)
@@ -188,7 +185,7 @@ class PlaceCommentView(APIView):
         query = place.place_comment_place.filter(main_comment=None)
         serializer = PlaceCommentSerializer(query, many=True)
             
-        return Response(serializer.data)
+        return Response(serializer.data, status.HTTP_200_OK)
     
     # (최상위) 댓글 작성
     def post(self, request, place_id):  
@@ -290,12 +287,32 @@ class PlaceSearchView(viewsets.ModelViewSet):
     
 # 카테고리 필터
 class PlaceCategoryView(viewsets.ModelViewSet):
-    queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
-    ordering = ['-created_at']
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['category',]
+    ordering = ['-id']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['category', 'address']
+    
+    def get_queryset(self):
+        category = self.request.GET.get('category')
+        user = self.request.user
+
+        queryset = Place.objects.all()
+
+        if category and user.is_authenticated:
+            current_region = user.user_profile.current_region
+            if current_region:
+                queryset = queryset.filter(
+                    Q(category__icontains=category) &
+                    Q(address__icontains=current_region)
+                )
+            else:
+                queryset = queryset.filter(category__icontains=category)
+        elif category:
+            queryset = queryset.filter(category__icontains=category)
+
+        return queryset
+    
     
 # ================================ 장소 검색, 정렬 종료 ================================
 

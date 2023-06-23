@@ -20,7 +20,7 @@ from place.models import Place, PlaceImage
 from user.models import User
 
 # csv 파일 경로
-CSV_PATH = 'place.csv'	
+CSV_PATH = '../place.csv'	
 
 
 
