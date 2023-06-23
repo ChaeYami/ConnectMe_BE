@@ -154,7 +154,6 @@ class MeetingCommentDetailView(APIView):
                 if serializer.is_valid():
                     serializer.save(content="삭제된 댓글 입니다.")
                     return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-                    
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -208,12 +207,17 @@ class MeetingCommentReplyDetailView(APIView):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         reply = get_object_or_404(MeetingCommentReply, id=reply_id)
+        comment = reply.comment.content
+        comments = reply.comment.reply.all()
         if request.user == reply.user:
             reply.delete()
+            if comment == "삭제된 댓글 입니다.":
+                if not comments:
+                    reply.comment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
-        
+    
 # ================================ 모임 대댓글 작성, 수정, 삭제 끝 ================================
 
 # ================================ 모임 제목, 내용, 작성자 검색 기능 시작 ================================
@@ -247,4 +251,14 @@ class MeetingImageDetailView(APIView):
             return Response({"message":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)     
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
-# ================================ 모임 이미지 삭제 시작 ================================
+# ================================ 모임 이미지 삭제 끝 ================================
+
+# ================================ 유저가 작성한 모임 글 목록 시작 ================================
+class MyCreateMeetingView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
+        user = request.user
+        meeting = user.my_meeting.all()
+        serializer = MeetingListSerializer(meeting, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
