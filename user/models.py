@@ -81,7 +81,7 @@ class User(AbstractBaseUser):
         ("네이버", "네이버"),
     ]
     signup_type = models.CharField(
-        "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="normal"
+        "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="일반"
     )
     
     is_active = models.BooleanField("활성화", default=False)  # 이메일 인증 전에는 비활성화
