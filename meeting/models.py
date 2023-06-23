@@ -4,7 +4,7 @@ from user.models import User
 # Create your models here.
 # ================================ 모임 글 모델 시작 ================================ 
 class Meeting(models.Model):
-    user = models.ForeignKey(User, verbose_name="작성자", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name="작성자", on_delete=models.CASCADE, related_name="my_meeting")
     title = models.CharField(verbose_name="제목", max_length=50)
     content = models.TextField(verbose_name="모임내용",)
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)

@@ -25,6 +25,8 @@ urlpatterns = [
          views.MeetingUserSearchView.as_view(),), #/meeting/search_api/?search=키워드 -모임 글에서 작성자를 검색
      path('bookmark_list/',
           views.MeetingBookmarkView.as_view(),), #/meeting/bookmark_list/ 북마크 한 모임 글 리스트 
+     path('my_create_meeting/',
+          views.MyCreateMeetingView.as_view(),), #/meeting/my_create_meeting/ 내가 작성한 모임 글 리스트
      path('<int:meeting_id>/meeting_image/<int:image_id>/',
           views.MeetingImageDetailView.as_view(),), #/meeting/<int:meeting_id>/meeting_image/<int:image_id> 이미지 삭제
 ]
