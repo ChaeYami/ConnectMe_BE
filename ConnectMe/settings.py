@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "meeting",
     "counsel",
     "django_filters",
+    "django_apscheduler",
 ]
 
 REST_FRAMEWORK = {

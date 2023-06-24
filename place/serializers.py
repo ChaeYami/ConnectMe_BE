@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
 from .validators import score_validator
 
-BACKEND = 'http://127.0.0.1:8000'
+BACKEND = 'http://127.0.0.1:8000' # 로컬환경에서
 
 # ================================ 이미지 시리얼라이저 시작 ================================
 class PlaceImageSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class PlaceSerializer(serializers.ModelSerializer):
             if 'https' in url:
                 return {'id':img.id, 'url':'https://'+url[16:]}
             else:
-                return {'id':img.id, 'url':BACKEND+img.image.url}
+                return {'id':img.id, 'url':BACKEND+img.image.url} # 로컬환경에서
         else:
             return img
         

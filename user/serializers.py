@@ -22,6 +22,7 @@ import threading
 
 from django.conf import settings
 
+from decouple import config
 
 
 # ================================ 회원가입(user serializser) ================================ 
@@ -317,9 +318,8 @@ class PasswordResetSerializer(serializers.Serializer):
             user = User.objects.get(email=email)
             uidb64 = urlsafe_b64encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-
-            frontend_site = "127.0.0.1:5500"
-            absurl = f"http://{frontend_site}/set_password.html?id=${uidb64}&token=${token}"
+            FRONTEND_BASE_URL = config("FRONTEND_BASE_URL")
+            absurl = f"{FRONTEND_BASE_URL}/set_password.html?id=${uidb64}&token=${token}"
 
             email_body = "{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
             message = {

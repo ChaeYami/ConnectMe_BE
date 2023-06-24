@@ -1,6 +1,7 @@
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import authenticate
+from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import DjangoUnicodeDecodeError, force_str, force_bytes
@@ -43,7 +44,7 @@ from decouple import config
 # )
 
 from .models import (
-    CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, User, Profile
+    CertifyPhoneAccount, CertifyPhoneSignup, Friend, ProfileAlbum, Report, User, Profile
 )
 from .validators import phone_validator
 
@@ -93,8 +94,8 @@ class UserView(APIView):
 
             # 이메일 전송
             email = user.email
-            BACKEND_BASE_URL = "localhost:8000"
-            authurl = f"http://{BACKEND_BASE_URL}/user/verify-email/{uid}/{token}/"
+            BACKENDBASEURL = config("BACKEND_BASE_URL")
+            authurl = f"{BACKENDBASEURL}/user/verify-email/{uid}/{token}/"
             email_body =  f"{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 회원가입을 완료해주세요. \n{authurl}"
             message = {
                 "email_body": email_body,
@@ -201,12 +202,13 @@ class VerifyEmailView(APIView):
             user = None
 
         token_generator = PasswordResetTokenGenerator()
+        FRONTEND_BASE_URL = config("FRONTEND_BASE_URL")
         # 사용자가 존재하고 토큰이 유효한지 확인
         if user is not None and token_generator.check_token(user, token):
             # 이메일 인증 완료 처리 - 유저 활성화
             user.is_active = True
             user.save()
-            return redirect("http://127.0.0.1:5500/confirm_email.html")
+            return redirect(f"{FRONTEND_BASE_URL}/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
 
@@ -575,10 +577,11 @@ class KakaoLoginView(APIView):
     def post(self, request):
         auth_code = request.data.get("code")
         kakao_token_api = "https://kauth.kakao.com/oauth/token"
+        FRONTEND_BASE_URL = config("FRONTEND_BASE_URL")
         data = {
             "grant_type": "authorization_code",
             "client_id": config("KAKAO_LOGIN_API_KEY"),
-            "redirect_uri": "http://127.0.0.1:5500/index.html",
+            "redirect_uri": f"{FRONTEND_BASE_URL}/index.html",
             "code": auth_code,
         }
         kakao_token = requests.post(
@@ -723,3 +726,29 @@ class RegionView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 # ================================ 현재 지역 끝 ================================
+
+# 신고하기
+class ReportView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, user_id):
+        try:
+            report_user = get_object_or_404(User, id = request.user.id) 
+            reported_user = get_object_or_404(User, id=user_id)
+            
+            Report.objects.create(report_user=report_user , reported_user=reported_user)
+            
+            reported_user.warning += 1
+            
+            # 신고누적차단
+            if reported_user.warning >= 3:
+                reported_user.is_active = False
+                reported_user.is_blocked = True
+            reported_user.save()
+                
+            return Response({"message": "신고완료"}, status=status.HTTP_200_OK)
+        
+        except IntegrityError:
+            return Response({"message": "중복신고불가"}, status=status.HTTP_400_BAD_REQUEST)
+            
+

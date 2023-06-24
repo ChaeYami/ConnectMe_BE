@@ -267,3 +267,16 @@ class CertifyPhoneAccount(models.Model):
     def __str__(self):
         return f"[휴대폰 번호]{self.user.phone}"
 
+
+class Report(models.Model):
+    report_user = models.ForeignKey(User, related_name="report_user", verbose_name="신고자", on_delete=models.CASCADE)
+    reported_user = models.ForeignKey(User, related_name="reported_user", verbose_name="피신고자", on_delete=models.CASCADE)
+    reported_at = models.DateTimeField(verbose_name="신고시각", auto_now_add=True)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["report_user", "reported_user"], name="no_duplication"
+            )
+        ]
+    

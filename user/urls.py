@@ -50,5 +50,6 @@ urlpatterns = [
     # current_region
     path("region/", views.RegionView.as_view(), name="region_view"), # /user/region/ : 현재 지역 입력값
     
+    path("report/<int:user_id>/", views.ReportView.as_view(), name="report_view"),  # /user/report/user_id : 유저 신고하기
     
 ]
