@@ -28,7 +28,7 @@ class PlaceBookPagination(PageNumberPagination):
     page_size = 20
     
 class PlaceCategoryPagination(PageNumberPagination):
-    page_size = 100
+    page_size = 50
 # ================================ 페이지네이션 끝 ================================
 # ================================ 장소 게시글 시작 ================================
 class PlaceView(APIView):
@@ -276,13 +276,16 @@ class PlaceSearchView(viewsets.ModelViewSet):
     search_fields = ['title',]
     
     def get_queryset(self):
-        queryset = super().get_queryset()
-
         # 댓글 수를 계산하여 comment_count 필드를 추가
         # annotate: 계산 후 새 필드를 추가
-        queryset = queryset.annotate(comment_count=Count('place_comment_place'))
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'))
+        category_query = self.request.query_params.get('category')
+        
+        if category_query is not None:
+            queryset = queryset.filter(category__icontains=category_query)
 
         return queryset
+    
     
 # 카테고리 필터
 class PlaceCategoryView(viewsets.ModelViewSet):
@@ -294,32 +297,42 @@ class PlaceCategoryView(viewsets.ModelViewSet):
     search_fields = ['category',]
     
     def get_queryset(self):
-        # 로그인한 유저
-        user = User.objects.get(id=3)
-        # user = self.request.user
         
-        try:
-            # 로그인한 유저의 프로필 모델
-            profile = Profile.objects.get(user=user)
-            current_region1 = profile.current_region1
-            current_region2 = profile.current_region2
-            
-            # 프로필.current_region이 address에 포함 되는지
-            if current_region1 is not None and current_region2 is not None:
-                queryset = Place.objects.filter(Q(address__contains=current_region1) & Q(address__contains=current_region2))
+        user = self.request.user
+        
+        if user.is_authenticated:
+            try:
+                # 로그인한 유저의 프로필 모델
+                profile = Profile.objects.get(user=user)
+                current_region1 = profile.current_region1
+                current_region2 = profile.current_region2
                 
-                # 검색한 데이터가 없다면,
+                # 카테고리 선택시
                 search_query = self.request.query_params.get('search')
-                queryset = queryset.filter(category__icontains=search_query)
                 
-                if not queryset:
-                    queryset = Place.objects.filter(address__contains=current_region1)
-            else:
-                queryset = Place.objects.all()
+                # 프로필.current_region이 address에 포함 되는지
+                if current_region1 is not None and current_region2 is not None:
+                    queryset = Place.objects.filter(Q(address__contains=current_region1) & Q(address__contains=current_region2))
+                    queryset = queryset.filter(category__icontains=search_query)
+                    
+                    # current_region1,2에 검색 결과가 없으면 current1로 범위를 넓힘
+                    if not queryset:
+                        queryset = Place.objects.filter(address__contains=current_region1)
+                        queryset = queryset.filter(category__icontains=search_query)
+                        
+                    # 이것마저 없으면 전체 가져오기                        
+                    if not queryset:
+                        queryset = Place.objects.all()
+                        queryset = queryset.filter(category__icontains=search_query)
                 
-        except Profile.DoesNotExist:
-            pass
-        
+                # 위치조회 거부시
+                else:
+                    queryset = Place.objects.all()
+                    
+            except Profile.DoesNotExist:
+                pass
+        else:
+            queryset = Place.objects.all()
 
         return queryset
     
