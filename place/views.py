@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.db.models import Count, Q
 
 from place.models import Place, PlaceComment, PlaceImage
@@ -14,7 +13,7 @@ from place.serializers import (
 from user.models import User, Profile
 
 from rest_framework import viewsets
-from rest_framework import status, generics
+from rest_framework import status
 from rest_framework import filters
 
 from rest_framework.views import APIView
@@ -287,29 +286,40 @@ class PlaceSearchView(viewsets.ModelViewSet):
     
 # 카테고리 필터
 class PlaceCategoryView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
     ordering = ['-id']
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['category', 'address']
+    search_fields = ['category',]
     
     def get_queryset(self):
-        category = self.request.GET.get('category')
-        user = self.request.user
-
-        queryset = Place.objects.all()
-
-        if category and user.is_authenticated:
-            current_region = user.user_profile.current_region
-            if current_region:
-                queryset = queryset.filter(
-                    Q(category__icontains=category) &
-                    Q(address__icontains=current_region)
-                )
+        # 로그인한 유저
+        user = User.objects.get(id=3)
+        # user = self.request.user
+        
+        try:
+            # 로그인한 유저의 프로필 모델
+            profile = Profile.objects.get(user=user)
+            current_region1 = profile.current_region1
+            current_region2 = profile.current_region2
+            
+            # 프로필.current_region이 address에 포함 되는지
+            if current_region1 is not None and current_region2 is not None:
+                queryset = Place.objects.filter(Q(address__contains=current_region1) & Q(address__contains=current_region2))
+                
+                # 검색한 데이터가 없다면,
+                search_query = self.request.query_params.get('search')
+                queryset = queryset.filter(category__icontains=search_query)
+                
+                if not queryset:
+                    queryset = Place.objects.filter(address__contains=current_region1)
             else:
-                queryset = queryset.filter(category__icontains=category)
-        elif category:
-            queryset = queryset.filter(category__icontains=category)
+                queryset = Place.objects.all()
+                
+        except Profile.DoesNotExist:
+            pass
+        
 
         return queryset
     
