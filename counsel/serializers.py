@@ -114,7 +114,7 @@ class CounselDetailSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     counsel_comment_counsel = CounselCommentSerializer
     def get_user(self, obj):
-        return {"account": obj.user.account, "pk": obj.user.pk}
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     class Meta:
         model = Counsel
