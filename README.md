@@ -1,8 +1,12 @@
-# Connect ME
+<div align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=8FB4E1&height=200&section=header&text=%20Connect%20Me&fontSize=80&fontColor=ffffff"/>
+<img width="500" alt="Kids Shop" src="https://github.com/PunciaTail/drf_homework/assets/120395814/4012a55f-cfd2-4c6b-8b8a-64cf2cb2b410">
 
 
-🤗 배포
+🤗 서비스 아키텍쳐
 ------
+![ConnectME 중간발표 서비스 아키텍쳐](https://github.com/PunciaTail/drf_homework/assets/120395814/a506d3db-88c8-4e2d-87fa-747d18a1e74e)
+
 
 📚 stacks 
 ------

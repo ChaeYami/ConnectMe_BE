@@ -453,10 +453,11 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
 class ProfileRegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ("current_region",)
+        fields = ("current_region1","current_region2",)
     
     def update(self, instance, validated_data):
-        instance.current_region = validated_data.get("current_region", instance.current_region)
+        instance.current_region1 = validated_data.get("current_region1", instance.current_region1)
+        instance.current_region2 = validated_data.get("current_region2", instance.current_region2)
         instance.save()
         
         return instance
