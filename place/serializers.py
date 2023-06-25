@@ -159,11 +159,10 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
 
 # place 수정 시리얼라이저    
 class PlaceUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
 
     CHOICES = [
-            ('밥','밥'),
-            ('술','술'),
+            ('식사','식사'),
+            ('주점','주점'),
             ('카페','카페'),
         ]
     title = serializers.CharField(required=False)
@@ -174,17 +173,6 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
     price = serializers.CharField(required=False)
     hour = serializers.CharField(required=False)
     holiday = serializers.CharField(required=False)
-    
-    def get_image(self, obj):
-        images = obj.place_image_place.all()
-        img = []
-        for image in images:
-            url = image.image.url
-            if 'https' in url:
-                return {'id':image.id, 'url':'https://'+url[16:]}
-            else:
-                img.append({'id':image.id, 'url':BACKEND+image.image.url})
-                return img
     
     class Meta:
         model = Place
