@@ -4,7 +4,7 @@
 </div>
 
 
-🤗 배포
+📱 배포
 ------
 https://connectme.co.kr/
 
@@ -55,6 +55,38 @@ https://connectme.co.kr/
 
 
 ### 채팅
+
+🥰 POSITION
+------
+🤍 서채연(팀장)  
+- User 앱 전반
+    - 회원가입, 로그인 / 소셜로그인 / 친구신청,수락,삭제 등 / 유저 신고 기능 등 user 앱 기능
+    - SMS 인증 - 아이디 찾기 / 이메일 인증 - 비밀번호 재설정
+- Amazon S3 static 파일 업로드 + cloudfront 배포
+- Validator 생성 및 적용
+- 팀원 코드 피드백 및 리팩토링
+  
+🤍 노탁근(부팀장)  
+- Docker, AWS 배포
+    - nginx, Backend, PostgreSQL
+- 신고 유저 차단 기능
+    - django-apscheduler
+- 채팅, 알림기능 (진행중)
+    - redis, daphne, django-channels
+
+🤍 이상민  
+- Place 앱 전반
+    - 맛집추천 CRUD : 권한 기반 접근 / 댓글, 대댓글 CRUD / 다중이미지 업로드
+    - 맛집 추천 크롤링
+- 유저 프로필 앨범 기능 / 위치 API - 유저 위치 저장
+
+🤍 정재준  
+- Meeting 앱 전반
+    - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드 
+
+🤍 장한울
+- Counsel 앱 전반
+    - counsel 게시글 CRUD / 댓글, 대댓글 CRUD
 
 ***
 💜 ERD
