@@ -89,7 +89,8 @@ class UserView(APIView):
             user = serializer.save()
 
             # 토큰 생성
-            uid = urlsafe_b64encode(force_bytes(user.pk))
+            _uid = urlsafe_b64encode(force_bytes(user.pk))
+            uid = str(_uid)[2:-1]
             token = PasswordResetTokenGenerator().make_token(user)
 
             # 이메일 전송

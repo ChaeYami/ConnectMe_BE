@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
-    path("verify-email/b'<str:uidb64>'/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
+    path("verify-email/<str:uidb64>/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
     
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

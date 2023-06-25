@@ -316,12 +316,13 @@ class PasswordResetSerializer(serializers.Serializer):
             email = attrs.get("email")
 
             user = User.objects.get(email=email)
-            uidb64 = urlsafe_b64encode(smart_bytes(user.id))
+            _uidb64 = urlsafe_b64encode(smart_bytes(user.id))
+            uidb64 = str(_uidb64)[2:-1]
             token = PasswordResetTokenGenerator().make_token(user)
             FRONTEND_BASE_URL = config("FRONTEND_BASE_URL")
-            absurl = f"{FRONTEND_BASE_URL}/set_password.html?id=${uidb64}&token=${token}"
+            absurl = f"{FRONTEND_BASE_URL}/set_password.html?id={uidb64}&token={token}"
 
-            email_body = "{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
+            email_body = f"{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
             message = {
                 "email_body": email_body,
                 "to_email": user.email,
