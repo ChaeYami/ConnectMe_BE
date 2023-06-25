@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.db.models import Count, Q
 
 from place.models import Place, PlaceComment, PlaceImage
@@ -14,7 +13,7 @@ from place.serializers import (
 from user.models import User, Profile
 
 from rest_framework import viewsets
-from rest_framework import status, generics
+from rest_framework import status
 from rest_framework import filters
 
 from rest_framework.views import APIView
@@ -29,7 +28,7 @@ class PlaceBookPagination(PageNumberPagination):
     page_size = 20
     
 class PlaceCategoryPagination(PageNumberPagination):
-    page_size = 100
+    page_size = 50
 # ================================ 페이지네이션 끝 ================================
 # ================================ 장소 게시글 시작 ================================
 class PlaceView(APIView):
@@ -277,39 +276,63 @@ class PlaceSearchView(viewsets.ModelViewSet):
     search_fields = ['title',]
     
     def get_queryset(self):
-        queryset = super().get_queryset()
-
         # 댓글 수를 계산하여 comment_count 필드를 추가
         # annotate: 계산 후 새 필드를 추가
-        queryset = queryset.annotate(comment_count=Count('place_comment_place'))
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'))
+        category_query = self.request.query_params.get('category')
+        
+        if category_query is not None:
+            queryset = queryset.filter(category__icontains=category_query)
 
         return queryset
     
+    
 # 카테고리 필터
 class PlaceCategoryView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
     ordering = ['-id']
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['category', 'address']
+    search_fields = ['category',]
     
     def get_queryset(self):
-        category = self.request.GET.get('category')
+        
         user = self.request.user
-
-        queryset = Place.objects.all()
-
-        if category and user.is_authenticated:
-            current_region = user.user_profile.current_region
-            if current_region:
-                queryset = queryset.filter(
-                    Q(category__icontains=category) &
-                    Q(address__icontains=current_region)
-                )
-            else:
-                queryset = queryset.filter(category__icontains=category)
-        elif category:
-            queryset = queryset.filter(category__icontains=category)
+        
+        if user.is_authenticated:
+            try:
+                # 로그인한 유저의 프로필 모델
+                profile = Profile.objects.get(user=user)
+                current_region1 = profile.current_region1
+                current_region2 = profile.current_region2
+                
+                # 카테고리 선택시
+                search_query = self.request.query_params.get('search')
+                
+                # 프로필.current_region이 address에 포함 되는지
+                if current_region1 is not None and current_region2 is not None:
+                    queryset = Place.objects.filter(Q(address__contains=current_region1) & Q(address__contains=current_region2))
+                    queryset = queryset.filter(category__icontains=search_query)
+                    
+                    # current_region1,2에 검색 결과가 없으면 current1로 범위를 넓힘
+                    if not queryset:
+                        queryset = Place.objects.filter(address__contains=current_region1)
+                        queryset = queryset.filter(category__icontains=search_query)
+                        
+                    # 이것마저 없으면 전체 가져오기                        
+                    if not queryset:
+                        queryset = Place.objects.all()
+                        queryset = queryset.filter(category__icontains=search_query)
+                
+                # 위치조회 거부시
+                else:
+                    queryset = Place.objects.all()
+                    
+            except Profile.DoesNotExist:
+                pass
+        else:
+            queryset = Place.objects.all()
 
         return queryset
     
