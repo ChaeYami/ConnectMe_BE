@@ -81,7 +81,7 @@ class User(AbstractBaseUser):
         ("네이버", "네이버"),
     ]
     signup_type = models.CharField(
-        "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="normal"
+        "로그인유형", max_length=10, choices=SIGNUP_TYPES, default="일반"
     )
     
     is_active = models.BooleanField("활성화", default=False)  # 이메일 인증 전에는 비활성화
@@ -127,7 +127,8 @@ class Friend(models.Model):
 class Profile(models.Model):
     profile_img = models.ImageField("프로필사진", null=True, blank=True, default=None, upload_to="profile_img/")
     prefer_region = models.CharField("선호지역", max_length=10 , default="전국", blank=True) 
-    current_region = models.CharField("현재지역", max_length=255, blank=True, null=True)
+    current_region1 = models.CharField("현재 행정시", max_length=50, blank=True, null=True)
+    current_region2 = models.CharField("현재 행정구", max_length=50, blank=True, null=True)
     # 자바스크립트에서 도/특별시/광역시를 고르면 해당하는 시/군/구를 고르게 한 다음 해당 시/군/구만 텍스트로 보내올 예정 (탁근님이 할 거임 쿠다사이)
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="회원", related_name="user_profile")
@@ -187,7 +188,6 @@ class CertifyPhoneSignup(models.Model):
     def send_sms(self):
         timestamp = str(int(time.time() * 1000))
         access_key = config("NAVER_ACCESS_KEY_ID")
-        print(access_key)
         secret_key = bytes(config("NAVER_SMS_SECRET_KEY"), "UTF-8")
         service_id = config("SERVICE_ID")
         method = "POST"
@@ -268,3 +268,16 @@ class CertifyPhoneAccount(models.Model):
     def __str__(self):
         return f"[휴대폰 번호]{self.user.phone}"
 
+
+class Report(models.Model):
+    report_user = models.ForeignKey(User, related_name="report_user", verbose_name="신고자", on_delete=models.CASCADE)
+    reported_user = models.ForeignKey(User, related_name="reported_user", verbose_name="피신고자", on_delete=models.CASCADE)
+    reported_at = models.DateTimeField(verbose_name="신고시각", auto_now_add=True)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["report_user", "reported_user"], name="no_duplication"
+            )
+        ]
+    

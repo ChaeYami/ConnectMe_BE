@@ -1,13 +1,20 @@
-# Connect ME
+<div align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=8FB4E1&height=200&section=header&text=%20Connect%20Me&fontSize=80&fontColor=ffffff"/>
+<img width="500" alt="Connectme_logo" src="https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/c0c57819-39dd-42b9-8b11-45243e32a269">
+</div>
 
 
 🤗 배포
 ------
+https://connectme.co.kr/
 
 📚 stacks 
 ------
 
-<img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white"> 
+<img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/selenium -43B02A?style=for-the-badge&logo=selenium&logoColor=white"> 
+ <br> <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+<br>  <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">  <img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/nginx 1.18.0-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/docker 20.10.21 -2496ED?style=for-the-badge&logo=docker&logoColor=white">
+<br><img src="https://img.shields.io/badge/amazons3 -569A31?style=for-the-badge&logo=amazons3&logoColor=white">
 
 
 ***
@@ -58,6 +65,12 @@
 💚 와이어프레임
 ------
 ![Group 21](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/fca58593-6d58-4302-9dae-a87af4e43e11)
+
+
+🤗 서비스 아키텍쳐
+------
+![ConnectME 중간발표 서비스 아키텍쳐](https://github.com/PunciaTail/drf_homework/assets/120395814/a506d3db-88c8-4e2d-87fa-747d18a1e74e)
+
 
 
 

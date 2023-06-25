@@ -80,7 +80,7 @@ class CounselListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     
     def get_user(self, obj):
-        return obj.user.nickname
+        return obj.user.account
 
     class Meta:
         model = Counsel
@@ -114,7 +114,7 @@ class CounselDetailSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     counsel_comment_counsel = CounselCommentSerializer
     def get_user(self, obj):
-        return {"nickname": obj.user.nickname, "pk": obj.user.pk}
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     class Meta:
         model = Counsel
