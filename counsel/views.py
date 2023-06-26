@@ -10,6 +10,9 @@ from .models import(
     CounselReply,
     )
 
+
+
+
 from .serializers import(
     CounselListSerializer,
     CounselCreateSerializer,
@@ -84,6 +87,15 @@ class CounselDetailView(APIView):
             return Response({'message': '삭제 완료'},status=status.HTTP_200_OK)
         else:
             return Response({"message":"권한이 없습니다."}, status.HTTP_403_FORBIDDEN)
+        
+# 작성한 게시글 모아보기
+class MyCreateCounselView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        counsel = Counsel.objects.filter(user=request.user)
+        serializer = CounselListSerializer(counsel, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
             
 # 게시글 좋아요
 class CounselLikeView(APIView):

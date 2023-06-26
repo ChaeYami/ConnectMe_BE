@@ -209,7 +209,7 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_user_name(self, obj):
-        user_name = obj.user.account
+        user_name = obj.user.nickname
         if obj.content == None:
             return '사용자'
         else:
