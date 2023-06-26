@@ -23,7 +23,8 @@ from random import randint
 # )
 
 
-# ================================ 유저 모델 시작 ================================
+''' 유저 모델 시작 '''
+
 class UserManager(BaseUserManager):
     def create_user(self, account, email, phone, password=None, **extra_fields):
         if not account:
@@ -121,7 +122,7 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
-# ================================ 유저 모델 끝 ================================
+''' 유저 모델 끝 '''
 
 
 """
@@ -145,8 +146,7 @@ class Friend(models.Model):
     )
 
 
-# ================================ 프로필 시작 ================================
-
+''' 프로필 시작 '''
 
 class Profile(models.Model):
     profile_img = models.ImageField(
@@ -204,11 +204,10 @@ class ProfileAlbum(models.Model):
     )
 
 
-# ================================ 프로필 끝 ================================
+''' 프로필 끝 '''
 
 
-# ================================ sms 인증 모델 ================================
-
+''' sms 인증 모델 '''
 
 # 회원가입 sms 인증번호 발송
 class CertifyPhoneSignup(models.Model):
