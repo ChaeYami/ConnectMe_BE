@@ -308,7 +308,8 @@ class CertifyPhoneAccount(models.Model):
     def __str__(self):
         return f"[휴대폰 번호]{self.user.phone}"
 
-
+''' 신고/차단 모델 시작 '''
+# 신고목록
 class Report(models.Model):
     report_user = models.ForeignKey(
         User, related_name="report_user", verbose_name="신고자", on_delete=models.CASCADE
@@ -328,7 +329,7 @@ class Report(models.Model):
             )
         ]
 
-
+# 차단목록
 class Blacklist(models.Model):
     blocked_user = models.ForeignKey(
         User, verbose_name="차단된 유저", on_delete=models.CASCADE
