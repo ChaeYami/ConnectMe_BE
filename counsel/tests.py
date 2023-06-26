@@ -13,7 +13,7 @@ from counsel.models import (
     CounselReply,
 )
 
-class CounselViewTest(APITestCase):
+class CounselListViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account ='test1account'
@@ -42,7 +42,8 @@ class CounselViewTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         
         
-class CounselDetailViewTest(APITestCase):
+''' 게시글 작성 '''        
+class CounselViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account ='test1account'
@@ -109,3 +110,78 @@ class CounselDetailViewTest(APITestCase):
             data={"title" : "test title", "content" : ""}, 
             )
         self.assertEqual(response.status_code, 400) # serializer is_valid = False
+
+
+
+''' 게시글 상세, 수정, 삭제 '''
+
+class CounselDetailViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account ='test1account'
+        cls.email='test1@naver.com'
+        cls.phone='01012345678'
+        cls.password='test1234!!'
+        cls.user_data = {"account":"test1account","password" :"test1234!!"}
+        cls.user = User.objects.create_user(account=cls.account, email=cls.email, phone=cls.phone, password=cls.password)
+        Profile.objects.create(user=cls.user)
+        
+        cls.counsel_data = [
+            {"title":"test title1", "content":"test content1"},
+            {"title":"test title2", "content":"test content2"},
+            {"title":"test title3", "content":"test content3"},
+            {"title":"test title4", "content":"test content4"},
+            {"title":"test title5", "content":"test content5"},
+        ]
+                
+        cls.counsel =[]
+        
+        for i in range(5):
+            cls.counsel.append(
+                Counsel.objects.create(**cls.counsel_data[i], user = cls.user)
+            )
+            
+    def setUp(self):
+        # self.access_token = self.client.post(reverse('user:login_view'), self.user_data).data['access']
+        self.client.force_authenticate(user=self.user) # 토큰없이 로그인
+        
+        
+    # 상세보기
+    def test_counsel_detail(self):
+        response = self.client.get(
+            path=reverse("counsel_detail_view", kwargs={"counsel_id" : 5}),
+            # HTTP_AUTHORIZATION = f"Bearer {self.access_token}",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    # 수정하기
+    def test_counsel_detail_update(self):
+        self.counsel_data = {
+            "title":"update test title", "content":"update test content"
+            }
+        response = self.client.put(
+            path=reverse("counsel_detail_view", kwargs={"counsel_id":5}),
+            data=self.counsel_data,
+            # HTTP_AUTHORIZATION = f"Bearer {self.access_token}",
+        )
+        # print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Counsel.objects.count(),5)
+        self.assertEqual(response.data["title"], "update test title")
+        self.assertEqual(response.data["content"], "update test content")
+
+    # 삭제
+    def test_counsel_detail_delete(self):
+        response = self.client.delete(
+            path=reverse("counsel_detail_view", kwargs={"counsel_id":5})
+            # HTTP_AUTHORIZATION = f"Bearer {self.access_token}",
+        )
+        # print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Counsel.objects.count(),4)
+        self.assertEqual(response.data,{'message': '삭제 완료'})
+        
+        
+    
+    
