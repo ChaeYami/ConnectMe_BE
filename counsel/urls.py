@@ -5,7 +5,7 @@ from counsel import views
 urlpatterns = [
     path('', views.CounselView.as_view(), name="counsel_view"), 
     path('<int:counsel_id>/', views.CounselDetailView.as_view(), name="counsel_detail_view"),
-    path('user/', views.MyCreateCounselView.as_view(), name="counsel_detail_view"),
+    path('user/', views.MyCreateCounselView.as_view(), name="my_create_counsel_view"),
 
     path('<int:counsel_id>/like/', views.CounselLikeView.as_view(), name="counsel_like_view"),
 
