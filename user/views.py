@@ -36,13 +36,6 @@ from user.serializers import (
 
 from decouple import config
 
-# from my_settings import (
-#     KAKAO_LOGIN_API_KEY,
-#     NAVER_LOGIN_API_KEY,
-#     NAVER_LOGIN_SECRET_KEY,
-#     GOOGLE_LOGIN_API_KEY
-# )
-
 from .models import (
     CertifyPhoneAccount,
     CertifyPhoneSignup,
@@ -59,7 +52,7 @@ import requests
 import uuid
 
 
-''' 회원가입, 회원정보 시작 '''
+""" 회원가입, 회원정보 시작 """
 
 class Util:
     @staticmethod
@@ -72,7 +65,7 @@ class Util:
         EmailThread(email).start()
 
 
-############## 회원가입, 개인정보 view ##############
+''' 회원가입, 개인정보 view '''
 class UserView(APIView):
     permission_classes = [AllowAny]
 
@@ -158,7 +151,7 @@ class UserView(APIView):
             )
 
 
-############## 회원가입 sms 인증 ##############
+''' 회원가입 sms 인증 '''
 
 
 # 인증번호 발송
@@ -222,7 +215,7 @@ class ConfirmPhoneSignupView(APIView):
             )
 
 
-############## 회원가입 이메일 인증 ##############
+''' 회원가입 이메일 인증 '''
 class VerifyEmailView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -244,7 +237,7 @@ class VerifyEmailView(APIView):
             return redirect("잘못되었거나 만료된 링크 프론트 html")
 
 
-''' 회원가입, 회원정보 끝 '''
+""" 회원가입, 회원정보 끝 """
 
 
 ''' 로그인 '''
@@ -277,10 +270,10 @@ class ChangePasswordView(APIView):
             )
 
 
-''' 프로필 시작 '''
+""" 프로필 시작 """
 
 
-############## 친구추천 (작성된 프로필 기반) ##############
+''' 친구추천 (작성된 프로필 기반) '''
 class ProfileListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -337,7 +330,7 @@ class ProfileListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-############## 개인 공개 프로필 ##############
+''' 개인 공개 프로필 '''
 class ProfileView(APIView):
     permission_classes = [AllowAny]
 
@@ -379,7 +372,7 @@ class ProfileView(APIView):
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
 
 
-############## 프로필 앨범 ##############
+''' 프로필 앨범 '''
 class ProfileAlbumView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -401,7 +394,7 @@ class ProfileAlbumView(APIView):
             ProfileAlbum.objects.create(user=user, album_img=data)
         return Response(status.HTTP_200_OK)
 
-
+# 프로필 앨범 사진 삭제
 class ProfileAlbumDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -422,13 +415,13 @@ class ProfileAlbumDeleteView(APIView):
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
 
 
-''' 프로필 끝 '''
+""" 프로필 끝 """
 
 
-''' 아이디 찾기 시작 '''
+""" 아이디 찾기 시작 """
 
 
-############## sms 인증번호 발송 ##############
+''' sms 인증번호 발송 '''
 class CertifyPhoneAccountView(APIView):
     permission_classes = [AllowAny]
 
@@ -454,7 +447,7 @@ class CertifyPhoneAccountView(APIView):
             )
 
 
-############## 인증번호 확인 ##############
+''' 인증번호 확인 '''
 class ConfirmPhoneAccountView(APIView):
     permission_classes = [AllowAny]
 
@@ -487,13 +480,12 @@ class ConfirmPhoneAccountView(APIView):
             )
 
 
-''' 아이디 찾기 끝 '''
+""" 아이디 찾기 끝 """
 
 
-''' 비밀번호 재설정 시작 '''
+""" 비밀번호 재설정 시작 """
 
-
-############## 이메일 보내기 ##############
+''' 이메일 보내기 '''
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
@@ -512,7 +504,7 @@ class PasswordResetView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-############## 비밀번호 재설정 토큰 확인 ##############
+''' 비밀번호 재설정 토큰 확인 '''
 class PasswordTokenCheckView(APIView):
     def get(self, request, uidb64, token):
         try:
@@ -533,7 +525,7 @@ class PasswordTokenCheckView(APIView):
             )
 
 
-############## 비밀번호 재설정 ##############
+''' 비밀번호 재설정 '''
 class SetNewPasswordView(APIView):
     def put(self, request):
         serializer = SetNewPasswordSerializer(data=request.data)
@@ -545,10 +537,10 @@ class SetNewPasswordView(APIView):
 ''' 비밀번호 재설정 끝 '''
 
 
-''' 친구맺기 시작 '''
+""" 친구맺기 시작 """
 
 
-############## 친구신청 ##############
+''' 친구신청 '''
 class FriendView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -562,7 +554,7 @@ class FriendView(APIView):
         return Response({"message": "친구 신청을 보냈습니다."}, status=status.HTTP_201_CREATED)
 
 
-############## 친구신청 수락 ##############
+''' 친구신청 수락 '''
 class FriendAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -585,7 +577,7 @@ class FriendAcceptView(APIView):
         return Response({"message": "친구 신청을 수락했습니다."}, status=status.HTTP_200_OK)
 
 
-############## 친구신청 거절 ##############
+''' 친구신청 거절 '''
 class FriendRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -603,7 +595,7 @@ class FriendRejectView(APIView):
         return Response({"message": "친구 신청을 거절했습니다."}, status=status.HTTP_200_OK)
 
 
-############## 친구신청목록 ##############
+''' 친구신청목록 '''
 class RequestList(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -616,7 +608,7 @@ class RequestList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-############## 친구목록 ##############
+''' 친구목록 '''
 class FriendsListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -630,7 +622,7 @@ class FriendsListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-############## 친구삭제 ##############
+''' 친구삭제 '''
 class FriendDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -649,13 +641,13 @@ class FriendDeleteView(APIView):
         return Response({"message": "친구를 삭제했습니다."}, status=status.HTTP_200_OK)
 
 
-''' 친구맺기 끝 '''
+""" 친구맺기 끝 """
 
 
-''' 소셜 로그인 시작 '''
+""" 소셜 로그인 시작 """
 
 
-############## 카카오로그인 ##############
+''' 카카오로그인 '''
 class KakaoLoginView(APIView):
     def get(self, request):
         return Response(config("KAKAO_LOGIN_API_KEY"), status=status.HTTP_200_OK)
@@ -695,7 +687,7 @@ class KakaoLoginView(APIView):
         return SocialLogin(**data)
 
 
-############## 네이버로그인 ##############
+''' 네이버로그인 '''
 class NaverLoginView(APIView):
     def get(self, request):
         return Response(config("NAVER_LOGIN_API_KEY"), status=status.HTTP_200_OK)
@@ -727,7 +719,7 @@ class NaverLoginView(APIView):
         return SocialLogin(**data)
 
 
-############## 구글로그인 ##############
+''' 구글로그인 '''
 class GoogleLoginView(APIView):
     def get(self, request):
         GOOGLELOGINAPIKEY = config("GOOGLE_LOGIN_API_KEY")
@@ -751,7 +743,7 @@ class GoogleLoginView(APIView):
         return SocialLogin(**data)
 
 
-############## 로그인 ##############
+''' 로그인 '''
 def SocialLogin(**kwargs):
     data = {key: value for key, value in kwargs.items() if value is not None}
     email = data.get("email")
@@ -793,10 +785,10 @@ def SocialLogin(**kwargs):
         )
 
 
-''' 소셜 로그인 끝 '''
+""" 소셜 로그인 끝 """
 
-''' 현재 지역 시작 '''
 
+""" 현재 지역 시작 """
 
 class RegionView(APIView):
     def patch(self, request):
@@ -812,10 +804,10 @@ class RegionView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-''' 현재 지역 끝 '''
+""" 현재 지역 끝 """
 
 
-# 신고하기
+""" 신고하기 """
 class ReportView(APIView):
     permission_classes = [IsAuthenticated]
 
