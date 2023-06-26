@@ -146,7 +146,7 @@ class CounselDetailViewTest(APITestCase):
         self.client.force_authenticate(user=self.user) # 토큰없이 로그인
         
         
-    # 상세보기
+    '''상세보기'''
     def test_counsel_detail(self):
         response = self.client.get(
             path=reverse("counsel_detail_view", kwargs={"counsel_id" : 5}),
@@ -155,7 +155,7 @@ class CounselDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         
         
-    # 수정하기
+    '''수정하기'''
     def test_counsel_detail_update(self):
         self.counsel_data = {
             "title":"update test title", "content":"update test content"
@@ -171,7 +171,7 @@ class CounselDetailViewTest(APITestCase):
         self.assertEqual(response.data["title"], "update test title")
         self.assertEqual(response.data["content"], "update test content")
 
-    # 삭제
+    '''삭제'''
     def test_counsel_detail_delete(self):
         response = self.client.delete(
             path=reverse("counsel_detail_view", kwargs={"counsel_id":5})
@@ -183,5 +183,150 @@ class CounselDetailViewTest(APITestCase):
         self.assertEqual(response.data,{'message': '삭제 완료'})
         
         
+""" 댓글 """
+class CommentViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account ='test1account'
+        cls.email='test1@naver.com'
+        cls.phone='01012345678'
+        cls.password='test1234!!'
+        cls.user_data = {"account":"test1account","password" :"test1234!!"}
+        cls.user = User.objects.create_user(account=cls.account, email=cls.email, phone=cls.phone, password=cls.password)
+        Profile.objects.create(user=cls.user)
+        
+        cls.counsel_data = {"title":"test title", "content":"test content"}
+        cls.counsel = Counsel.objects.create(**cls.counsel_data, user = cls.user)
+        
+        cls.comment_data = {"content":"test content"}
+        
+    def setUp(self):
+        self.client.force_authenticate(user=self.user) # 토큰없이 로그인
+        
+    '''댓글작성'''
+    def test_counsel_comment_create(self):
+        response = self.client.post(
+            path = reverse("counsel_comment_view", kwargs={"counsel_id" : self.counsel.id}),
+            data=self.comment_data,
+            # HTTP_AUTHORIZATION = f"Bearer {self.access_token}",
+        )
+        # print(CounselComment)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(CounselComment.objects.count(), 1)
+        self.assertEqual(CounselComment.objects.get().content, self.comment_data["content"])
+        
+    '''댓글 리스트'''
+    def test_counsel_comment_list(self):
+        pass
     
     
+""" 댓글 상세 (수정/삭제) """
+class CommentDetailViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account ='test1account'
+        cls.email='test1@naver.com'
+        cls.phone='01012345678'
+        cls.password='test1234!!'
+        cls.user_data = {"account":"test1account","password" :"test1234!!"}
+        cls.user = User.objects.create_user(account=cls.account, email=cls.email, phone=cls.phone, password=cls.password)
+        Profile.objects.create(user=cls.user)
+        
+        
+        cls.counsel_data = {"title": "test Title", "content": "test content"}
+        cls.counsel = Counsel.objects.create(**cls.counsel_data, user=cls.user)
+        
+        cls.comment_data = {"content": "test comment"}
+        cls.comment_data = [
+            {"content": "test 1"},
+            {"content": "test 2"},
+            {"content": "test 3"},
+            {"content": "test 4"},
+            {"content": "test 5"},
+        ]
+       
+        cls.comment = []
+        for _ in range(5):
+            cls.comment.append(
+                CounselComment.objects.create(
+                    content="comment", counsel=cls.counsel, user=cls.user
+                )
+            )
+
+    def setUp(self):
+        # self.access_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]
+        self.client.force_authenticate(user=self.user)
+
+
+    '''댓글수정'''
+    def test_counsel_comment_update(self): 
+        comment_id = self.comment[0].id  # 삭제할 댓글의 ID
+        self.comment_data = {
+            "content":"update test comment"
+            }
+        response = self.client.put(
+            path=reverse("counsel_detail_comment_view", kwargs={"counsel_id":1, "counsel_comment_id": comment_id}),
+            data=self.counsel_data,
+            # HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        # print(response.data)
+        # print(CounselComment.objects.count())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(CounselComment.objects.count(), 5)
+        self.assertEqual(response.data, {'meesage': '수정완료'})
+
+    '''댓글삭제'''
+    def test_counsel_comment_delete(self):
+        comment_id = self.comment[0].id  # 삭제할 댓글의 ID
+        response = self.client.delete(
+            path=reverse("counsel_detail_comment_view", kwargs={"counsel_id":1, "counsel_comment_id": comment_id}),
+            # HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        # print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(CounselComment.objects.count(), 4)
+        self.assertEqual(response.data, {'message': '삭제 완료'})
+        
+        
+""" 게시글 좋아요 """
+class CounselLikeViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account ='test1account'
+        cls.email='test1@naver.com'
+        cls.phone='01012345678'
+        cls.password='test1234!!'
+        cls.user_data = {"account":"test1account","password" :"test1234!!"}
+        cls.user = User.objects.create_user(account=cls.account, email=cls.email, phone=cls.phone, password=cls.password)
+        Profile.objects.create(user=cls.user)
+        
+        cls.counsel_data = {"title": "test Title", "content": "test content"}
+        cls.counsel = Counsel.objects.create(**cls.counsel_data, user=cls.user)
+        cls.counsel_2 = Counsel.objects.create(**cls.counsel_data, user=cls.user)
+        # cls.user.like.add(cls.counsel_2)
+        
+    
+    def setUp(self):
+        # self.access_token = self.client.post(reverse("user:login_view"), self.user_data).data["access"]
+        self.client.force_authenticate(user=self.user)
+    
+    
+    '''좋아요 누르기'''
+    def test_counsel_like(self):
+        url = reverse("counsel_like_view", kwargs={"counsel_id": self.counsel.id})
+
+        response = self.client.post(url)
+        # print(response.data)
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.data, {"message":"좋아요"})
+        
+    '''좋아요 취소하기'''
+    # def test_counsel_like_cancel(self):
+    #     url = reverse("counsel_like_view", kwargs={"counsel_id": self.counsel_2.id})
+
+    #     response = self.client.post(url)
+    #     print(response.data)
+        # self.assertEqual(response.status_code, 202)
+        # self.assertEqual(response.data, {"message":"좋아요"})
+        
+        
