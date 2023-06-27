@@ -1,9 +1,7 @@
 from django.test import TestCase
-
 from django.urls import reverse
 
 from rest_framework.test import APITestCase
-from rest_framework.test import APIClient
 from rest_framework import status
 
 from user.models import User, Profile
@@ -495,43 +493,137 @@ class CommentDetailViewTest(APITestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(CounselReply.objects.count(),4)
 
-# """ 댓글 좋아요 """
-# class CounselCommentLikelViewTest(APITestCase):
-#     @classmethod
-#     def setUpTestData(cls):
-#         cls.account ='test1account'
-#         cls.email='test1@naver.com'
-#         cls.phone='01012345678'
-#         cls.password='test1234!!'
-#         cls.user_data = {"account":"test1account","password" :"test1234!!"}
-#         cls.user = User.objects.create_user(account=cls.account, email=cls.email, phone=cls.phone, password=cls.password)
-#         Profile.objects.create(user=cls.user)
-
-#         cls.counsel_data = {"title": "test Title", "content": "test content"}
-#         cls.counsel = Counsel.objects.create(**cls.counsel_data, user=cls.user)
-#         cls.counsel_2 = Counsel.objects.create(**cls.counsel_data, user=cls.user)
-#         cls.counsel_2.like.add(cls.user)
+""" 댓글 좋아요 """
 
 
-#     def setUp(self):
-#         # self.access_token = self.client.post(reverse("user:login_view"), self.user_data).data["access"]
-#         self.client.force_authenticate(user=self.user)
+class CounselCommentLikelViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = "test1account"
+        cls.email = "test1@naver.com"
+        cls.phone = "01012345678"
+        cls.password = "test1234!!"
+        cls.user_data = {"account": "test1account", "password": "test1234!!"}
+        cls.user = User.objects.create_user(
+            account=cls.account, email=cls.email, phone=cls.phone, password=cls.password
+        )
+        Profile.objects.create(user=cls.user)
+
+        cls.counsel_data = {"title": "test Title", "content": "test content"}
+        cls.counsel = Counsel.objects.create(**cls.counsel_data, user=cls.user)
+
+        cls.comment = CounselComment.objects.create(
+            content="comment", counsel=cls.counsel, user=cls.user
+        )
+        cls.comment_2 = CounselComment.objects.create(
+            content="comment 2", counsel=cls.counsel, user=cls.user
+        )
+        cls.comment_2.like.add(cls.user)
+
+    def setUp(self):
+        # self.access_token = self.client.post(reverse("user:login_view"), self.user_data).data["access"]
+        self.client.force_authenticate(user=self.user)
+
+    """좋아요 누르기"""
+    def test_counsel_commnet_like(self):
+
+        response = self.client.post(
+            path=reverse(
+                "counsel_comment_like_view",
+                kwargs={
+                    "counsel_id": self.counsel.id,
+                    "counsel_comment_id": self.comment.id,
+                },
+            )
+        )
+
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.data, '댓글 좋아요')
+
+    """좋아요 취소하기"""
+    def test_counsel_commnet_like_cancel(self):
+        response = self.client.post(
+            path=reverse(
+                "counsel_comment_like_view",
+                kwargs={
+                    "counsel_id": self.counsel.id,
+                    "counsel_comment_id": self.comment_2.id,
+                },
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, '댓글 좋아요 취소')
 
 
-#     '''좋아요 누르기'''
-#     def test_counsel_like(self):
-#         url = reverse("counsel_like_view", kwargs={"counsel_id": self.counsel.id})
+""" 대댓글 좋아요 """
 
-#         response = self.client.post(url)
-#         # print(response.data)
-#         self.assertEqual(response.status_code, 202)
-#         self.assertEqual(response.data, {"message":"좋아요"})
 
-#     '''좋아요 취소하기'''
-#     def test_counsel_like_cancel(self):
-#         url = reverse("counsel_like_view", kwargs={"counsel_id": self.counsel_2.id})
+class CounselReplyLikelViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = "test1account"
+        cls.email = "test1@naver.com"
+        cls.phone = "01012345678"
+        cls.password = "test1234!!"
+        cls.user_data = {"account": "test1account", "password": "test1234!!"}
+        cls.user = User.objects.create_user(
+            account=cls.account, email=cls.email, phone=cls.phone, password=cls.password
+        )
+        Profile.objects.create(user=cls.user)
 
-#         response = self.client.post(url)
-#         # print(response.data)
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.data, {"message":"좋아요 취소"})
+        cls.counsel_data = {"title": "test Title", "content": "test content"}
+        cls.counsel = Counsel.objects.create(**cls.counsel_data, user=cls.user)
+
+        cls.comment = CounselComment.objects.create(
+            content="comment", counsel=cls.counsel, user=cls.user
+        )
+
+        cls.reply = CounselReply.objects.create(
+            content="test reply",
+            counsel=cls.counsel,
+            comment=cls.comment,
+            user=cls.user,
+        )
+        cls.reply_2 = CounselReply.objects.create(
+            content="test reply 2",
+            counsel=cls.counsel,
+            comment=cls.comment,
+            user=cls.user,
+        )
+        cls.reply_2.like.add(cls.user)
+
+    def setUp(self):
+        # self.access_token = self.client.post(reverse("user:login_view"), self.user_data).data["access"]
+        self.client.force_authenticate(user=self.user)
+
+    """좋아요 누르기"""
+
+    def test_counsel_reply_like(self):
+        response = self.client.post(
+            path=reverse(
+                "counsel_reply_like_view",
+                kwargs={
+                    "counsel_id": self.counsel.id,
+                    "counsel_reply_id": self.reply.id,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.data, '좋아요')
+
+
+    """좋아요 취소하기"""
+
+    def test_counsel_comment_like_cancel(self):
+        response = self.client.post(
+            path=reverse(
+                "counsel_reply_like_view",
+                kwargs={
+                    "counsel_id": self.counsel.id,
+                    "counsel_reply_id": self.reply_2.id,
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, '좋아요 취소')
