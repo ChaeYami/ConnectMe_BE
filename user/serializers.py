@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup
+from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup, InactiveUser
 from user.validators import (
     password_validator,
     # password_pattern,
@@ -138,6 +138,8 @@ class SignupSerializer(serializers.ModelSerializer):
         user.save()
         
         Profile.objects.create(user = user)
+        # 회원가입시 is_active=False 이므로
+        InactiveUser.objects.create(inactive_user=user)
         
         return user
         
@@ -283,6 +285,12 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+    
+'''계정 재활성화'''
+class ActivateAccount(serializers.Serializer):
+    email = serializers.EmailField()
+    
+    
     
 '''비밀번호 재설정 시작''' 
 

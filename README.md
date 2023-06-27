@@ -39,7 +39,7 @@ https://connectme.co.kr/
 🌍 원하는 곳에서 다양한 친구들과 함께해보세요! 🌍
 - 원하는 지역에서 많은 친구와 함께 즐거운 시간을 보낼 수 있습니다. 함께 맛집을 탐방하거나, 공통의 취미를 통해 새로운 친구들을 만나보세요. 이제 더 이상 바쁜 친구들을 재촉할 필요가 없습니다!
 
-🤔 기능
+🤔 기능 - 작성중
 ------
 ### 회원기능 : jwt token 사용
 
@@ -91,7 +91,8 @@ https://connectme.co.kr/
 ***
 💜 ERD
 ------
-![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/3aaad154-63e2-4dc4-bbd6-4e6e5fbf0169)
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/b20a578d-cc72-43c7-ba50-98eb0fd5a90c)
+
 
 
 💚 와이어프레임
