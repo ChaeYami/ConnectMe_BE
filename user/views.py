@@ -8,7 +8,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError, force_str, force_byt
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
 from django.db.models import Q
-
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
@@ -32,6 +32,7 @@ from user.serializers import (
     EmailThread,
     UserUpdateSerializer,
     ProfileRegionSerializer,
+    ActivateAccount,
 )
 
 from decouple import config
@@ -45,6 +46,7 @@ from .models import (
     User,
     Profile,
     Blacklist,
+    InactiveUser
 )
 from .validators import phone_validator
 
@@ -77,13 +79,13 @@ class UserView(APIView):
         else:
             return super(UserView, self).get_permissions()
 
-    # 개인정보 보기
+    '''개인정보 보기'''
     def get(self, request):  # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = SignupSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # 회원가입
+    '''회원가입'''
     def post(self, request):  # /user/
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -112,7 +114,7 @@ class UserView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # 회원정보수정
+    '''회원정보수정'''
     def patch(self, request):  # /user/
         user = get_object_or_404(User, id=request.user.id)
         serializer = UserUpdateSerializer(
@@ -132,7 +134,7 @@ class UserView(APIView):
                 {"message": "소셜로그인 가입자입니다."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-    # 회원 탈퇴 (비활성화, 비밀번호 받아서)
+    '''회원 탈퇴 (비활성화, 비밀번호 받아서)'''
     def delete(self, request):  # /user/
         user = get_object_or_404(User, id=request.user.id)
         datas = request.data.copy()
@@ -141,6 +143,9 @@ class UserView(APIView):
         if user.check_password(request.data.get("password")):
             if serializer.is_valid():
                 serializer.save()
+                # 비활성화 테이블
+                InactiveUser.objects.create(inactive_user=user)
+                
                 return Response(
                     {"message": "계정 비활성화 완료"}, status=status.HTTP_204_NO_CONTENT
                 )
@@ -152,7 +157,6 @@ class UserView(APIView):
 
 
 ''' 회원가입 sms 인증 '''
-
 
 # 인증번호 발송
 class CertifyPhoneSignupView(APIView):
@@ -232,11 +236,51 @@ class VerifyEmailView(APIView):
             # 이메일 인증 완료 처리 - 유저 활성화
             user.is_active = True
             user.save()
+            InactiveUser.objects.get(inactive_user_id=uid).delete()
             return redirect(f"{FRONTEND_BASE_URL}/confirm_email.html")
         else:
             return redirect("잘못되었거나 만료된 링크 프론트 html")
 
+'''계정 재활성화'''
 
+class ActivateAccountView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = ActivateAccount(data=request.data)
+        email = serializer.validated_data.get("email")
+        if serializer.is_valid:
+            try:
+                # 유저가 비활성화된 상태인 경우에만 계정을 활성화할 수 있도록 검증
+                user = User.objects.get(email=email, is_active=False)
+                
+                # 토큰 생성
+                _uid = urlsafe_b64encode(force_bytes(user.pk))
+                uid = str(_uid)[2:-1]
+                token = PasswordResetTokenGenerator().make_token(user)
+                # 이메일 전송
+                BACKENDBASEURL = config("BACKEND_BASE_URL")
+                authurl = f"{BACKENDBASEURL}/user/verify-email/{uid}/{token}/"
+                email_body = f"계정 재활성화를 위한 이메일 인증 링크입니다. 아래 링크를 클릭해 계정 재활성화를 진행해주세요. \n{authurl}"
+                message = {
+                    "email_body": email_body,
+                    "to_email": email,
+                    "email_subject": "계정 재활성화 이메일 인증",
+                }
+                Util.send_email(message)
+                return Response(
+                    {"message": "이메일을 통해 계정 재활성화 링크가 전송되었습니다."},
+                    status=status.HTTP_200_OK,
+                )
+            except User.DoesNotExist:
+                return Response(
+                    {"message": "비활성화된 상태가 아닌 계정입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+            
 """ 회원가입, 회원정보 끝 """
 
 

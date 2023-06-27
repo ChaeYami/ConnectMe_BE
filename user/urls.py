@@ -10,6 +10,7 @@ app_name = "user"  # 테스트코드
 urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
+    path("activate/", views.ActivateAccountView.as_view(), name="activate_account_view"),
     path("verify-email/<str:uidb64>/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
     
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
