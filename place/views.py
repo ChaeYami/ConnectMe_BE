@@ -34,15 +34,13 @@ class PlaceCategoryPagination(PageNumberPagination):
 class PlaceView(APIView):
 
     permission_classes = [IsAuthenticated]
-    pagination_class = PlaceBookPagination
 
-    # 장소 추천 전체보기
+    # 북마크 장소 모아보기
     def get(self, request):
-        place = Place.objects.all().order_by('-id')
-        paginator = self.pagination_class()
-        result_page = paginator.paginate_queryset(place, request)
-        serializer = PlaceSerializer(result_page, many=True)
-        return Response(serializer.data)
+        user = get_object_or_404(User, id=request.user.id)
+        book = user.place_bookmark.all().order_by('-id')
+        serializer = PlaceSerializer(book[:4], many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
     # 장소 추천 작성하기
     def post(self, request):  
@@ -117,22 +115,14 @@ class PlaceImageView(APIView):
     # 이미지 추가하기
     def post(self, request, place_id, place_image_id):
         place = get_object_or_404(Place, id=place_id)
-        for data in request.data.getlist('image'):
-            PlaceImage.objects.create(place=place, image=data)
-        return Response(status.HTTP_200_OK)
-    
-    # 이미지 수정하기
-    def patch(self, request, place_id, place_image_id):
-        place = get_object_or_404(Place, id=place_id)
-        image_place = PlaceImage.objects.filter(place=place_id)
-        image = get_object_or_404(PlaceImage, id=place_image_id)
+        image_data_list = request.data.getlist('image')
+        image_urls = []
+
+        for index, data in enumerate(image_data_list, start=1):
+            place_image = PlaceImage.objects.create(place=place, image=data)
+            image_urls.append({'id': place_image.id, 'url': place_image.image.url})
         
-        if image in image_place:
-            image.delete()
-            PlaceImage.objects.create(id=place_image_id, place=place, image=request.data['image'])
-            return Response(status.HTTP_200_OK)
-        else:
-            return Response({'message':'존재하지 않는 이미지입니다.'}, status.HTTP_400_BAD_REQUEST)
+        return Response(image_urls, status=status.HTTP_200_OK)
     
     # 이미지 삭제하기
     def delete(self, request, place_id, place_image_id):
@@ -156,15 +146,7 @@ class PlaceLikeView(APIView):
         else:
             place.like.add(request.user)
             return Response({"message":"좋아요"}, status.HTTP_200_OK)
-        
-        
-# 북마크 장소 모아보기
-class PlaceBookView(APIView):
-    def get(self, request, user_id):
-        user = get_object_or_404(User, id=user_id)
-        book = user.place_bookmark.all().order_by('-id')
-        serializer = PlaceSerializer(book[:4], many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+    
         
 
 
@@ -271,8 +253,8 @@ class PlaceSearchView(viewsets.ModelViewSet):
     serializer_class = PlaceSerializer
     pagination_class = PlaceBookPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    ordering_fields = ['comment_count', 'like', 'bookmark', 'created_at',]
-    ordering = ['-created_at']
+    ordering_fields = ['comment_count', 'like', 'bookmark', 'id',]
+    ordering = ['-id']
     search_fields = ['title',]
     
     def get_queryset(self):
@@ -330,7 +312,7 @@ class PlaceCategoryView(viewsets.ModelViewSet):
                     queryset = Place.objects.all()
                     
             except Profile.DoesNotExist:
-                pass
+                queryset = Place.objects.all()
         else:
             queryset = Place.objects.all()
 
