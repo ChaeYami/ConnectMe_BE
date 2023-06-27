@@ -91,7 +91,8 @@ https://connectme.co.kr/
 ***
 💜 ERD
 ------
-![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/3aaad154-63e2-4dc4-bbd6-4e6e5fbf0169)
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/b20a578d-cc72-43c7-ba50-98eb0fd5a90c)
+
 
 
 💚 와이어프레임
