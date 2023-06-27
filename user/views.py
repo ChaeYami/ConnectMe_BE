@@ -173,7 +173,7 @@ class CertifyPhoneSignupView(APIView):
                 signup.send_sms()
 
                 return Response(
-                    {"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK
+                    {"message": "인증번호가 발송되었습니다. 확인부탁드립니다.", "auth_number": signup.auth_number}, status=status.HTTP_200_OK
                 )
             else:
                 return Response(

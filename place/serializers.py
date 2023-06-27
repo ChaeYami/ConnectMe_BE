@@ -84,6 +84,7 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
 # place 생성 시리얼라이저        
 class PlaceCreateSerializer(serializers.ModelSerializer):
     image = PlaceImageSerializer(many=True, read_only=True)
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Place
@@ -155,11 +156,21 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
         for data in image_set.getlist("image"):
             PlaceImage.objects.create(place=instance, image=data)
         return instance
-
+    
+    
+    def get_image(self, obj):
+        images = obj.place_image_place.all()
+        img = []
+        for image in images:
+            url = image.image.url
+            if 'https' in url:
+                img.append({'id':image.id, 'url':'https://'+url[16:]})
+            else:
+                img.append({'id':image.id, 'url':BACKEND+image.image.url})
+        return img
 
 # place 수정 시리얼라이저    
 class PlaceUpdateSerializer(serializers.ModelSerializer):
-
     CHOICES = [
             ('식사','식사'),
             ('주점','주점'),
