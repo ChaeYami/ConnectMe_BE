@@ -479,10 +479,10 @@ class CertifyPhoneAccountView(APIView):
 
             else:
                 user = User.objects.get(phone=phone)
-                CertifyPhoneAccount.objects.create(user=user)
+                user_account = CertifyPhoneAccount.objects.create(user=user)
                 user.is_certify = True
                 return Response(
-                    {"message": "인증번호가 발송되었습니다. 확인부탁드립니다."}, status=status.HTTP_200_OK
+                    {"message": "인증번호가 발송되었습니다. 확인부탁드립니다.", "auth_number": user_account.auth_number}, status=status.HTTP_200_OK
                 )
 
         except:
