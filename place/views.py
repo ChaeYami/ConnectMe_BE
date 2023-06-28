@@ -24,11 +24,10 @@ from rest_framework.generics import get_object_or_404
 
 
 """페이지네이션 시작 """
-class PlaceBookPagination(PageNumberPagination):
-    page_size = 20
-    
+   
 class PlaceCategoryPagination(PageNumberPagination):
-    page_size = 50
+    page_size = 30
+    
 """페이지네이션 끝""" 
 
 
@@ -255,7 +254,7 @@ class PlaceCommentDetailView(APIView):
 class PlaceSearchView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
-    pagination_class = PlaceBookPagination
+    pagination_class = PlaceCategoryPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     ordering_fields = ['comment_count', 'like', 'bookmark', 'id',]
     ordering = ['-id']
