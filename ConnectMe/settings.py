@@ -23,6 +23,8 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    "chat",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -64,9 +66,7 @@ ROOT_URLCONF = "ConnectMe.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            os.path.join(BASE_DIR, "templates"),
-        ],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -80,6 +80,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ConnectMe.wsgi.application"
+
+
+# Channels
+ASGI_APPLICATION = "ConnectMe.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(config("REDIS_HOST"), config("REDIS_PORT"))],
+        },
+    },
+}
 
 
 # Database
