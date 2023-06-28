@@ -16,7 +16,8 @@ class Meeting(models.Model):
     meeting_at = models.TextField(verbose_name="모임일")
     num_person_meeting = models.TextField(verbose_name="인원수",)
     meeting_status = models.CharField(verbose_name="모집상태", max_length=10, default="모집중")
-    hot_place_url = models.TextField(verbose_name="핫플레이스URL")
+    place_title = models.TextField(verbose_name="모임장소")
+    place_address = models.TextField(verbose_name="모임주소")
 '''모임 글 모델 끝'''
 
 '''모임 댓글 시작'''
