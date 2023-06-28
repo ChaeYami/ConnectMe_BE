@@ -5,9 +5,9 @@ from .models import (
     CounselReply
 )
 
-# ================================ 대댓글 ================================
+""" 대댓글 """
 
-# 대댓글 작성
+'''대댓글 작성'''
 class CounselReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselReply
@@ -21,7 +21,7 @@ class CounselReplyCreateSerializer(serializers.ModelSerializer):
             },
         }
 
-# 대댓글
+'''대댓글'''
 class CounselReplySerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     reply_like_count = serializers.SerializerMethodField()
@@ -38,7 +38,7 @@ class CounselReplySerializer(serializers.ModelSerializer):
         model = CounselReply
         fields = "__all__"
 
-# ================================ 댓글 ================================
+""" 댓글 """
 
 class CounselCommentSerializer(serializers.ModelSerializer):
     reply = CounselReplySerializer(many=True)
@@ -58,7 +58,7 @@ class CounselCommentSerializer(serializers.ModelSerializer):
         model = CounselComment
         fields = "__all__"
 
-# 댓글 작성
+'''댓글 작성'''
 class CounselCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselComment
@@ -73,8 +73,9 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
         }
 
 
-# ================================ 글 작성, 상세, 수정 ================================
-# 글 리스트
+""" 글 작성, 상세, 수정 """
+
+'''글 리스트'''
 class CounselListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
@@ -88,7 +89,7 @@ class CounselListSerializer(serializers.ModelSerializer):
 
         
 
-# 글 작성, 수정
+'''글 작성, 수정'''
 class CounselCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -107,7 +108,7 @@ class CounselCreateSerializer(serializers.ModelSerializer):
             },
         }
 
-# 글 상세
+'''글 상세'''
 class CounselDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")

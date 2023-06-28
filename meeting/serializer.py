@@ -7,7 +7,7 @@ from meeting.models import (
     MeetingImage,
     )
 
-# ================================ 모임 이미지 시작 ================================ 
+""" 모임 이미지 시작  """
 
 class MeetingImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
@@ -16,12 +16,12 @@ class MeetingImageSerializer(serializers.ModelSerializer):
         model = MeetingImage
         fields = "__all__"
 
-# ================================ 모임 이미지 끝 ================================ 
+""" 모임 이미지 끝  """
 
-# ================================ 댓글, 대댓글 Nested Serializer 시작 ================================
+""" 댓글, 대댓글 Nested Serializer 시작 """
 # 따로 위에 올려놓은 이유는 모임 글 상세에 Nested Serializer 사용하기 위함입니다.
 
-# 모임 대댓글 리스트
+'''모임 대댓글 리스트'''
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
@@ -33,7 +33,7 @@ class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
         model = MeetingCommentReply
         fields = "__all__"
 
-# 모임 댓글 리스트
+'''모임 댓글 리스트'''
 class MeetingCommentListSerializer(serializers.ModelSerializer):
     reply = MeetingCommentReplyListSerializer(many=True) # 대댓글 Nested Serializer
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
@@ -46,10 +46,10 @@ class MeetingCommentListSerializer(serializers.ModelSerializer):
         model = MeetingComment
         fields = "__all__"
 
-# ================================ 댓글, 대댓글 Nested Serializer 끝 ================================
+""" 댓글, 대댓글 Nested Serializer 끝 """
 
-# ================================ 모임 글 리스트, 작성, 상세, 수정 ================================
-# 모임 글 리스트
+""" 모임 글 리스트, 작성, 상세, 수정 """
+'''모임 글 리스트'''
 class MeetingListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
@@ -66,7 +66,7 @@ class MeetingListSerializer(serializers.ModelSerializer):
         model = Meeting
         fields = ("id","title","user","comment_count","created_at","meeting_image","content","bookmark",)
 
-# 모임 글 작성
+'''모임 글 작성'''
 class MeetingCreateSerializer(serializers.ModelSerializer):
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
 
@@ -83,7 +83,7 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
 
     
 
-# 모임 글 수정
+'''모임 글 수정'''
 class MeetingUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -102,7 +102,7 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
     
         
 
-# 모임 글 상세
+'''모임 글 상세'''
 class MeetingDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
@@ -116,28 +116,28 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
         model = Meeting
         fields = "__all__"
 
-# ================================ 모임 글 리스트, 작성, 상세, 수정 끝 ================================
+""" 모임 글 리스트, 작성, 상세, 수정 끝 """
 
-# ================================ 모임 댓글 작성, 수정 ================================
+""" 모임 댓글 작성, 수정 """
 
-# 모임 댓글 작성 수정
+'''모임 댓글 작성 수정'''
 class MeetingCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingComment
         fields = ("content",)
 
-# ================================ 모임 댓글 작성, 수정 끝 ================================
+""" 모임 댓글 작성, 수정 끝 """
 
-# ================================ 모임 대댓글 목록, 작성, 수정 시작 ================================
+""" 모임 대댓글 목록, 작성, 수정 시작 """
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
         fields = "__all__"
 
-# 모임 대댓글 작성 수정
+'''모임 대댓글 작성 수정'''
 class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
         fields = ("content",)
 
-# ================================ 모임 대댓글 작성, 수정 끝 ================================
+""" 모임 대댓글 작성, 수정 끝 """
