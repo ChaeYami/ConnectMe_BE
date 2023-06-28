@@ -1,13 +1,16 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase
-from place.models import Place, PlaceComment, PlaceImage
-from user.models import User
-from django.test.client import MULTIPART_CONTENT, encode_multipart, BOUNDARY
-from PIL import Image
-import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
-import random
+
+from rest_framework.test import APITestCase
+
 from .serializers import *
+from user.models import User
+from place.models import Place, PlaceComment
+
+import random
+import tempfile
+from PIL import Image
+
 
 
 
@@ -73,8 +76,8 @@ class BaseTestCase(APITestCase):
         cls.user1.save()
     
     def setUp(self):
-        self.super_user_access_token = self.client.post(reverse("user:login_view"), self.superuser_data).data.get("access")
-        self.basic_user_access_token = self.client.post(reverse("user:login_view"), self.user_data1).data.get("access")
+        self.super_user_access_token = self.client.post(reverse("login_view"), self.superuser_data).data.get("access")
+        self.basic_user_access_token = self.client.post(reverse("login_view"), self.user_data1).data.get("access")
 
 class PlaceViewTest(BaseTestCase):
     '''

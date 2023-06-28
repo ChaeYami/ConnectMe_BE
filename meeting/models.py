@@ -18,7 +18,6 @@ class Meeting(models.Model):
     meeting_status = models.CharField(verbose_name="모집상태", max_length=10, default="모집중")
     place_title = models.TextField(verbose_name="모임장소")
     place_address = models.TextField(verbose_name="모임주소")
-
 '''모임 글 모델 끝'''
 
 '''모임 댓글 시작'''

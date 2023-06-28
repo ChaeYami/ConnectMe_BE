@@ -5,8 +5,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-app_name = "user"  # 테스트코드
-
 urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
