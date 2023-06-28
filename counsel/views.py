@@ -3,14 +3,13 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.pagination import PageNumberPagination
 
 from .models import(
     Counsel,
     CounselComment,
     CounselReply,
     )
-
-
 
 
 from .serializers import(
@@ -23,11 +22,16 @@ from .serializers import(
     CounselReplyCreateSerializer,
 )
 
-
-""" 게시글 시작 """
+'''페이지네이션 시작'''
+class CounselPagination(PageNumberPagination):
+    page_size = 25
+    
+'''페이지네이션 끝'''
+'''게시글 시작'''
 
 class CounselView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = CounselPagination
     
     def get_permissions(self):
         if self.request.method == "POST":
@@ -38,7 +42,9 @@ class CounselView(APIView):
     '''글목록'''
     def get(self, request):
         counsels = Counsel.objects.all()
-        serializer = CounselListSerializer(counsels, many = True)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(counsels, request)
+        serializer = CounselListSerializer(result_page, many = True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     '''글작성'''
@@ -91,10 +97,13 @@ class CounselDetailView(APIView):
 '''작성한 게시글 모아보기'''
 class MyCreateCounselView(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = CounselPagination
     
     def get(self, request):
         counsel = Counsel.objects.filter(user=request.user)
-        serializer = CounselListSerializer(counsel, many=True)
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(counsel, request)
+        serializer = CounselListSerializer(result_page, many = True)
         return Response(serializer.data, status.HTTP_200_OK)
             
 '''게시글 좋아요'''

@@ -34,7 +34,7 @@ urlpatterns = [
     path("<int:user_id>/image/<int:image_id>/", views.ProfileAlbumDeleteView.as_view(), name="profile_album_delete_view"), # /user/id/image : 사진첩 사진삭제
     
     # recommend
-    path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천
+    path("recommend/<str:filter_>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천
     
     # friend
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그

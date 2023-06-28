@@ -321,9 +321,9 @@ class ChangePasswordView(APIView):
 class ProfileListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, filter):
+    def get(self, request, filter_):
         # 지역
-        if filter == "prefer_region":
+        if filter_ == "prefer_region":
             user = get_object_or_404(Profile, user_id=request.user.id)
             prefer_region = user.prefer_region
             admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
@@ -336,7 +336,7 @@ class ProfileListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # mbti
-        elif filter == "mbti":
+        elif filter_ == "mbti":
             user = get_object_or_404(Profile, user_id=request.user.id)
             mbti = user.mbti
             admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
@@ -348,12 +348,12 @@ class ProfileListView(APIView):
             serializer = ProfileSerializer(profiles, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # 나이
-        elif filter == "age_range":
+        # 나이대
+        elif filter_ == "age_range":
             user = get_object_or_404(Profile, user_id=request.user.id)
             age_range = user.age_range
             admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
-            profiles = Profile.objects.filter(prefer_region=prefer_region).exclude(
+            profiles = Profile.objects.filter(age_range=age_range).exclude(
                 Q(id=request.user.id) | Q(id=admin.id)
                 if admin
                 else Q(id=request.user.id)
@@ -362,7 +362,7 @@ class ProfileListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # 전체
-        elif filter == "all":
+        elif filter_ == "all":
             user = get_object_or_404(Profile, user_id=request.user.id)
             admin = User.objects.filter(is_admin=True).first()  # admin 계정 확인
             profiles = Profile.objects.all().exclude(
