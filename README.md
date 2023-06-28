@@ -266,17 +266,18 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 
 
 
-🐬 와이어프레임
+🐬 Wireframe
 ------
 ![Group 21](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/fca58593-6d58-4302-9dae-a87af4e43e11)
 
 
-🐬 서비스 아키텍쳐
+🐬 Service Architecture
+
 ------
 ![ConnectME 중간발표 서비스 아키텍쳐](https://github.com/PunciaTail/drf_homework/assets/120395814/a506d3db-88c8-4e2d-87fa-747d18a1e74e)
 
 
 
-🐬 팀 프로젝트 문서 
+🐬 Team Project DOCS  
 ------
 [사회화지원소 팀노션](https://rhetorical-cilantro-7e4.notion.site/538c12449cf94e28b0c20a9f4ac0a3fc?v=96c787ffabfa458586546ec93833852b&pvs=4)
