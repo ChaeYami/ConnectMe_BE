@@ -11,10 +11,10 @@ https://connectme.co.kr/
 📚 stacks 
 ------
 
-<img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/selenium -43B02A?style=for-the-badge&logo=selenium&logoColor=white"> 
- <br> <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
-<br>  <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">  <img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/nginx 1.18.0-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/docker 20.10.21 -2496ED?style=for-the-badge&logo=docker&logoColor=white">
-<br><img src="https://img.shields.io/badge/amazons3 -569A31?style=for-the-badge&logo=amazons3&logoColor=white">
+Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/selenium -43B02A?style=for-the-badge&logo=selenium&logoColor=white"> 
+<br> Frontend : <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+<br>  Database : <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">  
+<br> Server : <img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/nginx 1.18.0-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/docker 20.10.21 -2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/amazons3 -569A31?style=for-the-badge&logo=amazons3&logoColor=white">
 
 
 ***
@@ -42,48 +42,85 @@ https://connectme.co.kr/
 🐬 기능 - 작성중
 ------
 ### 회원기능
-<details>
-<summary>회원가입, 로그인 `jwt token` </summary>
-<div markdown="1">
-- 회원가입시 SMS(전화번호)인증, 이메일 인증  
-- 소셜로그인  
-</div>
-</details>
-- 개인정보 관리(비공개프로필), 공개프로필, 비활성화, 재활성화, 비활성화 계정 30일후 삭제  
-SMS 인증(회원가입, 아이디 찾기), 이메일 인증(회원가입, 비밀번호 재설정), 소셜로그인  
-친구신청, 수락, 거절, 삭제   
-신고, 누적신고 임시차단, 차단 자동 해제  
-친구 추천 - 회원정보(나이, 지역, MBTI)에 따른 유저 목록
+
+- 회원가입, 로그인
+    - 회원가입시 SMS(전화번호)인증, 이메일 인증  
+    - 소셜로그인  
+    - 아이디 찾기 : SMS 인증
+    - 비밀번호 재설정 : 이메일 인증
+    - 공개 프로필 / 비공개 프로필(개인정보)
+
+- 개인정보 관리
+    - 전화번호 변경 (SMS 인증)  
+    - 비밀번호 변경  
+    - 계정 비활성화 / 재활성화  
+    - 비활성화 계정 30일 후 자동 삭제  
+
+- 친구기능
+    - 친구신청 / 수락 / 거절 / 삭제  
+
+- 신고기능
+    - 신고하기
+    - 누적 신고 3회시 임시 차단
+    - 임시 차단 후 24시간 경과시 자동 차단 해제
+    - 관리자 확인 가능
+
+- 친구(유저) 추천  
+      - 회원 정보(나이, 지역, MBTI)에 따른 유저 추천 목록
+
 
 
 ### 모임생성 (만남의 광장)
-모임 모집 글 작성/수정/삭제/좋아요  - 모임 날짜, 시간, 인원, 주소, 장소(지도API), 다중 이미지 업로드
-모임 참가하기 기능 - 참가하기/취소하기, 참가 인원 카운트, 인원 제한
-모임 상태 기능 -  모집중, 모집 종료, 진행중, 모임종료, 자리없음
-모임 모집 글/지역 검색 기능   
-댓글 작성/수정/삭제   
-대댓글 작성/수정/삭제  
 
+- 모임 모집 글 CRUD
+    - 작성 / 수정 / 삭제 / 좋아요
+    - 모임 날짜, 시간, 인원, 주소, 
+    - 모임 장소 보여주기 (지도API)
+    - 다중 이미지 업로드
+    - 댓글 작성/수정/삭제   
+    - 대댓글 작성/수정/삭제  
 
+- 모임 참가하기 기능  
+    - 참가하기 / 취소하기
+    - 참가 인원 카운트
+    - 인원 제한
+
+- 모임 상태 기능   
+    - 모집중, 모집 종료, 진행중, 모임종료, 자리없음
+
+- 검색기능
+    - 모임 모집 글 검색  
+    - 지역 검색  
 
 ### 채팅
 
 
 
 ### 장소추천
-맛집 추천 글 작성/수정/삭제 -> 관리자만 , 조회 -> 사용자 , 다중 이미지 업로드
-맛집 추천 데이터 - 크롤링 / 지도 API
-사용자의 위치에 따른 맛집 리스트 추천
-맛집 추천 글 북마크, 북마크 글 모아보기
-댓글 작성/수정/삭제
-대댓글 작성/수정/삭제
+- 장소 추천 글 CRUD 
+    - 맛집 추천 글 작성/수정/삭제 -> 관리자만  
+    - 조회 -> 사용자  
+    - 지도 API, 위치 API  
+    - 사용자의 위치에 따른 맛집 리스트 추천  
+    - 다중 이미지 업로드  
+    - 맛집 추천 데이터 -> 크롤링  
+    - 북마크  
+    - 북마크 글 모아보기
+
+- 댓글
+    - 댓글 작성/수정/삭제
+    - 대댓글 작성/수정/삭제
 
 
 ### 고민상담
-상담 글 작성/수정/삭제/조회/좋아요  
-댓글 리스트/작성/수정/삭제/좋아요  
-대댓글 리스트/작성/수정/삭제/좋아요  
-상담 글 리스트 페이지네이션
+- 고민상담 글 CRUD
+    - 상담 글 작성/수정/삭제/좋아요
+    - 상담 글 리스트   
+    - 상담 글 리스트 페이지네이션  
+- 댓글  
+    - 댓글 리스트/작성/수정/삭제/좋아요  
+    - 대댓글 리스트/작성/수정/삭제/좋아요  
+
 
 
 🐬 POSITION
