@@ -7,7 +7,7 @@ from meeting.models import (
     MeetingImage,
     )
 
-""" 모임 이미지 시작  """
+'''모임 이미지 시작'''
 
 class MeetingImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
@@ -16,11 +16,11 @@ class MeetingImageSerializer(serializers.ModelSerializer):
         model = MeetingImage
         fields = "__all__"
 
-""" 모임 이미지 끝  """
+'''모임 이미지 끝'''
 
-""" 댓글, 대댓글 Nested Serializer 시작 """
-# 따로 위에 올려놓은 이유는 모임 글 상세에 Nested Serializer 사용하기 위함입니다.
-
+'''댓글, 대댓글 Nested Serializer 시작
+따로 위에 올려놓은 이유는 모임 글 상세에 Nested Serializer 사용하기 위함입니다.
+'''
 '''모임 대댓글 리스트'''
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
@@ -46,9 +46,9 @@ class MeetingCommentListSerializer(serializers.ModelSerializer):
         model = MeetingComment
         fields = "__all__"
 
-""" 댓글, 대댓글 Nested Serializer 끝 """
+'''댓글, 대댓글 Nested Serializer 끝'''
 
-""" 모임 글 리스트, 작성, 상세, 수정 """
+'''모임 글 리스트, 작성, 상세, 수정'''
 '''모임 글 리스트'''
 class MeetingListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
@@ -76,7 +76,7 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("id","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        fields = ("id","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","hot_place_url",)
 
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
@@ -92,7 +92,7 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","hot_place_url",)
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -101,8 +101,7 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
         instance.meeting_at = validated_data.get('meeting_at', instance.meeting_at)
         instance.num_person_meeting = validated_data.get('num_person_meeting', instance.num_person_meeting)
         instance.meeting_status = validated_data.get('meeting_status', instance.meeting_status)
-        instance.place_title = validated_data.get('place_title', instance.place_title)
-        instance.place_address = validated_data.get('place_address', instance.place_address)
+        instance.hot_place_url = validated_data.get('hot_place_url', instance.hot_place_url)
 
         instance.save()
         
@@ -132,9 +131,9 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
         model = Meeting
         fields = "__all__"
 
-""" 모임 글 리스트, 작성, 상세, 수정 끝 """
+'''모임 글 리스트, 작성, 상세, 수정 끝'''
 
-""" 모임 댓글 작성, 수정 """
+'''모임 댓글 작성, 수정'''
 
 '''모임 댓글 작성 수정'''
 class MeetingCommentCreateSerializer(serializers.ModelSerializer):
@@ -142,9 +141,9 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
         model = MeetingComment
         fields = ("content",)
 
-""" 모임 댓글 작성, 수정 끝 """
+'''모임 댓글 작성, 수정 끝'''
 
-""" 모임 대댓글 목록, 작성, 수정 시작 """
+'''모임 대댓글 목록, 작성, 수정 시작'''
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
@@ -156,4 +155,9 @@ class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
         model = MeetingCommentReply
         fields = ("content",)
 
-""" 모임 대댓글 작성, 수정 끝 """
+'''모임 대댓글 작성, 수정 끝'''
+
+class MeetingStatusupdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meeting
+        fields = ("meeting_status",)
