@@ -23,22 +23,14 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 🐳 Connect ME : 함께 놀고 소통하며 즐거움을 찾는 커뮤니티 🎉
 ------
 > 2023.06.05 ~
-  
+
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/75de3bb6-ec14-4384-980c-667a11bb7418)
+
 
 🐋 Front-End 
 ------
 [Front-End Link](https://github.com/ChaeYami/ConnectMe_FE)
 
-🐬 기획
-------
-🎉 다 같이 놀자! 🎉
-- 함께 맛집도 찾아가고, 공통의 취미를 즐기며, 새로운 친구들을 만나고 싶은 분들을 위한 특별한 커뮤니티💫   
-
-🌟 소통을 위한 다양한 공간 🌟  
-- 채팅, 게시판, 모임 등을 통해 쉽게 다른 회원들과 소통하고 교류할 수 있습니다. 
-
-🌍 원하는 곳에서 다양한 친구들과 함께해보세요! 🌍
-- 원하는 지역에서 많은 친구와 함께 즐거운 시간을 보낼 수 있습니다. 함께 맛집을 탐방하거나, 공통의 취미를 통해 새로운 친구들을 만나보세요. 이제 더 이상 바쁜 친구들을 재촉할 필요가 없습니다!
 
 🐬 기능
 ------
@@ -256,11 +248,21 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 
 </details>
 
+🐬 API , Dataset
+------
+- 소셜로그인
+  - 구글 : Google OAuth API
+  - 카카오 : KaKao OAuth 2.0 API
+- SMS(전화번호)인증 : NAVER Cloud Simple & Easy Notification Service - SMS API
+- 지도 : Kakao Maps API
+- 위치 : Geolocation API
+- 맛집 추천 크롤링 데이터 : [메뉴판닷컴](https://www.menupan.com/)
+
 
 ***
 🐬 ERD
 ------
-![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/b20a578d-cc72-43c7-ba50-98eb0fd5a90c)
+![Connect ME (2)](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/55e28a36-1995-41ed-926c-bb8f09b5f79c)
 
 
 
