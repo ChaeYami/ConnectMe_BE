@@ -76,7 +76,7 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("id","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","hot_place_url",)
+        fields = ("id","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
 
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
@@ -92,7 +92,7 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","hot_place_url",)
+        fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -101,7 +101,8 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
         instance.meeting_at = validated_data.get('meeting_at', instance.meeting_at)
         instance.num_person_meeting = validated_data.get('num_person_meeting', instance.num_person_meeting)
         instance.meeting_status = validated_data.get('meeting_status', instance.meeting_status)
-        instance.hot_place_url = validated_data.get('hot_place_url', instance.hot_place_url)
+        instance.place_title = validated_data.get('place_title', instance.place_title)
+        instance.place_address = validated_data.get('place_address', instance.place_address)
 
         instance.save()
         
