@@ -1,7 +1,6 @@
 from django.db import models
 
 from user.models import User
-# Create your models here.
 
 '''모임 글 모델 시작'''
 class Meeting(models.Model):

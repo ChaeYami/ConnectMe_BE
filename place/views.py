@@ -23,26 +23,28 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import get_object_or_404
 
 
-# ================================ 페이지네이션 시작 ================================
+"""페이지네이션 시작 """
 class PlaceBookPagination(PageNumberPagination):
     page_size = 20
     
 class PlaceCategoryPagination(PageNumberPagination):
     page_size = 50
-# ================================ 페이지네이션 끝 ================================
-# ================================ 장소 게시글 시작 ================================
+"""페이지네이션 끝""" 
+
+
+"""장소 게시글 시작""" 
 class PlaceView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    # 북마크 장소 모아보기
+    '''북마크 장소 모아보기'''
     def get(self, request):
         user = get_object_or_404(User, id=request.user.id)
         book = user.place_bookmark.all().order_by('-id')
         serializer = PlaceSerializer(book[:4], many=True)
         return Response(serializer.data, status.HTTP_200_OK)
 
-    # 장소 추천 작성하기
+    '''장소 추천 작성하기'''
     def post(self, request):  
         if request.user.is_staff:
             serializer = PlaceCreateSerializer(
@@ -60,7 +62,7 @@ class PlaceDetailView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    # 장소 추천 상세보기
+    '''장소 추천 상세보기'''
     def get(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
         query = place.place_comment_place.filter(main_comment=None)
@@ -70,7 +72,7 @@ class PlaceDetailView(APIView):
 
         return Response({'place':place_serializer, 'comment':comment_serializer})
 
-    # 장소 추천 북마크
+    '''장소 추천 북마크'''
     def post(self, request, place_id):  
         user = request.user
         place = get_object_or_404(Place, id=place_id)
@@ -82,7 +84,7 @@ class PlaceDetailView(APIView):
             place.bookmark.add(user)
             return Response({"message":"북마크"}, status.HTTP_200_OK)
 
-    # 장소 추천 수정하기
+    '''장소 추천 수정하기'''
     def patch(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
 
@@ -96,7 +98,7 @@ class PlaceDetailView(APIView):
         else:
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
-    # 장소 추천 삭제하기
+    '''장소 추천 삭제하기'''
     def delete(self, request, place_id):  
         login = request.user
         writer = get_object_or_404(Place, id=place_id)
@@ -112,7 +114,7 @@ class PlaceImageView(APIView):
     
     permission_classes = [IsAdminUser]
     
-    # 이미지 추가하기
+    '''이미지 추가하기'''
     def post(self, request, place_id, place_image_id):
         place = get_object_or_404(Place, id=place_id)
         image_data_list = request.data.getlist('image')
@@ -124,7 +126,7 @@ class PlaceImageView(APIView):
         
         return Response(image_urls, status=status.HTTP_200_OK)
     
-    # 이미지 삭제하기
+    '''이미지 삭제하기'''
     def delete(self, request, place_id, place_image_id):
         image_place = PlaceImage.objects.filter(place=place_id)
         image = get_object_or_404(PlaceImage, id=place_image_id)
@@ -136,7 +138,7 @@ class PlaceImageView(APIView):
             return Response({'message':'존재하지 않는 이미지입니다.'}, status.HTTP_400_BAD_REQUEST)
 
 
-# 장소 추천 좋아요
+'''장소 추천 좋아요'''
 class PlaceLikeView(APIView):
     def post(self, request, place_id):
         place = get_object_or_404(Place, id=place_id)
@@ -150,16 +152,16 @@ class PlaceLikeView(APIView):
         
 
 
-# ================================ 장소 게시글 종료 ================================
+""" 장소 게시글 종료 """
 
-# ================================ 장소 댓글 시작 ================================
 
+""" 장소 댓글 시작 """
 
 class PlaceCommentView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    # (프론트) 해당 게시글 댓글 가져오기
+    '''(프론트) 해당 게시글 댓글 가져오기'''
     def get(self, request, place_id):  
         place = get_object_or_404(Place, id=place_id)
         # 대댓글을 중복으로 가져오지 않도록 최상위 댓글만 보여줌
@@ -168,7 +170,7 @@ class PlaceCommentView(APIView):
             
         return Response(serializer.data, status.HTTP_200_OK)
     
-    # (최상위) 댓글 작성
+    '''(최상위) 댓글 작성'''
     def post(self, request, place_id):  
         serializer = PlaceCreateCommentSerializer(data=request.data)
         place = get_object_or_404(Place, id=place_id)
@@ -184,7 +186,7 @@ class PlaceCommentDetailView(APIView):
 
     permission_classes = [IsAuthenticated]
     
-    # 단일 댓글 가져오기
+    '''단일 댓글 가져오기'''
     def get(self, request, place_id, place_comment_id):
         comment = get_object_or_404(PlaceComment, id=place_comment_id)
         serializer = PlaceCreateCommentSerializer(comment)
@@ -193,7 +195,7 @@ class PlaceCommentDetailView(APIView):
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
     
-    # 대댓글 작성
+    '''대댓글 작성'''
     def post(self, request, place_id, place_comment_id):  
         upside_comment = get_object_or_404(PlaceComment, id=place_comment_id)
         place = get_object_or_404(Place, id=place_id)
@@ -209,7 +211,7 @@ class PlaceCommentDetailView(APIView):
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-    # 댓글 수정
+    '''댓글 수정'''
     def put(self, request, place_id, place_comment_id):
         comment = get_object_or_404(PlaceComment, id=place_comment_id)
         if request.user == comment.user:
@@ -223,7 +225,7 @@ class PlaceCommentDetailView(APIView):
         else:
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
-    # 댓글 삭제
+    '''댓글 삭제'''
     def delete(self, request, place_id, place_comment_id):  
         login = request.user
         comment = PlaceComment.objects.filter(main_comment=place_comment_id)
@@ -245,8 +247,10 @@ class PlaceCommentDetailView(APIView):
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
 
-# ================================ 장소 댓글 종료 ================================
-# ================================ 장소 검색, 정렬 시작 ================================
+""" 장소 댓글 종료 """
+
+
+""" 장소 검색, 정렬 시작 """
 # select, search 검색
 class PlaceSearchView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
@@ -269,7 +273,7 @@ class PlaceSearchView(viewsets.ModelViewSet):
         return queryset
     
     
-# 카테고리 필터
+'''카테고리 필터'''
 class PlaceCategoryView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
@@ -319,5 +323,5 @@ class PlaceCategoryView(viewsets.ModelViewSet):
         return queryset
     
     
-# ================================ 장소 검색, 정렬 종료 ================================
+""" 장소 검색, 정렬 종료 """
 

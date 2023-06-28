@@ -27,11 +27,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
-'''모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작'''
+""" 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작 """
 
 class MeetingView(APIView):
     
-    '''모임 글 리스트'''
+    ''' 모임 글 리스트'''
     def get(self, request):
         meeting = Meeting.objects.all()
         serializer = MeetingListSerializer(meeting, many=True)
@@ -106,9 +106,9 @@ class MeetingBookmarkView(APIView):
         serializer = MeetingListSerializer(meeting, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-'''모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 끝'''
+""" 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 끝 """
 
-'''모임 댓글 목록, 작성, 수정, 삭제 시작'''
+""" 모임 댓글 목록, 작성, 수정, 삭제 시작 """
 
 class MeetingCommentView(APIView):
     '''모임 댓글 목록'''
@@ -164,9 +164,9 @@ class MeetingCommentDetailView(APIView):
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
-'''모임 댓글 작성, 수정, 삭제 끝'''
+""" 모임 댓글 작성, 수정, 삭제 끝 """
 
-'''모임 대댓글 목록, 작성, 수정, 삭제 시작'''
+""" 모임 대댓글 목록, 작성, 수정, 삭제 시작 """
 
 class MeetingCommentReplyView(APIView):
 
@@ -220,9 +220,9 @@ class MeetingCommentReplyDetailView(APIView):
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
     
-'''모임 대댓글 작성, 수정, 삭제 끝'''
+""" 모임 대댓글 작성, 수정, 삭제 끝 """
 
-'''모임 제목, 내용, 작성자 검색 기능 시작'''
+""" 모임 제목, 내용, 작성자 검색 기능 시작 """
 class MeetingTitleSearchView(generics.ListAPIView):
     queryset = Meeting.objects.all()
     serializer_class = MeetingListSerializer
@@ -248,7 +248,7 @@ class MeetingCitySearchView(generics.ListAPIView):
     search_fields = ['meeting_city',]
 '''모임 제목, 내용, 작성자 검색 기능 끝'''
 
-'''모임 이미지 삭제 시작'''
+""" 모임 이미지 삭제 시작 """
 class MeetingImageDetailView(APIView):
     permission_classes = [IsAuthenticated]
     def delete(self, request, meeting_id, image_id):
@@ -259,8 +259,9 @@ class MeetingImageDetailView(APIView):
             return Response({"message":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)     
         else:
             return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
-'''모임 이미지 삭제 끝'''
+""" 모임 이미지 삭제 끝 """
 
+""" 유저가 작성한 모임 글 목록 시작 """
 '''유저가 작성한 모임 글 목록 시작'''
 class MyCreateMeetingView(APIView):
     def get(self, request):
