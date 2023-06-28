@@ -23,7 +23,9 @@ from random import randint
 # )
 
 
-# ================================ 유저 모델 시작 ================================
+""" 유저 모델 시작 """
+
+
 class UserManager(BaseUserManager):
     def create_user(self, account, email, phone, password=None, **extra_fields):
         if not account:
@@ -121,14 +123,21 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
-# ================================ 유저 모델 끝 ================================
+'''비활성화 계정 모델'''
+class InactiveUser(models.Model):
+    inactive_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="inactive_user"
+    )
+    inactivated_at = models.DateTimeField(auto_now_add=True)
+
+
+""" 유저 모델 끝 """
 
 
 """
 user_friend : 친구신청 상태 테이블
 user_friends : 친구 상태 테이블
 """
-
 
 class Friend(models.Model):
     from_user = models.ForeignKey(
@@ -145,8 +154,7 @@ class Friend(models.Model):
     )
 
 
-# ================================ 프로필 시작 ================================
-
+""" 프로필 시작 """
 
 class Profile(models.Model):
     profile_img = models.ImageField(
@@ -204,10 +212,10 @@ class ProfileAlbum(models.Model):
     )
 
 
-# ================================ 프로필 끝 ================================
+""" 프로필 끝 """
 
 
-# ================================ sms 인증 모델 ================================
+""" sms 인증 모델 """
 
 
 # 회원가입 sms 인증번호 발송
@@ -310,6 +318,10 @@ class CertifyPhoneAccount(models.Model):
         return f"[휴대폰 번호]{self.user.phone}"
 
 
+""" 신고/차단 모델 시작 """
+
+
+# 신고목록
 class Report(models.Model):
     report_user = models.ForeignKey(
         User, related_name="report_user", verbose_name="신고자", on_delete=models.CASCADE
@@ -330,6 +342,7 @@ class Report(models.Model):
         ]
 
 
+# 차단목록
 class Blacklist(models.Model):
     blocked_user = models.ForeignKey(
         User, verbose_name="차단된 유저", on_delete=models.CASCADE

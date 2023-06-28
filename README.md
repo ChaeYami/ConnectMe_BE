@@ -4,7 +4,7 @@
 </div>
 
 
-🤗 배포
+📱 배포
 ------
 https://connectme.co.kr/
 
@@ -39,7 +39,7 @@ https://connectme.co.kr/
 🌍 원하는 곳에서 다양한 친구들과 함께해보세요! 🌍
 - 원하는 지역에서 많은 친구와 함께 즐거운 시간을 보낼 수 있습니다. 함께 맛집을 탐방하거나, 공통의 취미를 통해 새로운 친구들을 만나보세요. 이제 더 이상 바쁜 친구들을 재촉할 필요가 없습니다!
 
-🤔 기능
+🤔 기능 - 작성중
 ------
 ### 회원기능 : jwt token 사용
 
@@ -56,10 +56,43 @@ https://connectme.co.kr/
 
 ### 채팅
 
+🥰 POSITION
+------
+🤍 서채연(팀장)  
+- User 앱 전반
+    - 회원가입, 로그인 / 소셜로그인 / 친구신청,수락,삭제 등 / 유저 신고 기능 등 user 앱 기능
+    - SMS 인증 - 아이디 찾기 / 이메일 인증 - 비밀번호 재설정
+- Amazon S3 static 파일 업로드 + cloudfront 배포
+- Validator 생성 및 적용
+- 팀원 코드 피드백 및 리팩토링
+  
+🤍 노탁근(부팀장)  
+- Docker, AWS 배포
+    - nginx, Backend, PostgreSQL
+- 신고 유저 차단 기능
+    - django-apscheduler
+- 채팅, 알림기능 (진행중)
+    - redis, daphne, django-channels
+
+🤍 이상민  
+- Place 앱 전반
+    - 맛집추천 CRUD : 권한 기반 접근 / 댓글, 대댓글 CRUD / 다중이미지 업로드
+    - 맛집 추천 크롤링
+- 유저 프로필 앨범 기능 / 위치 API - 유저 위치 저장
+
+🤍 정재준  
+- Meeting 앱 전반
+    - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드 
+
+🤍 장한울
+- Counsel 앱 전반
+    - counsel 게시글 CRUD / 댓글, 대댓글 CRUD
+
 ***
 💜 ERD
 ------
-![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/3aaad154-63e2-4dc4-bbd6-4e6e5fbf0169)
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/b20a578d-cc72-43c7-ba50-98eb0fd5a90c)
+
 
 
 💚 와이어프레임

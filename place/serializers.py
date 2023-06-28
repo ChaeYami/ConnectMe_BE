@@ -84,6 +84,7 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
 # place 생성 시리얼라이저        
 class PlaceCreateSerializer(serializers.ModelSerializer):
     image = PlaceImageSerializer(many=True, read_only=True)
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Place
@@ -155,15 +156,24 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
         for data in image_set.getlist("image"):
             PlaceImage.objects.create(place=instance, image=data)
         return instance
-
+    
+    
+    def get_image(self, obj):
+        images = obj.place_image_place.all()
+        img = []
+        for image in images:
+            url = image.image.url
+            if 'https' in url:
+                img.append({'id':image.id, 'url':'https://'+url[16:]})
+            else:
+                img.append({'id':image.id, 'url':BACKEND+image.image.url})
+        return img
 
 # place 수정 시리얼라이저    
 class PlaceUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
-
     CHOICES = [
-            ('밥','밥'),
-            ('술','술'),
+            ('식사','식사'),
+            ('주점','주점'),
             ('카페','카페'),
         ]
     title = serializers.CharField(required=False)
@@ -174,17 +184,6 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
     price = serializers.CharField(required=False)
     hour = serializers.CharField(required=False)
     holiday = serializers.CharField(required=False)
-    
-    def get_image(self, obj):
-        images = obj.place_image_place.all()
-        img = []
-        for image in images:
-            url = image.image.url
-            if 'https' in url:
-                return {'id':image.id, 'url':'https://'+url[16:]}
-            else:
-                img.append({'id':image.id, 'url':BACKEND+image.image.url})
-                return img
     
     class Meta:
         model = Place
@@ -221,7 +220,7 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_user_name(self, obj):
-        user_name = obj.user.account
+        user_name = obj.user.nickname
         if obj.content == None:
             return '사용자'
         else:
