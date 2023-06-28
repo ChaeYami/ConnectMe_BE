@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # user
     path("", views.UserView.as_view(), name="user_view"),  # /user/ : 회원가입, 정보수정, 회원탈퇴
-    path("verify-email/b'<str:uidb64>'/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
+    path("activate/", views.ActivateAccountView.as_view(), name="activate_account_view"),
+    path("verify-email/<str:uidb64>/<str:token>/", views.VerifyEmailView.as_view(), name="verify_email_view"),  # /user/verify-email/uidb64/token/ : 회원가입 이메일 인증
     
     path("login/", views.CustomTokenObtainPairView.as_view(), name="login_view"),  # /user/login/ : 로그인
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
@@ -33,7 +34,7 @@ urlpatterns = [
     path("<int:user_id>/image/<int:image_id>/", views.ProfileAlbumDeleteView.as_view(), name="profile_album_delete_view"), # /user/id/image : 사진첩 사진삭제
     
     # recommend
-    path("recommend/<str:filter>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천
+    path("recommend/<str:filter_>/", views.ProfileListView.as_view(), name = "recommend_view" ), # /user/recommend/filter : 유저 추천
     
     # friend
     path('friend/<int:user_id>/', views.FriendView.as_view(), name='friend_request_view'), # user/friend/id/ : 친구신청 로그
@@ -50,5 +51,6 @@ urlpatterns = [
     # current_region
     path("region/", views.RegionView.as_view(), name="region_view"), # /user/region/ : 현재 지역 입력값
     
+    path("report/<int:user_id>/", views.ReportView.as_view(), name="report_view"),  # /user/report/user_id : 유저 신고하기
     
 ]

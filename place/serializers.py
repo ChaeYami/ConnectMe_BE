@@ -2,9 +2,9 @@ from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
 from .validators import score_validator
 
-BACKEND = 'http://127.0.0.1:8000'
+BACKEND = 'http://127.0.0.1:8000' # 로컬환경에서
 
-# ================================ 이미지 시리얼라이저 시작 ================================
+""" 이미지 시리얼라이저 시작 """
 class PlaceImageSerializer(serializers.ModelSerializer):
     # 이미지 url로 반환
     image = serializers.ImageField(use_url=True)
@@ -13,13 +13,17 @@ class PlaceImageSerializer(serializers.ModelSerializer):
         model = PlaceImage
         fields = ["id", "image"]
         
-# ================================ 이미지 시리얼라이저 끝 ================================
+""" 이미지 시리얼라이저 끝 """
 
-# ================================ 게시글 시리얼라이저 시작 ================================
 
-# place 전체보기 시리얼라이저
+""" 게시글 시리얼라이저 시작 """
+
+'''place 전체보기 시리얼라이저'''
 class PlaceSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
     
     def get_image(self, obj):
         img = obj.place_image_place.first()
@@ -28,18 +32,30 @@ class PlaceSerializer(serializers.ModelSerializer):
             if 'https' in url:
                 return {'id':img.id, 'url':'https://'+url[16:]}
             else:
-                return {'id':img.id, 'url':BACKEND+img.image.url}
+                return {'id':img.id, 'url':BACKEND+img.image.url} # 로컬환경에서
         else:
             return img
+        
+    def get_comment_count(self, obj):
+        return obj.place_comment_place.count()
+    
+    def get_like_count(self, obj):
+        return obj.like.count()
+    
+    def get_bookmark_count(self, obj):
+        return obj.bookmark.count()
     
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
+        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
 
 
-# place 상세보기 시리얼라이저
+'''place 상세보기 시리얼라이저'''
 class PlaceDetailSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    bookmark_count = serializers.SerializerMethodField()
     
     def get_image(self, obj):
         images = obj.place_image_place.all()
@@ -52,14 +68,24 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
                 img.append({'id':image.id, 'url':BACKEND+image.image.url})
         return img
     
+    def get_comment_count(self, obj):
+        return obj.place_comment_place.count()
+    
+    def get_like_count(self, obj):
+        return obj.like.count()
+    
+    def get_bookmark_count(self, obj):
+        return obj.bookmark.count()
+    
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
+        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
         
         
-# place 생성 시리얼라이저        
+'''place 생성 시리얼라이저'''        
 class PlaceCreateSerializer(serializers.ModelSerializer):
     image = PlaceImageSerializer(many=True, read_only=True)
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Place
@@ -131,15 +157,24 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
         for data in image_set.getlist("image"):
             PlaceImage.objects.create(place=instance, image=data)
         return instance
+    
+    
+    def get_image(self, obj):
+        images = obj.place_image_place.all()
+        img = []
+        for image in images:
+            url = image.image.url
+            if 'https' in url:
+                img.append({'id':image.id, 'url':'https://'+url[16:]})
+            else:
+                img.append({'id':image.id, 'url':BACKEND+image.image.url})
+        return img
 
-
-# place 수정 시리얼라이저    
+'''place 수정 시리얼라이저'''    
 class PlaceUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
-
     CHOICES = [
-            ('밥','밥'),
-            ('술','술'),
+            ('식사','식사'),
+            ('주점','주점'),
             ('카페','카페'),
         ]
     title = serializers.CharField(required=False)
@@ -151,26 +186,16 @@ class PlaceUpdateSerializer(serializers.ModelSerializer):
     hour = serializers.CharField(required=False)
     holiday = serializers.CharField(required=False)
     
-    def get_image(self, obj):
-        images = obj.place_image_place.all()
-        img = []
-        for image in images:
-            url = image.image.url
-            if 'https' in url:
-                return {'id':image.id, 'url':'https://'+url[16:]}
-            else:
-                img.append({'id':image.id, 'url':BACKEND+image.image.url})
-                return img
-    
     class Meta:
         model = Place
         exclude = ['user', 'bookmark', 'like']
     
-# ================================ 게시글 시리얼라이저 끝 ================================
+""" 게시글 시리얼라이저 끝 """
 
-# ================================ 댓글 시리얼라이저 시작 ================================
+
+""" 댓글 시리얼라이저 시작 """
     
-# 댓글 출력을 위한 오버라이딩
+'''댓글 출력을 위한 오버라이딩'''
 class RecursiveSerializer(serializers.Serializer):
     # 부모의 직렬화 인스턴스 생성
     def to_representation(self, instance):
@@ -178,7 +203,7 @@ class RecursiveSerializer(serializers.Serializer):
         return serializer.data
 
 
-# place 댓글 시리얼라이저
+'''place 댓글 시리얼라이저'''
 class PlaceCommentSerializer(serializers.ModelSerializer):
     reply = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
@@ -191,13 +216,13 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_name', 'place', 'content', 'main_comment', 'deep', 'created_at', 'updated_at', 'reply']
         
     def get_reply(self, instance):
-        sorted_reply = sorted(instance.reply.all())
-        serializer = self.__class__(sorted_reply, many=True)
+        replies = instance.reply.all()
+        serializer = self.__class__(replies, many=True)
         serializer.bind('', self)
         return serializer.data
     
     def get_user_name(self, obj):
-        user_name = obj.user.account
+        user_name = obj.user.nickname
         if obj.content == None:
             return '사용자'
         else:
@@ -209,7 +234,7 @@ class PlaceCommentSerializer(serializers.ModelSerializer):
         else:
             return obj.content
 
-# place 댓글 생성, 수정 시리얼라이저
+'''place 댓글 생성, 수정 시리얼라이저'''
 class PlaceCreateCommentSerializer(serializers.ModelSerializer):
     content = serializers.CharField(allow_blank=False, allow_null=False)
     class Meta:
@@ -217,7 +242,7 @@ class PlaceCreateCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'content']
         
 
-# place 댓글 삭제 시리얼라이저
+'''place 댓글 삭제 시리얼라이저'''
 class PlaceDeleteCommentSerializer(serializers.ModelSerializer):
     content = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     class Meta:
@@ -226,4 +251,4 @@ class PlaceDeleteCommentSerializer(serializers.ModelSerializer):
         
     
 
-# ================================ 댓글 시리얼라이저 끝 ================================
+""" 댓글 시리얼라이저 끝 """

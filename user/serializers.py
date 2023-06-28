@@ -9,7 +9,7 @@ from django.core.mail import EmailMessage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from rest_framework import serializers, exceptions
-from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup
+from user.models import ProfileAlbum, User, Profile, Friend, CertifyPhoneSignup, InactiveUser
 from user.validators import (
     password_validator,
     # password_pattern,
@@ -22,9 +22,10 @@ import threading
 
 from django.conf import settings
 
+from decouple import config
 
 
-# ================================ 회원가입(user serializser) ================================ 
+''' 회원가입(user serializser)'''
 
 # 기왕 프로필 페이지와 모델도 분리한김에 시리얼라이저 이름도 UserSerializer 대신에 SignupSerializer 로 했습니당
 class SignupSerializer(serializers.ModelSerializer):
@@ -137,14 +138,16 @@ class SignupSerializer(serializers.ModelSerializer):
         user.save()
         
         Profile.objects.create(user = user)
+        # 회원가입시 is_active=False 이므로
+        InactiveUser.objects.create(inactive_user=user)
         
         return user
         
-# ================================ 회원가입(user serializser) 끝 ================================ 
+''' 회원가입(user serializser) 끝 '''
 
         
 
-# ================================ 정보수정(이메일, 전화번호) 시작 ================================ 
+''' 정보수정(이메일, 전화번호) 시작 '''
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -187,7 +190,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return instance
     
     
-# ================================ 정보수정(이메일, 전화번호) 끝 ================================ 
+''' 정보수정(이메일, 전화번호) 끝  '''
 
 
 # 로그인 토큰 serializer
@@ -213,7 +216,7 @@ class UserDelSerializer(serializers.ModelSerializer):
         fields = ("is_active",)
 
 
-# 비밀번호 변경 serializer
+'''비밀번호 변경 serializer'''
 class ChangePasswordSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(
         error_messages={
@@ -283,7 +286,14 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
         return instance
     
-# ================================ 비밀번호 재설정 시작 ================================ 
+'''계정 재활성화'''
+class ActivateAccount(serializers.Serializer):
+    email = serializers.EmailField()
+    
+    
+    
+'''비밀번호 재설정 시작''' 
+
 class EmailThread(threading.Thread):
     def __init__(self, email):
         self.email = email
@@ -315,13 +325,13 @@ class PasswordResetSerializer(serializers.Serializer):
             email = attrs.get("email")
 
             user = User.objects.get(email=email)
-            uidb64 = urlsafe_b64encode(smart_bytes(user.id))
+            _uidb64 = urlsafe_b64encode(smart_bytes(user.id))
+            uidb64 = str(_uidb64)[2:-1]
             token = PasswordResetTokenGenerator().make_token(user)
+            FRONTEND_BASE_URL = config("FRONTEND_BASE_URL")
+            absurl = f"{FRONTEND_BASE_URL}/set_password.html?id={uidb64}&token={token}"
 
-            frontend_site = "127.0.0.1:5500"
-            absurl = f"http://{frontend_site}/set_password.html?id=${uidb64}&token=${token}"
-
-            email_body = "{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
+            email_body = f"{user.nickname}님 안녕하세요! \n아래 링크를 클릭해 비밀번호 재설정을 진행해주세요. \n " + absurl
             message = {
                 "email_body": email_body,
                 "to_email": user.email,
@@ -395,10 +405,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(detail={"user": "존재하지 않는 회원입니다."})
 
 
-# ================================ 비밀번호 재설정 끝 ================================ 
+''' 비밀번호 재설정 끝  '''
 
 
-# ================================ 프로필 시작 ================================ 
+''' 프로필 시작 '''
 
 # 프로필 serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -418,7 +428,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "mbti", "age", "age_range", "introduce")
+        fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "current_region1", "current_region2" ,"mbti", "age", "age_range", "introduce")
         
         
     def update(self, instance, validated_data):
@@ -453,17 +463,18 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
 class ProfileRegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ("current_region",)
+        fields = ("current_region1","current_region2",)
     
     def update(self, instance, validated_data):
-        instance.current_region = validated_data.get("current_region", instance.current_region)
+        instance.current_region1 = validated_data.get("current_region1", instance.current_region1)
+        instance.current_region2 = validated_data.get("current_region2", instance.current_region2)
         instance.save()
         
         return instance
         
     
     
-# ================================ 친구신청 시작 ================================
+''' 친구신청 시작 '''
     
 class FriendSerializer(serializers.Serializer):
     from_user = serializers.SlugRelatedField(
@@ -529,5 +540,5 @@ class RequestListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     
-# ================================ 친구신청 끝 ================================
+''' 친구신청 끝 '''
     
