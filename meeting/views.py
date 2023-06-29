@@ -26,16 +26,29 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
+
+'''페이지네이션 시작'''
+
+class CounselPagination(PageNumberPagination):
+    page_size = 12
+    
+'''페이지네이션 끝'''
 """ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작 """
 
 class MeetingView(APIView):
     
+    pagination_class = CounselPagination()
+    
     ''' 모임 글 리스트'''
     def get(self, request):
         meeting = Meeting.objects.all()
-        serializer = MeetingListSerializer(meeting, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = self.pagination_class
+        result_page = paginator.paginate_queryset(meeting, request)
+        total_items = paginator.page.paginator.count
+        serializer = MeetingListSerializer(result_page, many=True)
+        return Response({"meeting": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)
     
     '''모임 글 작성'''
     def post(self, request):
@@ -47,7 +60,7 @@ class MeetingView(APIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"meesage":"작성 실패"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MeetingDetialView(APIView):
 
@@ -85,6 +98,8 @@ class MeetingDetialView(APIView):
 
 class MeetingBookmarkView(APIView):
     
+    pagination_class = CounselPagination()
+    
     '''모임 글 북마크하기'''
     def post(self, request, meeting_id):
         if not request.user.is_authenticated:
@@ -98,13 +113,16 @@ class MeetingBookmarkView(APIView):
             return Response('북마크', status=status.HTTP_202_ACCEPTED)
         
     '''북마크한 모임 글 보기'''
-    def get(self, request):
+    def get(self, request, meeting_id):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         user = request.user
         meeting = user.bookmark_meeting.all()
-        serializer = MeetingListSerializer(meeting, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = self.pagination_class
+        result_page = paginator.paginate_queryset(meeting, request)
+        total_items = paginator.page.paginator.count
+        serializer = MeetingListSerializer(result_page, many=True)
+        return Response({"meeting": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)
     
 """ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 끝 """
 
@@ -264,13 +282,19 @@ class MeetingImageDetailView(APIView):
 """ 유저가 작성한 모임 글 목록 시작 """
 '''유저가 작성한 모임 글 목록 시작'''
 class MyCreateMeetingView(APIView):
+    
+    pagination_class = CounselPagination()
+    
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         user = request.user
         meeting = user.my_meeting.all()
-        serializer = MeetingListSerializer(meeting, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = self.pagination_class
+        result_page = paginator.paginate_queryset(meeting, request)
+        total_items = paginator.page.paginator.count
+        serializer = MeetingListSerializer(result_page, many=True)
+        return Response({"meeting": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)
 
 '''모임 글 모임 참가하기'''
 class MeetingJoinMeetingView(APIView):
