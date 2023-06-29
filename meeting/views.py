@@ -15,7 +15,7 @@ from meeting.serializer import (
     MeetingCommentListSerializer,
     MeetingCommentReplyListSerializer,
     MeetingCommentReply,
-    MeetingStatusupdateSerializer
+    MeetingStatusupdateSerializer,
     )
 
 
