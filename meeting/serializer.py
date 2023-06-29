@@ -121,6 +121,10 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
     join_meeting_count = serializers.SerializerMethodField()
+    join_meeting = serializers.SerializerMethodField()
+
+    def get_join_meeting(self, obj):
+        return obj.join_meeting.all().values()
 
     def get_user(self, obj):
         return obj.user.nickname
