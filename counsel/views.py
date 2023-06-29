@@ -41,7 +41,7 @@ class CounselView(APIView):
         
     '''글목록'''
     def get(self, request):
-        counsels = Counsel.objects.all()
+        counsels = Counsel.objects.all().order_by('-id')
         paginator = self.pagination_class
         result_page = paginator.paginate_queryset(counsels, request)
         total_items = paginator.page.paginator.count
@@ -101,7 +101,7 @@ class MyCreateCounselView(APIView):
     pagination_class = CounselPagination
     
     def get(self, request):
-        counsel = Counsel.objects.filter(user=request.user)
+        counsel = Counsel.objects.filter(user=request.user).order_by('-id')
         paginator = self.pagination_class()
         result_page = paginator.paginate_queryset(counsel, request)
         total_items = paginator.page.paginator.count
