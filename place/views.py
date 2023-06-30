@@ -312,7 +312,7 @@ class PlaceCategoryView(viewsets.ModelViewSet):
                     
                     # current_region1,2에 검색 결과가 없으면 current1로 범위를 넓힘
                     if not queryset:
-                        queryset = Place.objects.filter(address__contains=current_region1)
+                        queryset = Place.objects.filter(address__startswith=current_region1)
                         queryset = queryset.filter(category__icontains=search_query)
                         
                     # 이것마저 없으면 전체 가져오기                        
