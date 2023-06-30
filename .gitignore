@@ -5,8 +5,6 @@
 !**/migrations/__init__.py
 my_settings.py
 ConnectMe/my_settings.py
-chat/templates
-/chat/
 
 
 ### Django ###
