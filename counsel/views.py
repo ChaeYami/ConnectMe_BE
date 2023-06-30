@@ -24,14 +24,14 @@ from .serializers import(
 
 '''페이지네이션 시작'''
 class CounselPagination(PageNumberPagination):
-    page_size = 25
+    page_size = 15
     
 '''페이지네이션 끝'''
 '''게시글 시작'''
 
 class CounselView(APIView):
     permission_classes = [AllowAny]
-    pagination_class = CounselPagination
+    pagination_class = CounselPagination()
     
     def get_permissions(self):
         if self.request.method == "POST":
@@ -41,11 +41,12 @@ class CounselView(APIView):
         
     '''글목록'''
     def get(self, request):
-        counsels = Counsel.objects.all()
-        paginator = self.pagination_class()
+        counsels = Counsel.objects.all().order_by('-id')
+        paginator = self.pagination_class
         result_page = paginator.paginate_queryset(counsels, request)
-        serializer = CounselListSerializer(result_page, many = True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        total_items = paginator.page.paginator.count
+        serializer = CounselListSerializer(result_page, many=True)
+        return Response({"counsel": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)
 
     '''글작성'''
     def post(self, request):
@@ -100,11 +101,12 @@ class MyCreateCounselView(APIView):
     pagination_class = CounselPagination
     
     def get(self, request):
-        counsel = Counsel.objects.filter(user=request.user)
+        counsel = Counsel.objects.filter(user=request.user).order_by('-id')
         paginator = self.pagination_class()
         result_page = paginator.paginate_queryset(counsel, request)
-        serializer = CounselListSerializer(result_page, many = True)
-        return Response(serializer.data, status.HTTP_200_OK)
+        total_items = paginator.page.paginator.count
+        serializer = CounselListSerializer(result_page, many=True)
+        return Response({"counsel": serializer.data, "total-page": total_items}, status.HTTP_200_OK)
             
 '''게시글 좋아요'''
 class CounselLikeView(APIView):

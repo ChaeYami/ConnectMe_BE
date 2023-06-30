@@ -28,6 +28,9 @@ from rest_framework.generics import get_object_or_404
 class PlaceCategoryPagination(PageNumberPagination):
     page_size = 30
     
+class PlaceBookPagination(PageNumberPagination):
+    page_size = 10
+    
 """페이지네이션 끝""" 
 
 
@@ -35,13 +38,17 @@ class PlaceCategoryPagination(PageNumberPagination):
 class PlaceView(APIView):
 
     permission_classes = [IsAuthenticated]
+    pagination_class = PlaceBookPagination()
 
     '''북마크 장소 모아보기'''
     def get(self, request):
         user = get_object_or_404(User, id=request.user.id)
         book = user.place_bookmark.all().order_by('-id')
-        serializer = PlaceSerializer(book[:4], many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+        paginator = self.pagination_class
+        result_page = paginator.paginate_queryset(book, request)
+        total_items = paginator.page.paginator.count
+        serializer = PlaceSerializer(result_page, many=True)
+        return Response({"place": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)
 
     '''장소 추천 작성하기'''
     def post(self, request):  
