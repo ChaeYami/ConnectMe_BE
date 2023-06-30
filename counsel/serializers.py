@@ -49,7 +49,7 @@ class CounselCommentSerializer(serializers.ModelSerializer):
     )
 
     def get_user(self, obj):
-        return obj.user.account
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     def get_comment_like_count(self, obj):
         return obj.like.count()
@@ -81,7 +81,7 @@ class CounselListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     
     def get_user(self, obj):
-        return obj.user.account
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
     class Meta:
         model = Counsel
