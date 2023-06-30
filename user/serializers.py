@@ -191,7 +191,37 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     
     
 ''' 정보수정(이메일, 전화번호) 끝  '''
+''' 정보수정 닉네임 시작 '''
+class UserNickUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("nickname",)
+        extra_kwargs = {
+            "nickname": {
+                "error_messages": {
+                    "required": "닉네임은 필수 입력 사항입니다.",
+                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
+                    "blank": "닉네임은 필수 입력 사항입니다.",
+                }
+            }
+        }
+        
+    def validate(self,data):
+        nickname = data.get("nickname")
+        if nickname_validator(nickname):
+            raise serializers.ValidationError(
+                detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
+            )
+        return data
+    
+    def update(self, instance, validated_data):
+        instance.nickname = validated_data.get("nickname", instance.nickname)
+        instance.save()
+        
+        return instance
+    
 
+''' 정보수정 닉네임 끝 '''
 
 # 로그인 토큰 serializer
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -423,7 +453,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         return obj.user.account
     
     def get_nickname(self, obj):
-        return obj.user.nickname
+        if obj.user.is_admin:
+            nickname = '[운영자] '+obj.user.nickname
+            return nickname
+        elif obj.user.is_staff:
+            nickname = '[staff] '+obj.user.nickname
+            return nickname
+        else:
+            return obj.user.nickname
     
     
     class Meta:
@@ -440,12 +477,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         else:
             instance.age_range = '10대 이하'
             
+        
         instance.mbti = validated_data.get('mbti', instance.mbti)
         instance.prefer_region = validated_data.get('prefer_region', instance.prefer_region)
         instance.age = validated_data.get('age', instance.age)
         instance.introduce = validated_data.get('introduce', instance.introduce)
         instance.profile_img = validated_data.get('profile_img', instance.profile_img)
         instance.save()
+        
         return instance
 
         
