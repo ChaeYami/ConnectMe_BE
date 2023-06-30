@@ -23,6 +23,8 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    "chat",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -78,6 +80,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ConnectMe.wsgi.application"
+
+
+# Channels
+ASGI_APPLICATION = "ConnectMe.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(config("REDIS_HOST"), config("REDIS_PORT"))],
+        },
+    },
+}
 
 
 # Database

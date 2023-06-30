@@ -116,10 +116,12 @@ class CounselLikeView(APIView):
         counsel = get_object_or_404(Counsel, id=counsel_id)
         if request.user in counsel.like.all():
             counsel.like.remove(request.user)
-            return Response({"message":"좋아요 취소"}, status=status.HTTP_200_OK)
+            counsel_like = counsel.like.count()
+            return Response({"message":"좋아요 취소", "counsel_like":counsel_like}, status=status.HTTP_200_OK)
         else:
             counsel.like.add(request.user)
-            return Response({"message":"좋아요"}, status=status.HTTP_202_ACCEPTED)
+            counsel_like = counsel.like.count()
+            return Response({"message":"좋아요", "counsel_like":counsel_like}, status=status.HTTP_202_ACCEPTED)
 
 """ 게시글 끝 """
 
@@ -174,8 +176,6 @@ class CounselCommentDetailView(APIView):
         if request.user == comment.user:
             comment.delete()
             return Response({'message': '삭제 완료'},status=status.HTTP_200_OK)
-        else:
-            return Response({"message":"권한이 없습니다."}, status.HTTP_403_FORBIDDEN)
 
 
 class CounselCommentLikelView(APIView):
@@ -184,10 +184,12 @@ class CounselCommentLikelView(APIView):
         counselcomment = get_object_or_404(CounselComment, id=counsel_comment_id)
         if request.user in counselcomment.like.all():
             counselcomment.like.remove(request.user)
-            return Response('댓글 좋아요 취소', status=status.HTTP_200_OK)
+            comment_like = counselcomment.like.count()
+            return Response({"message": "댓글 좋아요 취소", "comment_like":comment_like}, status=status.HTTP_200_OK)
         else:
             counselcomment.like.add(request.user)
-            return Response('댓글 좋아요', status=status.HTTP_202_ACCEPTED)
+            comment_like = counselcomment.like.count()
+            return Response({"message": "댓글 좋아요", "comment_like":comment_like}, status=status.HTTP_202_ACCEPTED)
         
 """ 댓글 끝 """
 
@@ -252,10 +254,12 @@ class CounselReplyLikeView(APIView):
         counselreply = get_object_or_404(CounselReply, id=counsel_reply_id)
         if request.user in counselreply.like.all():
             counselreply.like.remove(request.user)
-            return Response('좋아요 취소', status=status.HTTP_200_OK)
+            reply_like = counselreply.like.count()
+            return Response({"message": "좋아요 취소", "reply_like":reply_like}, status=status.HTTP_200_OK)
         else:
             counselreply.like.add(request.user)
-            return Response('좋아요', status=status.HTTP_202_ACCEPTED)
+            reply_like = counselreply.like.count()
+            return Response({"message": "좋아요", "reply_like":reply_like}, status=status.HTTP_202_ACCEPTED)
 
 """ 대댓글 끝 """
 

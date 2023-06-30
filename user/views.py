@@ -33,6 +33,7 @@ from user.serializers import (
     UserUpdateSerializer,
     ProfileRegionSerializer,
     ActivateAccount,
+    UserNickUpdateSerializer
 )
 
 from decouple import config
@@ -404,8 +405,10 @@ class ProfileView(APIView):
         if user == request.user:
             profile = get_object_or_404(Profile, id=user_id)
             serializer = ProfileSerializer(profile, data=request.data, partial=True)
-            if serializer.is_valid():
+            user_serizlier = UserNickUpdateSerializer(user, data=request.data, partial=True)
+            if serializer.is_valid() and user_serizlier.is_valid():
                 serializer.save()
+                user_serizlier.save()
                 return Response(
                     {"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK
                 )
