@@ -2,7 +2,6 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 import os
-import my_settings
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -16,9 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['backend', ]
 
 # Application definition
 
@@ -97,8 +96,26 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = my_settings.DATABASES
+POSTGRES_DB = os.environ.get('POSTGRES_DB', '')
+if POSTGRES_DB:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': POSTGRES_DB,
+            'USER': os.environ.get('POSTGRES_USER', ''),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+            'HOST': os.environ.get('POSTGRES_HOST', ''),
+            'PORT': os.environ.get('POSTGRES_PORT', ''),
+        }
+    }
 
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -176,9 +193,10 @@ SIMPLE_JWT = {
 }
 
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
-# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5500']
+CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'http://connectme.co.kr', 'http://13.124.71.106', 'http://127.0.0.1:5500']
+CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 
 AUTH_USER_MODEL = "user.User"
 

@@ -12,4 +12,4 @@ urlpatterns = [
     path("meeting/", include("meeting.urls")),
     path("counsel/", include("counsel.urls")),
     path("chat/", include("chat.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
