@@ -174,8 +174,18 @@ class CounselCommentDetailView(APIView):
     def delete(self, request, counsel_id, counsel_comment_id):
         comment = get_object_or_404(CounselComment, id=counsel_comment_id)
         if request.user == comment.user:
-            comment.delete()
-            return Response({'message': '삭제 완료'},status=status.HTTP_200_OK)
+            if comment.reply.all():
+                serializer = CounselReplyCreateSerializer(comment, {"content":"삭제된 댓글 입니다."} )
+                if serializer.is_valid():
+                    serializer.save(content="삭제된 댓글 입니다.")
+                    return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                comment.delete()
+                return Response({'message': '삭제 완료'},status=status.HTTP_200_OK)
+        else:
+            return Response({"message":"권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 
 class CounselCommentLikelView(APIView):
