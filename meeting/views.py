@@ -27,13 +27,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
+
+
 """ 모임 글 리스트, 작성, 상세, 수정, 삭제, 북마크, 북마크 한 글 시작 """
 
 class MeetingView(APIView):
     
     ''' 모임 글 리스트'''
     def get(self, request):
-        meeting = Meeting.objects.all()
+        meeting = Meeting.objects.all().order_by("-created_at")
         serializer = MeetingListSerializer(meeting, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -102,7 +104,7 @@ class MeetingBookmarkView(APIView):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         user = request.user
-        meeting = user.bookmark_meeting.all()
+        meeting = user.bookmark_meeting.all().order_by("-created_at")
         serializer = MeetingListSerializer(meeting, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -268,19 +270,19 @@ class MyCreateMeetingView(APIView):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         user = request.user
-        meeting = user.my_meeting.all()
+        meeting = user.my_meeting.all().order_by("-created_at")
         serializer = MeetingListSerializer(meeting, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 '''모임 글 모임 참가하기'''
 class MeetingJoinMeetingView(APIView):
+
     def post(self, request, meeting_id):
         if not request.user.is_authenticated:
             return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
         meeting = get_object_or_404(Meeting, id=meeting_id)
         num_person = meeting.num_person_meeting
         join_person = meeting.join_meeting.count()
-        
         if request.user in meeting.join_meeting.all():
             meeting.join_meeting.remove(request.user)
             serializer = MeetingStatusupdateSerializer(meeting, {"meeting_status":"모집중"} )
