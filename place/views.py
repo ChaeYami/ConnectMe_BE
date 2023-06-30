@@ -85,10 +85,12 @@ class PlaceDetailView(APIView):
 
         if user in place.bookmark.all():
             place.bookmark.remove(user)
-            return Response({"message":"북마크 취소"}, status.HTTP_200_OK)
+            bookmark_count = place.bookmark.count()
+            return Response({"message":"북마크 취소", "book_count":bookmark_count}, status.HTTP_200_OK)
         else:
             place.bookmark.add(user)
-            return Response({"message":"북마크"}, status.HTTP_200_OK)
+            bookmark_count = place.bookmark.count()
+            return Response({"message":"북마크", "book_count":bookmark_count}, status.HTTP_200_OK)
 
     '''장소 추천 수정하기'''
     def patch(self, request, place_id):  
@@ -148,12 +150,15 @@ class PlaceImageView(APIView):
 class PlaceLikeView(APIView):
     def post(self, request, place_id):
         place = get_object_or_404(Place, id=place_id)
+        
         if request.user in place.like.all():
             place.like.remove(request.user)
-            return Response({"message":"좋아요 취소"}, status.HTTP_200_OK)
+            like_count = place.like.count()
+            return Response({"message":"좋아요 취소", "like_count":like_count}, status.HTTP_200_OK)
         else:
             place.like.add(request.user)
-            return Response({"message":"좋아요"}, status.HTTP_200_OK)
+            like_count = place.like.count()
+            return Response({"message":"좋아요", "like_count":like_count}, status.HTTP_200_OK)
     
         
 
@@ -236,19 +241,17 @@ class PlaceCommentDetailView(APIView):
         login = request.user
         comment = PlaceComment.objects.filter(main_comment=place_comment_id)
         writer = get_object_or_404(PlaceComment, id=place_comment_id)
-        place = get_object_or_404(Place, id=place_id)
-        if writer in place.place_comment_place.all():
-            if login == writer.user:
-                serializer = PlaceDeleteCommentSerializer(writer, data=request.data)
-                if serializer.is_valid():
-                    if comment:
-                        serializer.save(content=None)
-                        return Response(serializer.data, status.HTTP_200_OK)
-                    else:
-                        writer.delete()
-                        return Response(status.HTTP_200_OK)
+        if login == writer.user:
+            serializer = PlaceDeleteCommentSerializer(writer, data=request.data)
+            if serializer.is_valid():
+                if comment:
+                    serializer.save(content=None)
+                    return Response(serializer.data, status.HTTP_200_OK)
                 else:
-                    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+                    writer.delete()
+                    return Response(status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'message':'권한이 없습니다.'}, status.HTTP_403_FORBIDDEN)
 
@@ -303,7 +306,7 @@ class PlaceCategoryView(viewsets.ModelViewSet):
                 search_query = self.request.query_params.get('search')
                 
                 # 프로필.current_region이 address에 포함 되는지
-                if current_region1 is not None and current_region2 is not None:
+                if current_region1 is not None and current_region2 is not None and search_query:
                     queryset = Place.objects.filter(Q(address__contains=current_region1) & Q(address__contains=current_region2))
                     queryset = queryset.filter(category__icontains=search_query)
                     
