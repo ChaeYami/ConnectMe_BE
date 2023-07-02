@@ -78,10 +78,14 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
 '''글 리스트'''
 class CounselListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
+    
+    def get_comment_count(self, obj):
+        return obj.counsel_comment_counsel.count()
 
     class Meta:
         model = Counsel

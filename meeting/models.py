@@ -1,6 +1,7 @@
 from django.db import models
 
 from user.models import User
+from place.models import Place
 
 '''모임 글 모델 시작'''
 class Meeting(models.Model):
@@ -17,6 +18,7 @@ class Meeting(models.Model):
     meeting_status = models.CharField(verbose_name="모집상태", max_length=10, default="모집중")
     place_title = models.TextField(verbose_name="모임장소")
     place_address = models.TextField(verbose_name="모임주소")
+    place = models.ForeignKey(Place, verbose_name="핫플레이스", default=None, null=True, on_delete=models.CASCADE, related_name="meeting_place")
 '''모임 글 모델 끝'''
 
 '''모임 댓글 시작'''
