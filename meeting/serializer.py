@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import urllib.parse
 
 from meeting.models import (
     Meeting,
@@ -76,13 +77,18 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("id","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        fields = ("id","place","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
 
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
-        image_set = self.context['request'].FILES
-        for image_data in image_set.getlist('image'):
-            MeetingImage.objects.create(meeting=instance, image=image_data)
+        image_urls = self.context['request'].data.getlist('image')
+
+        for image_url in image_urls:
+            try:
+                MeetingImage.objects.create(meeting=instance, image=image_url)
+            except Exception as e:
+                print(e)
+        
         return instance
 
     
