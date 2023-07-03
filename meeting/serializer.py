@@ -24,11 +24,12 @@ class MeetingImageSerializer(serializers.ModelSerializer):
 '''
 '''모임 대댓글 리스트'''
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
+    user = serializers.SerializerMethodField()
+    
     def get_user(self, obj):
-        return obj.user.nickname
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     class Meta:
         model = MeetingCommentReply
@@ -40,8 +41,9 @@ class MeetingCommentListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
     user = serializers.SerializerMethodField()
+    
     def get_user(self, obj):
-        return obj.user.nickname
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     class Meta:
         model = MeetingComment
@@ -121,19 +123,19 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 
 '''모임 글 상세'''
 class MeetingDetailSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
-    user = serializers.SerializerMethodField()
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
     join_meeting_count = serializers.SerializerMethodField()
     join_meeting = serializers.SerializerMethodField()
+    
+    def get_user(self, obj):
+        return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
     def get_join_meeting(self, obj):
         return obj.join_meeting.all().values()
-
-    def get_user(self, obj):
-        return obj.user.nickname
     
     def get_join_meeting_count(self, obj):
         return obj.join_meeting.count()
