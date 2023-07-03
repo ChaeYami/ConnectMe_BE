@@ -62,7 +62,7 @@ class CounselCommentSerializer(serializers.ModelSerializer):
 class CounselCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselComment
-        fields = ("content",)
+        fields = ("content","is_anonymous",)
         extra_kwargs = {
             "content": {
                 "error_messages": {
