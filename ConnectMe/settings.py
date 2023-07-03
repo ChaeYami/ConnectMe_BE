@@ -198,6 +198,12 @@ SIMPLE_JWT = {
 CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'http://connectme.co.kr', 'http://13.124.71.106', 'http://127.0.0.1:5500']
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 
+CSRF_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://connectme.co.kr", "https://api.connectme.co.kr"
+]
+
 AUTH_USER_MODEL = "user.User"
 
 # EMAIL settings
