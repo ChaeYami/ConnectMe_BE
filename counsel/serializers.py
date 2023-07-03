@@ -85,7 +85,8 @@ class CounselListSerializer(serializers.ModelSerializer):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
     
     def get_comment_count(self, obj):
-        return obj.counsel_comment_counsel.count()
+        reply_count = CounselReply.objects.filter(comment__in=obj.counsel_comment_counsel.all()).count()
+        return obj.counsel_comment_counsel.count()+reply_count
 
     class Meta:
         model = Counsel
