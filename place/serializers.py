@@ -3,11 +3,9 @@ from .models import Place, PlaceComment, PlaceImage
 from django.core.serializers import serialize
 from .validators import score_validator
 import os
-from dotenv import load_dotenv
+from decouple import config
 
-load_dotenv()
-
-BACKEND = os.environ.get("BACKEND_BASE_URL") # 로컬환경에서
+BACKEND = config("BACKEND_BASE_URL") # 로컬환경에서
 
 """ 이미지 시리얼라이저 시작 """
 class PlaceImageSerializer(serializers.ModelSerializer):
