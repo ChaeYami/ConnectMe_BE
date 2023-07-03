@@ -64,14 +64,15 @@ class MeetingListSerializer(serializers.ModelSerializer):
         return obj.join_meeting.count()
 
     def get_comment_count(self, obj):
-        return obj.comment.count()
+        reply_count = MeetingCommentReply.objects.filter(comment__in=obj.comment.all()).count()
+        return obj.comment.count()+reply_count
 
     def get_user(self, obj):
         return obj.user.nickname
 
     class Meta:
         model = Meeting
-        fields = ("id","title","user","comment_count","created_at","meeting_image","content","bookmark","meeting_city","meeting_at","num_person_meeting","meeting_status","join_meeting_count",)
+        fields = ("id","title","user","comment_count", "created_at","meeting_image","content","bookmark","meeting_city","meeting_at","num_person_meeting","meeting_status","join_meeting_count",)
 
 '''모임 글 작성'''
 class MeetingCreateSerializer(serializers.ModelSerializer):

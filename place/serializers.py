@@ -1,8 +1,13 @@
 from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
+from django.core.serializers import serialize
 from .validators import score_validator
+import os
+from dotenv import load_dotenv
 
-BACKEND = 'http://127.0.0.1:8000' # 로컬환경에서
+load_dotenv()
+
+BACKEND = os.environ.get("BACKEND_BASE_URL") # 로컬환경에서
 
 """ 이미지 시리얼라이저 시작 """
 class PlaceImageSerializer(serializers.ModelSerializer):
@@ -56,6 +61,7 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
     bookmark_count = serializers.SerializerMethodField()
+    meeting = serializers.SerializerMethodField()
     
     def get_image(self, obj):
         images = obj.place_image_place.all()
@@ -77,9 +83,23 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
     def get_bookmark_count(self, obj):
         return obj.bookmark.count()
     
+    def get_meeting(self, obj):
+        meetings = obj.meeting_place.filter(place=obj.id)
+        meeting_data = []
+        for meeting in meetings:
+            meeting_data.append({
+                'id': meeting.id,
+                'user': meeting.user.id,
+                'title': meeting.title,
+                'content': meeting.content,
+                'created_at': meeting.created_at,
+                'updated_at': meeting.updated_at,
+            })
+        return meeting_data
+    
     class Meta:
         model = Place
-        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like']
+        fields = ['id', 'user', 'title','category', 'sort', 'comment_count', 'like_count', 'bookmark_count', 'address', 'score', 'price', 'hour', 'holiday', 'content', 'created_at', 'updated_at', 'image', 'bookmark', 'like','meeting']
         
         
 '''place 생성 시리얼라이저'''        
