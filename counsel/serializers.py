@@ -5,6 +5,8 @@ from .models import (
     CounselReply
 )
 
+import bleach
+
 """ 대댓글 """
 
 '''대댓글 작성'''
@@ -20,6 +22,15 @@ class CounselReplyCreateSerializer(serializers.ModelSerializer):
                 }
             },
         }
+        
+    def validate(self, attrs):
+        content = attrs.get('content')
+        # content 필드에서 HTML 태그 제거
+        cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+        attrs['content'] = cleaned_content
+
+        return attrs
 
 '''대댓글'''
 class CounselReplySerializer(serializers.ModelSerializer):
@@ -37,6 +48,7 @@ class CounselReplySerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselReply
         fields = "__all__"
+        
 
 """ 댓글 """
 
@@ -57,6 +69,8 @@ class CounselCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselComment
         fields = "__all__"
+        
+    
 
 '''댓글 작성'''
 class CounselCommentCreateSerializer(serializers.ModelSerializer):
@@ -72,7 +86,16 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
             },
         }
 
+    def validate(self, attrs):
+        content = attrs.get('content')
 
+        # content 필드에서 HTML 태그 제거
+        cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+        attrs['content'] = cleaned_content
+
+        return attrs
+    
 """ 글 작성, 상세, 수정 """
 
 '''글 리스트'''
@@ -112,7 +135,20 @@ class CounselCreateSerializer(serializers.ModelSerializer):
                 },
             },
         }
+    def validate(self, attrs):
+            title = attrs.get('title')
+            content = attrs.get('content')
 
+            # title 필드에서 HTML 태그 제거
+            cleaned_title = bleach.clean(title, tags=[], strip=True)
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['title'] = cleaned_title
+            attrs['content'] = cleaned_content
+
+            return attrs
 '''글 상세'''
 class CounselDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
