@@ -25,7 +25,7 @@ class CounselReplyCreateSerializer(serializers.ModelSerializer):
 class CounselReplySerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     reply_like_count = serializers.SerializerMethodField()
-    comment_created_at = serializers.DateTimeField(
+    updated_at = serializers.DateTimeField(
         format="%y-%m-%d %H:%M", read_only=True
     )
     def get_reply_like_count(self, obj):
@@ -44,7 +44,7 @@ class CounselCommentSerializer(serializers.ModelSerializer):
     reply = CounselReplySerializer(many=True)
     user = serializers.SerializerMethodField()
     comment_like_count = serializers.SerializerMethodField()
-    comment_created_at = serializers.DateTimeField(
+    updated_at = serializers.DateTimeField(
         format="%y-%m-%d %H:%M", read_only=True
     )
 
