@@ -321,3 +321,18 @@ class MeetingJoinMeetingView(APIView):
                 if serializer.is_valid():
                     serializer.save(meeting_status="자리없음")
             return Response({"message":"약속"}, status=status.HTTP_202_ACCEPTED)
+        
+class MyJoinMeetingListView(APIView):
+
+    pagination_class = CounselPagination()
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"message":"로그인 해주세요"}, status=status.HTTP_403_FORBIDDEN)
+        user = request.user
+        meeting = user.join_meeting.all().order_by("-created_at")
+        paginator = self.pagination_class
+        result_page = paginator.paginate_queryset(meeting, request)
+        total_items = paginator.page.paginator.count
+        serializer = MeetingListSerializer(result_page, many=True)
+        return Response({"meeting": serializer.data, "total-page": total_items}, status=status.HTTP_200_OK)

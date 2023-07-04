@@ -9,7 +9,7 @@ class Counsel(models.Model):
     like = models.ManyToManyField(User, related_name='counsel_like', verbose_name="좋아요")
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
-
+    is_anonymous = models.BooleanField(verbose_name="익명",null=True, blank=True)
     
 class CounselComment(models.Model):
     user = models.ForeignKey(User, verbose_name="댓글작성자", on_delete=models.CASCADE, related_name="counsel_comment_user")
@@ -18,6 +18,8 @@ class CounselComment(models.Model):
     like = models.ManyToManyField(User, related_name='counsel_comment_like', verbose_name="좋아요")
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
+    is_anonymous = models.BooleanField(verbose_name="익명",null=True, blank=True)
+    
     
 class CounselReply(models.Model):
     user = models.ForeignKey(User, verbose_name="댓글작성자", on_delete=models.CASCADE, related_name="counsel_reply_user")
@@ -27,4 +29,6 @@ class CounselReply(models.Model):
     like = models.ManyToManyField(User, related_name='counsel_reply_like', verbose_name="좋아요")
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
+    is_anonymous = models.BooleanField(verbose_name="익명",null=True, blank=True)
+    
 

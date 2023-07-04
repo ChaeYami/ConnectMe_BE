@@ -89,10 +89,13 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
                 'id': meeting.id,
                 'user': meeting.user.id,
                 'title': meeting.title,
-                'content': meeting.content,
-                'created_at': meeting.created_at,
-                'updated_at': meeting.updated_at,
+                'meeting_city' : meeting.meeting_city,
+                'meeting_at' : meeting.meeting_at,
+                'num_person_meeting' : meeting.num_person_meeting,
+                'meeting_status' : meeting.meeting_status,
+                'join_meeting' : meeting.join_meeting.count()
             })
+        meeting_data = sorted(meeting_data, key=lambda x:x['meeting_at'], reverse=True)
         return meeting_data
     
     class Meta:
