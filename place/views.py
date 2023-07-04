@@ -266,14 +266,14 @@ class PlaceSearchView(viewsets.ModelViewSet):
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    ordering_fields = ['comment_count', 'like', 'bookmark', 'id',]
+    ordering_fields = ['comment_count', 'likes_count', 'books_count', 'id',]
     ordering = ['-id']
     search_fields = ['title',]
     
     def get_queryset(self):
         # 댓글 수를 계산하여 comment_count 필드를 추가
         # annotate: 계산 후 새 필드를 추가
-        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'))
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'), likes_count=Count('like'), books_count=Count('bookmark'))
         category_query = self.request.query_params.get('category')
         
         if category_query is not None:

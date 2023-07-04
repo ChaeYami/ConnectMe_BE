@@ -1,3 +1,4 @@
+import bleach
 from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
 from django.core.serializers import serialize
@@ -89,10 +90,13 @@ class PlaceDetailSerializer(serializers.ModelSerializer):
                 'id': meeting.id,
                 'user': meeting.user.id,
                 'title': meeting.title,
-                'content': meeting.content,
-                'created_at': meeting.created_at,
-                'updated_at': meeting.updated_at,
+                'meeting_city' : meeting.meeting_city,
+                'meeting_at' : meeting.meeting_at,
+                'num_person_meeting' : meeting.num_person_meeting,
+                'meeting_status' : meeting.meeting_status,
+                'join_meeting' : meeting.join_meeting.count()
             })
+        meeting_data = sorted(meeting_data, key=lambda x:x['meeting_at'], reverse=True)
         return meeting_data
     
     class Meta:
@@ -258,6 +262,16 @@ class PlaceCreateCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaceComment
         fields = ['id', 'content']
+        
+    def validate(self, attrs):
+            content = attrs.get('content')
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['content'] = cleaned_content
+
+            return attrs
         
 
 '''place 댓글 삭제 시리얼라이저'''

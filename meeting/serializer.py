@@ -8,6 +8,9 @@ from meeting.models import (
     MeetingImage,
     )
 
+import bleach
+
+
 '''모임 이미지 시작'''
 
 class MeetingImageSerializer(serializers.ModelSerializer):
@@ -82,6 +85,27 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
         model = Meeting
         fields = ("id","place","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
 
+    def validate(self, attrs):
+            title = attrs.get('title')
+            content = attrs.get('content')
+            meeting_city = attrs.get('meeting_city')
+            place_title = attrs.get('place_title')
+            place_address = attrs.get('place_address')
+            
+            cleaned_title = bleach.clean(title, tags=[], strip=True)
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+            cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
+            cleaned_place_title = bleach.clean(place_title, tags=[], strip=True)
+            cleaned_place_address = bleach.clean(place_address, tags=[], strip=True)
+
+            attrs['title'] = cleaned_title
+            attrs['content'] = cleaned_content
+            attrs['meeting_city'] = cleaned_meeting_city
+            attrs['place_title'] = cleaned_place_title
+            attrs['place_address'] = cleaned_place_address
+
+            return attrs
+    
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
         image_urls = self.context['request'].data.getlist('image')
@@ -102,6 +126,29 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        
+    def validate(self, attrs):
+            title = attrs.get('title')
+            content = attrs.get('content')
+            meeting_city = attrs.get('meeting_city')
+            place_title = attrs.get('place_title')
+            place_address = attrs.get('place_address')
+            
+            cleaned_title = bleach.clean(title, tags=[], strip=True)
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+            cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
+            cleaned_place_title = bleach.clean(place_title, tags=[], strip=True)
+            cleaned_place_address = bleach.clean(place_address, tags=[], strip=True)
+
+            attrs['title'] = cleaned_title
+            attrs['content'] = cleaned_content
+            attrs['meeting_city'] = cleaned_meeting_city
+            attrs['place_title'] = cleaned_place_title
+            attrs['place_address'] = cleaned_place_address
+
+            return attrs
+    
+    
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -154,6 +201,17 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingComment
         fields = ("content",)
+        
+    def validate(self, attrs):
+            content = attrs.get('content')
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['content'] = cleaned_content
+
+            return attrs
+    
 
 '''모임 댓글 작성, 수정 끝'''
 
@@ -168,6 +226,16 @@ class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
         fields = ("content",)
+        
+    def validate(self, attrs):
+            content = attrs.get('content')
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['content'] = cleaned_content
+
+            return attrs
 
 '''모임 대댓글 작성, 수정 끝'''
 
