@@ -31,4 +31,6 @@ urlpatterns = [
           views.MyCreateMeetingView.as_view(),), #/meeting/my_create_meeting/ 내가 작성한 모임 글 리스트
      path('<int:meeting_id>/meeting_image/<int:image_id>/',
           views.MeetingImageDetailView.as_view(),), #/meeting/<int:meeting_id>/meeting_image/<int:image_id> 이미지 삭제
-]
+     path('my_join_meeting_list/',
+          views.MyJoinMeetingListView.as_view(),),
+]    
