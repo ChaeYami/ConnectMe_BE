@@ -441,6 +441,16 @@ class ProfileView(APIView):
 
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
+        
+    def delete(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        
+        if user == request.user:
+            user.user_profile.profile_img.delete()
+            return Response({"message": "프로필 사진이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
+        
 
 
 """ 프로필 앨범 """
