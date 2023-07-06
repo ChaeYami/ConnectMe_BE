@@ -454,7 +454,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         #     img = Image.open(image)
         #     if image.size > max_size:
         #         raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
-        # return data    
+        return data    
         
     
     def update(self, instance, validated_data):
