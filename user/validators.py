@@ -32,3 +32,9 @@ def nickname_validator(nickname):
     if not re.search(nickname_validation, str(nickname)):
         return True
     return False
+
+def age_validator(age):
+    age_validation = r"^\d{1,2}$"
+    if not re.search(age_validation, str(age)):
+        return True
+    return False
