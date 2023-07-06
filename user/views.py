@@ -401,7 +401,7 @@ class ProfileView(APIView):
 
         if user == request.user:
             profile = get_object_or_404(Profile, id=user_id)
-            serializer = ProfileSerializer(profile, data=request.data, partial=True)
+            serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             user_serializer = UserNickUpdateSerializer(user, data=request.data, partial=True)
             if all([serializer.is_valid(), user_serializer.is_valid()]):
                 serializer.save()
@@ -435,7 +435,7 @@ class ProfileAlbumView(APIView):
     def post(self, request, user_id):
         user = get_object_or_404(User, id=request.user.id)
         album_images = request.data.getlist("album_img")
-        
+
         for index, data in enumerate(album_images, start=1):
             img = Image.open(data)
             max_size = 1048576

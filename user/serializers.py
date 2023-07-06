@@ -448,7 +448,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField()
     nickname = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
-    profile_img = serializers.SerializerMethodField()
+    profile_img = serializers.ImageField()
     
     def get_user_id(self,obj):
         return obj.user.id
@@ -478,7 +478,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"age" : "나이는 0-99 사이의 숫자여야 합니다."}
             )
-        return data
+        
+        max_size = 1048576  # 1MB
+        images = self.context['request'].FILES.getlist("profile_img")
+        for image in images:
+            img = Image.open(image)
+            if image.size > max_size:
+                raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+        return data    
         
     
     def update(self, instance, validated_data):
