@@ -50,6 +50,7 @@ from .models import (
     InactiveUser,
 )
 from .validators import phone_validator
+from PIL import Image
 
 import requests
 import uuid
@@ -426,7 +427,7 @@ class ProfileView(APIView):
 
         if user == request.user:
             profile = get_object_or_404(Profile, id=user_id)
-            serializer = ProfileSerializer(profile, data=request.data, partial=True)
+            serializer = ProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
             user_serializer = UserNickUpdateSerializer(
                 user, data=request.data, partial=True
             )
@@ -477,7 +478,15 @@ class ProfileAlbumView(APIView):
     # 사진 올리기
     def post(self, request, user_id):
         user = get_object_or_404(User, id=request.user.id)
-        for data in request.data.getlist("album_img"):
+        album_images = request.data.getlist("album_img")
+        
+        for index, data in enumerate(album_images, start=1):
+            img = Image.open(data)
+            max_size = 1048576
+            if data.size > max_size:
+                error_msg = f"이미지 크기는 1MB를 초과할 수 없습니다."
+                return Response({'error': error_msg}, status=status.HTTP_400_BAD_REQUEST)
+
             ProfileAlbum.objects.create(user=user, album_img=data)
         return Response(status.HTTP_200_OK)
 

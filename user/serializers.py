@@ -25,6 +25,8 @@ from django.conf import settings
 
 from decouple import config
 
+from PIL import Image
+
 
 ''' 회원가입(user serializser)'''
 
@@ -410,6 +412,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField()
     nickname = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
+    profile_img = serializers.SerializerMethodField()
     
     def get_user_id(self,obj):
         return obj.user.id
@@ -431,7 +434,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "current_region1", "current_region2" ,"mbti", "age", "age_range", "introduce")
-        
+    
      
     def validate(self, data):
         age = data.get("age")
@@ -439,7 +442,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"age" : "나이는 0-99 사이의 숫자여야 합니다."}
             )
-        return data
+            
+        max_size = 1048576  # 1MB
+        images = self.context['request'].FILES.getlist("profile_img")
+        for image in images:
+            img = Image.open(image)
+            if image.size > max_size:
+                raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+        return data    
         
     
     def update(self, instance, validated_data):

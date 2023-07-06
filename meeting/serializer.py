@@ -1,5 +1,6 @@
 from rest_framework import serializers
 import urllib.parse
+from PIL import Image
 
 from meeting.models import (
     Meeting,
@@ -103,8 +104,17 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
             attrs['meeting_city'] = cleaned_meeting_city
             attrs['place_title'] = cleaned_place_title
             attrs['place_address'] = cleaned_place_address
+            
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
 
             return attrs
+        
     
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
@@ -145,6 +155,14 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
             attrs['meeting_city'] = cleaned_meeting_city
             attrs['place_title'] = cleaned_place_title
             attrs['place_address'] = cleaned_place_address
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+
 
             return attrs
     
