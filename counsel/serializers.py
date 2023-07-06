@@ -37,7 +37,7 @@ class CounselReplySerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     reply_like_count = serializers.SerializerMethodField()
     updated_at = serializers.DateTimeField(
-        format="%y.%m.%d %H:%M", read_only=True
+        format="%y-%m-%d %H:%M", read_only=True
     )
     def get_reply_like_count(self, obj):
         return obj.like.count()
@@ -57,7 +57,7 @@ class CounselCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     comment_like_count = serializers.SerializerMethodField()
     updated_at = serializers.DateTimeField(
-        format="%y.%m.%d %H:%M", read_only=True
+        format="%y-%m-%d %H:%M", read_only=True
     )
 
     def get_user(self, obj):
@@ -102,7 +102,7 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
 class CounselListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(format="%Y.%m.%d")
+    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
@@ -151,8 +151,8 @@ class CounselCreateSerializer(serializers.ModelSerializer):
             return attrs
 '''글 상세'''
 class CounselDetailSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y.%m.%d  %H:%M")
-    updated_at = serializers.DateTimeField(format="%Y.%m.%d  %H:%M")
+    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
     user = serializers.SerializerMethodField()
     counsel_comment_counsel = CounselCommentSerializer
     def get_user(self, obj):

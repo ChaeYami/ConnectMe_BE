@@ -110,16 +110,22 @@ class SignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"password": "비밀번호는 8자 이상의 영문 대/소문자와 숫자, 특수문자를 포함해야 합니다."}
             )
+
+        # # 비밀번호 유효성 검사
+        # if password_pattern(password):
+        #     raise serializers.ValidationError(
+        #         detail={"password": "비밀번호는 연속해서 3자리 이상 동일한 영문,숫자,특수문자 사용이 불가합니다."}
+        #     )
             
         if phone_validator(phone):
             raise serializers.ValidationError(
                 detail={"phone": "전화번호는 숫자만 사용해주세요."}
             )
             
-        # if nickname_validator(nickname):
-        #     raise serializers.ValidationError(
-        #         detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
-        #     )
+        if nickname_validator(nickname):
+            raise serializers.ValidationError(
+                detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
+            )
             
          # 휴대폰 번호 존재여부와 blank 허용
         if (User.objects.filter(phone=phone).exists() and not phone == ""):
@@ -188,7 +194,37 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     
     
 ''' 정보수정(이메일, 전화번호) 끝  '''
+''' 정보수정 닉네임 시작 '''
+class UserNickUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("nickname",)
+        extra_kwargs = {
+            "nickname": {
+                "error_messages": {
+                    "required": "닉네임은 필수 입력 사항입니다.",
+                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
+                    "blank": "닉네임은 필수 입력 사항입니다.",
+                }
+            }
+        }
+        
+    def validate(self,data):
+        nickname = data.get("nickname")
+        if nickname_validator(nickname):
+            raise serializers.ValidationError(
+                detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
+            )
+        return data
+    
+    def update(self, instance, validated_data):
+        instance.nickname = validated_data.get("nickname", instance.nickname)
+        instance.save()
+        
+        return instance
+    
 
+''' 정보수정 닉네임 끝 '''
 
 # 로그인 토큰 serializer
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -430,11 +466,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         else:
             return obj.user.nickname
     
-        
+    
     class Meta:
         model = Profile
         fields = ("id", "user_id", "account", "nickname", "profile_img", "prefer_region", "current_region1", "current_region2" ,"mbti", "age", "age_range", "introduce")
-    
+        
      
     def validate(self, data):
         age = data.get("age")
@@ -442,29 +478,19 @@ class ProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"age" : "나이는 0-99 사이의 숫자여야 합니다."}
             )
-            
-        max_size = 1048576  # 1MB
-        images = self.context['request'].FILES.getlist("profile_img")
-        for image in images:
-            img = Image.open(image)
-            if image.size > max_size:
-                raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
-        return data    
+        return data
         
     
     def update(self, instance, validated_data):
-        if validated_data['age'] == None:
-            got_ages = 0
-        else:
-            got_ages = validated_data['age']
+        got_ages = validated_data['age']
         
         if got_ages >= 10:
             got_ages = str(got_ages)[:1]+'0 대'
             instance.age_range = got_ages
         else:
             instance.age_range = '10대 이하'
-                
-       
+            
+        
         instance.mbti = validated_data.get('mbti', instance.mbti)
         instance.prefer_region = validated_data.get('prefer_region', instance.prefer_region)
         instance.age = validated_data.get('age', instance.age)
@@ -473,40 +499,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.save()
         
         return instance
-    
-''' 정보수정 닉네임 시작 '''
-class UserNickUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("nickname",)
-        extra_kwargs = {
-            "nickname": {
-                "error_messages": {
-                    "required": "닉네임은 필수 입력 사항입니다.",
-                    "invalid": "알맞은 형식의 닉네임을 입력해주세요.",
-                    "blank": "닉네임은 필수 입력 사항입니다.",
-                }
-            }
-        }
-        
-    # def validate(self,data):
-    #     nickname = data.get("nickname")
-    #     if nickname_validator(nickname):
-    #         raise serializers.ValidationError(
-    #             detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
-    #         )
-    #     return data
-    
-    def update(self, instance, validated_data):
-        instance.nickname = validated_data.get("nickname", instance.nickname)
-        instance.save()
-        
-        return instance
-    
 
-''' 정보수정 닉네임 끝 '''
         
-'''앨범'''
+# 앨범
 class ProfileAlbumSerializer(serializers.ModelSerializer):
     # 이미지 url로 반환
     album_img = serializers.ImageField(use_url=True)
@@ -516,7 +511,7 @@ class ProfileAlbumSerializer(serializers.ModelSerializer):
         fields = "__all__"
     
     
-'''현재 지역'''
+# 현재 지역
 class ProfileRegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -529,7 +524,7 @@ class ProfileRegionSerializer(serializers.ModelSerializer):
         
         return instance
         
-
+    
     
 ''' 친구신청 시작 '''
     
