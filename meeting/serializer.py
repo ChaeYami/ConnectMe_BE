@@ -1,5 +1,6 @@
 from rest_framework import serializers
 import urllib.parse
+from PIL import Image
 
 from meeting.models import (
     Meeting,
@@ -91,7 +92,6 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
             meeting_city = attrs.get('meeting_city')
             place_title = attrs.get('place_title')
             place_address = attrs.get('place_address')
-            
             cleaned_title = bleach.clean(title, tags=[], strip=True)
             cleaned_content = bleach.clean(content, tags=[], strip=True)
             cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
@@ -103,8 +103,17 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
             attrs['meeting_city'] = cleaned_meeting_city
             attrs['place_title'] = cleaned_place_title
             attrs['place_address'] = cleaned_place_address
+            
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
 
             return attrs
+        
     
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
@@ -145,6 +154,14 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
             attrs['meeting_city'] = cleaned_meeting_city
             attrs['place_title'] = cleaned_place_title
             attrs['place_address'] = cleaned_place_address
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+
 
             return attrs
     
@@ -177,13 +194,13 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
     join_meeting_count = serializers.SerializerMethodField()
-    join_meeting = serializers.SerializerMethodField()
+    join_meeting_user = serializers.SerializerMethodField()
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
-    def get_join_meeting(self, obj):
-        return obj.join_meeting.all().values()
+    def get_join_meeting_user(self, obj):
+        return obj.join_meeting.all().values("nickname")
     
     def get_join_meeting_count(self, obj):
         return obj.join_meeting.count()

@@ -1,10 +1,11 @@
 import bleach
 from rest_framework import serializers
 from .models import Place, PlaceComment, PlaceImage
-from django.core.serializers import serialize
 from .validators import score_validator
-import os
 from decouple import config
+from rest_framework import serializers
+from PIL import Image
+
 
 BACKEND = config("BACKEND_BASE_URL") # 로컬환경에서
 
@@ -171,7 +172,15 @@ class PlaceCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 detail={"score": "별점은 0~5.0 이하의 숫자만 입력할 수 있습니다."}
             )
+    
+        images = self.context['request'].FILES.getlist("image")
+        max_size = 1048576  # 1MB
+        for image in images:
+            img = Image.open(image)
+            if image.size > max_size:
+                raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
         return data
+    
         
     def create(self, validated_data):
         instance = Place.objects.create(**validated_data)
