@@ -190,7 +190,7 @@ class Profile(models.Model):
     mbti = models.CharField(
         "MBTI", choices=MBTI, max_length=4, blank=True, null=True, default="ALL"
     )
-    age = models.IntegerField("나이", default="0", blank=True, null=True)
+    age = models.IntegerField("나이", default="0", blank=True)
     age_range = models.CharField(
         "나잇대", max_length=20, blank=True, null=True, default="ALL"
     )
