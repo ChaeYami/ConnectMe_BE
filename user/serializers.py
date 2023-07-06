@@ -417,7 +417,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField()
     nickname = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
-    # profile_img = serializers.ImageField()
+    profile_img = serializers.ImageField()
     
     def get_user_id(self,obj):
         return obj.user.id
@@ -448,12 +448,12 @@ class ProfileSerializer(serializers.ModelSerializer):
                 detail={"age" : "나이는 0-99 사이의 숫자여야 합니다."}
             )
         
-        # max_size = 1048576  # 1MB
-        # images = self.context['request'].FILES.getlist("profile_img")
-        # for image in images:
-        #     img = Image.open(image)
-        #     if image.size > max_size:
-        #         raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+        max_size = 1048576  # 1MB
+        images = self.context['request'].FILES.getlist("profile_img")
+        for image in images:
+            img = Image.open(image)
+            if image.size > max_size:
+                raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
         return data    
         
     
@@ -497,12 +497,12 @@ class UserNickUpdateSerializer(serializers.ModelSerializer):
         }
         
     # def validate(self,data):
-        # nickname = data.get("nickname")
-        # if nickname_validator(nickname):
-        #     raise serializers.ValidationError(
-        #         detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
-        #     )
-        # return data
+    #     nickname = data.get("nickname")
+    #     if nickname_validator(nickname):
+    #         raise serializers.ValidationError(
+    #             detail={"nickname": "닉네임은 공백 없이 2자이상 8자 이하의 영문, 한글, 특수문자는 '-' 와 '_'만 사용 가능합니다."}
+    #         )
+    #     return data
     
     def update(self, instance, validated_data):
         instance.nickname = validated_data.get("nickname", instance.nickname)
