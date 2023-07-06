@@ -92,7 +92,6 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
             meeting_city = attrs.get('meeting_city')
             place_title = attrs.get('place_title')
             place_address = attrs.get('place_address')
-            
             cleaned_title = bleach.clean(title, tags=[], strip=True)
             cleaned_content = bleach.clean(content, tags=[], strip=True)
             cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
@@ -195,13 +194,13 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
     join_meeting_count = serializers.SerializerMethodField()
-    join_meeting = serializers.SerializerMethodField()
+    join_meeting_user = serializers.SerializerMethodField()
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
-    def get_join_meeting(self, obj):
-        return obj.join_meeting.all().values()
+    def get_join_meeting_user(self, obj):
+        return obj.join_meeting.all().values("nickname")
     
     def get_join_meeting_count(self, obj):
         return obj.join_meeting.count()

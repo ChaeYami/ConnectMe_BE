@@ -8,7 +8,7 @@ from datetime import datetime
 
 def job():
     now = datetime.now()
-    now_datetime = now.strftime('%Y-%m-%d %I:%M %p')
+    now_datetime = now.strftime('%Y-%m-%d %H:%M')
     meetings = Meeting.objects.all()
     for meeting in meetings:
         end_meeting = meeting.meeting_at 
