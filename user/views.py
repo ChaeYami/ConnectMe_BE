@@ -447,41 +447,15 @@ class ProfileView(APIView):
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
-    def delete(self, request, user_id):
-        user = get_object_or_404(User, id=user_id)
+    # def delete(self, request, user_id):
+    #     user = get_object_or_404(User, id=user_id)
         
-        if user == request.user:
-            user.user_profile.profile_img.delete()
-            return Response({"message": "프로필 사진이 삭제되었습니다."}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
+    #     if user == request.user:
+    #         user.user_profile.profile_img.delete()
+    #         return Response({"message": "프로필 사진이 삭제되었습니다."}, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
         
-
-
-
-# if user == request.user:
-#             profile = get_object_or_404(Profile, id=user_id)
-#             serializer = ProfileSerializer(profile, data=request.data, partial=True)
-#             user_serializer = UserNickUpdateSerializer(
-#                 user, data=request.data, partial=True
-#             )
-#             if serializer.is_valid():
-#                 if user_serializer.is_valid():
-                    
-#                     user_serializer.save()
-#                     serializer.save()
-                    
-#                     return Response(
-#                         {"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK
-#                     )
-#                 else:
-#                     return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#             else:
-#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#         else:
-#             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
 
 """ 프로필 앨범 """
 
