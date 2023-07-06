@@ -17,7 +17,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ['backend', ]
+ALLOWED_HOSTS = ['backend_wsgi', 'backend_asgi']
 
 # Application definition
 
@@ -195,7 +195,7 @@ SIMPLE_JWT = {
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'http://connectme.co.kr', 'http://13.124.71.106', 'http://127.0.0.1:5500']
+CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'https://api.connectme.co.kr']
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 
 CSRF_COOKIE_SECURE = True
