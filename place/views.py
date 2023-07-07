@@ -269,8 +269,8 @@ class PlaceCommentDetailView(APIView):
 
 
 """ 장소 검색, 정렬 시작 """
-# select, search 검색
-class PlaceSearchView(viewsets.ModelViewSet):
+# select, search title 검색
+class PlaceTitleSearchView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
@@ -278,6 +278,27 @@ class PlaceSearchView(viewsets.ModelViewSet):
     ordering_fields = ['comment_count', 'likes_count', 'books_count', 'id',]
     ordering = ['-id']
     search_fields = ['title',]
+    
+    def get_queryset(self):
+        # 댓글 수를 계산하여 comment_count 필드를 추가
+        # annotate: 계산 후 새 필드를 추가
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'), likes_count=Count('like'), books_count=Count('bookmark'))
+        category_query = self.request.query_params.get('category')
+        
+        if category_query is not None:
+            queryset = queryset.filter(category__icontains=category_query)
+
+        return queryset
+
+
+class PlaceRegionSearchView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    pagination_class = PlaceCategoryPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['comment_count', 'likes_count', 'books_count', 'id',]
+    ordering = ['-id']
+    search_fields = ['address',]
     
     def get_queryset(self):
         # 댓글 수를 계산하여 comment_count 필드를 추가
