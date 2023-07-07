@@ -13,7 +13,7 @@ import bleach
 class CounselReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselReply
-        fields = ("content",)
+        fields = ("content","is_anonymous")
         extra_kwargs = {
             "content": {
                 "error_messages": {
