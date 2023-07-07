@@ -4,7 +4,10 @@ from .models import (
     CounselComment,
     CounselReply
 )
-
+from taggit_serializer.serializers import(
+    TaggitSerializer,
+    TagListSerializerField
+)
 import bleach
 
 """ 대댓글 """
@@ -101,7 +104,8 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
 """ 글 작성, 상세, 수정 """
 
 '''글 리스트'''
-class CounselListSerializer(serializers.ModelSerializer):
+class CounselListSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
     user = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%Y.%m.%d")
@@ -120,7 +124,8 @@ class CounselListSerializer(serializers.ModelSerializer):
         
 
 '''글 작성, 수정'''
-class CounselCreateSerializer(serializers.ModelSerializer):
+class CounselCreateSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField(required=False)
 
     class Meta:
         model = Counsel
@@ -151,8 +156,37 @@ class CounselCreateSerializer(serializers.ModelSerializer):
             attrs['content'] = cleaned_content
 
             return attrs
+    
+    def create(self, validated_data):
+        tags_data = validated_data.pop('tags', [])
+        
+        if isinstance(tags_data, list):
+            tags_data = ','.join(tags_data)
+        
+        tags_list = [tag.strip() for tag in tags_data.split(',')]
+
+        counsel = Counsel.objects.create(**validated_data)
+        counsel.tags.set(tags_list)
+
+        return counsel
+
+    def update(self, instance, validated_data):
+        tags_data = validated_data.pop('tags', [])
+        
+        if isinstance(tags_data, list):
+            tags_data = ','.join(tags_data)
+        
+        tags_list = [tag.strip() for tag in tags_data.split(',')]
+
+        instance = super().update(instance, validated_data)
+
+        instance.tags.set(tags_list)
+
+        return instance
+
 '''글 상세'''
-class CounselDetailSerializer(serializers.ModelSerializer):
+class CounselDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
     created_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     updated_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     user = serializers.SerializerMethodField()

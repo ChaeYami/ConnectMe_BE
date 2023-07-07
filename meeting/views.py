@@ -241,25 +241,25 @@ class MeetingCommentReplyDetailView(APIView):
 
 """ 모임 제목, 내용, 작성자 검색 기능 시작 """
 class MeetingTitleSearchView(generics.ListAPIView):
-    queryset = Meeting.objects.all()
+    queryset = Meeting.objects.all().order_by("-created_at")
     serializer_class = MeetingListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['title',]
 
 class MeetingContentSearchView(generics.ListAPIView):
-    queryset = Meeting.objects.all()
+    queryset = Meeting.objects.all().order_by("-created_at")
     serializer_class = MeetingListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['content',]
 
 class MeetingUserSearchView(generics.ListAPIView):
-    queryset = Meeting.objects.all()
+    queryset = Meeting.objects.all().order_by("-created_at")
     serializer_class = MeetingListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['user__nickname',]
 
 class MeetingCitySearchView(generics.ListAPIView):
-    queryset = Meeting.objects.all()
+    queryset = Meeting.objects.all().order_by("-created_at")
     serializer_class = MeetingListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['meeting_city',]

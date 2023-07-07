@@ -200,7 +200,7 @@ class MeetingDetailSerializer(serializers.ModelSerializer):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
     def get_join_meeting_user(self, obj):
-        return obj.join_meeting.all().values("nickname")
+        return obj.join_meeting.all().values("id","nickname")
     
     def get_join_meeting_count(self, obj):
         return obj.join_meeting.count()
