@@ -16,4 +16,6 @@ urlpatterns = [
     path('<int:counsel_id>/comment/<int:counsel_comment_id>/reply/', views.CounselReplyView.as_view(), name="counsel_reply_view"),
     path('<int:counsel_id>/comment/reply/<int:counsel_reply_id>/', views.CounselReplyDetailView.as_view(), name="counsel_reply_detail_view"),
     path('<int:counsel_id>/comment/reply/<int:counsel_reply_id>/like/', views.CounselReplyLikeView.as_view(), name="counsel_reply_like_view"),
+
+    path('tag/', views.TagCounselAPIView.as_view(), name='tagcounselview'),
 ]

@@ -11,7 +11,7 @@ class Meeting(models.Model):
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
     bookmark = models.ManyToManyField(User, verbose_name="북마크", blank=True, related_name="bookmark_meeting")
-    join_meeting = models.ManyToManyField(User, verbose_name="참가하기", blank=True, related_name="join_meeting")
+    join_meeting = models.ManyToManyField(User, verbose_name="모임참가", blank=True, related_name="join_meeting")
     meeting_city = models.CharField(verbose_name="지역", max_length=10)
     meeting_at = models.TextField(verbose_name="모임일")
     num_person_meeting = models.PositiveIntegerField(verbose_name="인원수",validators=[MinValueValidator(2)])

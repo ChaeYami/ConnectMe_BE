@@ -273,3 +273,9 @@ class CounselReplyLikeView(APIView):
 
 """ 대댓글 끝 """
 
+class TagCounselAPIView(APIView):
+    def get(self, request):
+        tag_name = request.GET.get('tag')
+        counsel = Counsel.objects.filter(tags__name=tag_name).order_by("-created_at")
+        serializer = CounselListSerializer(counsel, many=True)
+        return Response(serializer.data)
