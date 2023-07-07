@@ -21,6 +21,8 @@ from .serializers import(
     CounselReplySerializer,
     CounselReplyCreateSerializer,
 )
+from django.db.models import F
+from django.db.models import Count
 
 '''페이지네이션 시작'''
 class CounselPagination(PageNumberPagination):
@@ -273,9 +275,44 @@ class CounselReplyLikeView(APIView):
 
 """ 대댓글 끝 """
 
+
 class TagCounselAPIView(APIView):
     def get(self, request):
         tag_name = request.GET.get('tag')
         counsel = Counsel.objects.filter(tags__name=tag_name).order_by("-created_at")
         serializer = CounselListSerializer(counsel, many=True)
         return Response(serializer.data)
+
+class TopCommentsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, counsel_id):
+        
+        comments = CounselComment.objects.filter(counsel_id=counsel_id)
+        
+        comments_serializer = CounselCommentSerializer(comments, many=True)
+        comments_data = comments_serializer.data
+
+        for comment_data in comments_data:
+            if comment_data.get('reply'):
+                comment_data['reply'] = []
+
+        replies = CounselReply.objects.filter(counsel_id=counsel_id)
+        
+        replies_serializer = CounselReplySerializer(replies, many=True)
+
+        combined_data = []
+        for i in range(max(len(comments), len(replies))):
+            if i < len(comments):
+                combined_data.append(comments_serializer.data[i])
+            if i < len(replies):
+                combined_data.append(replies_serializer.data[i])
+
+        combined_data.sort(key=lambda x: x.get('comment_like_count', 0) + x.get('reply_like_count', 0), reverse=True)
+        combined_data = combined_data[:3]
+
+        response_data = {
+            'combined_data': combined_data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
