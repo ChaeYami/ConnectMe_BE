@@ -589,7 +589,8 @@ class SetNewPasswordView(APIView):
         serializer = SetNewPasswordSerializer(data=request.data)
         if serializer.is_valid():
             return Response({"message": "비밀번호 재설정 완료"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 ''' 비밀번호 재설정 끝 '''
