@@ -410,7 +410,13 @@ class ProfileView(APIView):
                     {"message": "프로필 수정이 완료되었습니다."}, status=status.HTTP_200_OK
                 )
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                errors = {
+                    'serializer_errors': serializer.errors,
+                    'user_serializer_errors': user_serializer.errors
+                }
+
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
 
         else:
             return Response({"message": "권한이 없습니다!"}, status=status.HTTP_403_FORBIDDEN)
@@ -873,7 +879,7 @@ class ReportView(APIView):
             reported_user.warning += 1
 
             # 신고누적차단
-            if reported_user.warning >= 1:
+            if reported_user.warning >= 3:
                 reported_user.is_active = False
                 reported_user.is_blocked = True
                 blocked_check = Blacklist.objects.filter(blocked_user=reported_user)

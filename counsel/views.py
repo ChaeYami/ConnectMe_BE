@@ -161,7 +161,7 @@ class CounselCommentDetailView(APIView):
     def put(self, request, counsel_id, counsel_comment_id):
         comment = get_object_or_404(CounselComment, id=counsel_comment_id)
         if comment.user == request.user:
-            serializer = CounselCreateSerializer(comment, data=request.data, partial=True)
+            serializer = CounselCommentSerializer(comment, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response({"meesage":"수정완료"}, status.HTTP_200_OK)
