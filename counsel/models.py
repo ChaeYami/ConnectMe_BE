@@ -1,5 +1,7 @@
 from django.db import models
 from user.models import User
+from taggit.managers import TaggableManager
+
 
 
 class Counsel(models.Model):
@@ -10,6 +12,8 @@ class Counsel(models.Model):
     created_at = models.DateTimeField(verbose_name="작성일" , auto_now_add=True,)
     updated_at = models.DateTimeField(verbose_name="수정일" , auto_now=True)
     is_anonymous = models.BooleanField(verbose_name="익명",null=True, blank=True)
+    tags = TaggableManager(blank=True, verbose_name="장고태그")
+
     
 class CounselComment(models.Model):
     user = models.ForeignKey(User, verbose_name="댓글작성자", on_delete=models.CASCADE, related_name="counsel_comment_user")

@@ -2,6 +2,7 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 import os
+import my_settings
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -15,9 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', '0') == '1'
+DEBUG = True
 
-ALLOWED_HOSTS = ['backend_wsgi', 'backend_asgi', 'api.connectme.co.kr', 'connectme.co.kr']
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -40,17 +41,17 @@ INSTALLED_APPS = [
     "counsel",
     "django_filters",
     "django_apscheduler",
+    "taggit.apps.TaggitAppConfig",
 ]
+
+TAGGIT_CASE_INSENSITIVE = True
+TAGGIT_LIMIT = 50
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-    'DEFAULT_SCHEMA_CLASS': None,
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
 }
 
 MIDDLEWARE = [
@@ -100,26 +101,8 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-POSTGRES_DB = os.environ.get('POSTGRES_DB', '')
-if POSTGRES_DB:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': POSTGRES_DB,
-            'USER': os.environ.get('POSTGRES_USER', ''),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': os.environ.get('POSTGRES_HOST', ''),
-            'PORT': os.environ.get('POSTGRES_PORT', ''),
-        }
-    }
+DATABASES = my_settings.DATABASES
 
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -197,16 +180,9 @@ SIMPLE_JWT = {
 }
 
 
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'https://api.connectme.co.kr', 'http://connectme.co.kr', 'http://api.connectme.co.kr', 'http://13.209.54.168']
-CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
-
-CSRF_COOKIE_SECURE = True
-
-CSRF_TRUSTED_ORIGINS = [
-        "https://connectme.co.kr", "https://api.connectme.co.kr",'http://connectme.co.kr','http://api.connectme.co.kr', 'http://13.209.54.168'
-]
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5500']
 
 AUTH_USER_MODEL = "user.User"
 
