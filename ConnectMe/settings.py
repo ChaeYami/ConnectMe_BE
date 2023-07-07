@@ -196,13 +196,13 @@ SIMPLE_JWT = {
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'https://api.connectme.co.kr', 'http://connectme.co.kr', 'http://api.connectme.co.kr']
+CORS_ORIGIN_WHITELIST = ['https://connectme.co.kr', 'https://api.connectme.co.kr', 'http://connectme.co.kr', 'http://api.connectme.co.kr', 'http://13.209.54.168']
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 
 CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
-        "https://connectme.co.kr", "https://api.connectme.co.kr",'http://connectme.co.kr','http://api.connectme.co.kr'
+        "https://connectme.co.kr", "https://api.connectme.co.kr",'http://connectme.co.kr','http://api.connectme.co.kr', 'http://13.209.54.168'
 ]
 
 AUTH_USER_MODEL = "user.User"
