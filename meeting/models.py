@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.validators import MinValueValidator
 from user.models import User
 from place.models import Place
 
@@ -14,7 +14,7 @@ class Meeting(models.Model):
     join_meeting = models.ManyToManyField(User, verbose_name="참가하기", blank=True, related_name="join_meeting")
     meeting_city = models.CharField(verbose_name="지역", max_length=10)
     meeting_at = models.TextField(verbose_name="모임일")
-    num_person_meeting = models.TextField(verbose_name="인원수",)
+    num_person_meeting = models.PositiveIntegerField(verbose_name="인원수",validators=[MinValueValidator(2)])
     meeting_status = models.CharField(verbose_name="모집상태", max_length=10, default="모집중")
     place_title = models.TextField(verbose_name="모임장소")
     place_address = models.TextField(verbose_name="모임주소")

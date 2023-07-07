@@ -1,5 +1,6 @@
 from rest_framework import serializers
 import urllib.parse
+from PIL import Image
 
 from meeting.models import (
     Meeting,
@@ -7,6 +8,9 @@ from meeting.models import (
     MeetingCommentReply,
     MeetingImage,
     )
+
+import bleach
+
 
 '''모임 이미지 시작'''
 
@@ -24,8 +28,8 @@ class MeetingImageSerializer(serializers.ModelSerializer):
 '''
 '''모임 대댓글 리스트'''
 class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
-    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
+    created_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     user = serializers.SerializerMethodField()
     
     def get_user(self, obj):
@@ -38,8 +42,8 @@ class MeetingCommentReplyListSerializer(serializers.ModelSerializer):
 '''모임 댓글 리스트'''
 class MeetingCommentListSerializer(serializers.ModelSerializer):
     reply = MeetingCommentReplyListSerializer(many=True) # 대댓글 Nested Serializer
-    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
-    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
+    created_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     user = serializers.SerializerMethodField()
     
     def get_user(self, obj):
@@ -82,6 +86,35 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
         model = Meeting
         fields = ("id","place","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
 
+    def validate(self, attrs):
+            title = attrs.get('title')
+            content = attrs.get('content')
+            meeting_city = attrs.get('meeting_city')
+            place_title = attrs.get('place_title')
+            place_address = attrs.get('place_address')
+            cleaned_title = bleach.clean(title, tags=[], strip=True)
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+            cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
+            cleaned_place_title = bleach.clean(place_title, tags=[], strip=True)
+            cleaned_place_address = bleach.clean(place_address, tags=[], strip=True)
+
+            attrs['title'] = cleaned_title
+            attrs['content'] = cleaned_content
+            attrs['meeting_city'] = cleaned_meeting_city
+            attrs['place_title'] = cleaned_place_title
+            attrs['place_address'] = cleaned_place_address
+            
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+
+            return attrs
+        
+    
     def create(self, validated_data):
         instance = Meeting.objects.create(**validated_data)
         image_urls = self.context['request'].data.getlist('image')
@@ -102,6 +135,37 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
         fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        
+    def validate(self, attrs):
+            title = attrs.get('title')
+            content = attrs.get('content')
+            meeting_city = attrs.get('meeting_city')
+            place_title = attrs.get('place_title')
+            place_address = attrs.get('place_address')
+            
+            cleaned_title = bleach.clean(title, tags=[], strip=True)
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+            cleaned_meeting_city = bleach.clean(meeting_city, tags=[], strip=True)
+            cleaned_place_title = bleach.clean(place_title, tags=[], strip=True)
+            cleaned_place_address = bleach.clean(place_address, tags=[], strip=True)
+
+            attrs['title'] = cleaned_title
+            attrs['content'] = cleaned_content
+            attrs['meeting_city'] = cleaned_meeting_city
+            attrs['place_title'] = cleaned_place_title
+            attrs['place_address'] = cleaned_place_address
+            
+            images = self.context['request'].FILES.getlist("image")
+            max_size = 1048576  # 1MB
+            for image in images:
+                img = Image.open(image)
+                if image.size > max_size:
+                    raise serializers.ValidationError("이미지 크기는 1MB를 초과할 수 없습니다.")
+
+
+            return attrs
+    
+    
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -125,18 +189,18 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 '''모임 글 상세'''
 class MeetingDetailSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
-    updated_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M")
+    created_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     comment = MeetingCommentListSerializer(many=True) # 댓글 Nested Serializer
     meeting_image = MeetingImageSerializer(many=True, read_only=True)
     join_meeting_count = serializers.SerializerMethodField()
-    join_meeting = serializers.SerializerMethodField()
+    join_meeting_user = serializers.SerializerMethodField()
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
 
-    def get_join_meeting(self, obj):
-        return obj.join_meeting.all().values()
+    def get_join_meeting_user(self, obj):
+        return obj.join_meeting.all().values("nickname")
     
     def get_join_meeting_count(self, obj):
         return obj.join_meeting.count()
@@ -154,6 +218,17 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingComment
         fields = ("content",)
+        
+    def validate(self, attrs):
+            content = attrs.get('content')
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['content'] = cleaned_content
+
+            return attrs
+    
 
 '''모임 댓글 작성, 수정 끝'''
 
@@ -168,6 +243,16 @@ class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
         fields = ("content",)
+        
+    def validate(self, attrs):
+            content = attrs.get('content')
+
+            # content 필드에서 HTML 태그 제거
+            cleaned_content = bleach.clean(content, tags=[], strip=True)
+
+            attrs['content'] = cleaned_content
+
+            return attrs
 
 '''모임 대댓글 작성, 수정 끝'''
 

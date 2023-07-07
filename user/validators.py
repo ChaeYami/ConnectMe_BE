@@ -8,14 +8,6 @@ def password_validator(password):
         return True
     return False
 
-# def password_pattern(password):
-#     # 3자이상 같은 문자가 연속할 경우 불가
-#     password_pattern = r"(.)\1+\1"
-    
-#     if re.search(password_pattern, str(password)):
-#         return True
-#     return False
-
 def phone_validator(phone):
     # 11자 숫자
     phone_validations = r"\d{10,11}$"
@@ -38,5 +30,11 @@ def nickname_validator(nickname):
     
     
     if not re.search(nickname_validation, str(nickname)):
+        return True
+    return False
+
+def age_validator(age):
+    age_validation = r"^\d{1,2}$"
+    if not re.search(age_validation, str(age)):
         return True
     return False

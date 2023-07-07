@@ -1,4 +1,5 @@
 from django.db.models import Count, Q
+from django.core.exceptions import ValidationError
 
 from place.models import Place, PlaceComment, PlaceImage
 from place.serializers import (
@@ -21,6 +22,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import get_object_or_404
+
+from PIL import Image
 
 
 """페이지네이션 시작 """
@@ -129,6 +132,12 @@ class PlaceImageView(APIView):
         image_urls = []
 
         for index, data in enumerate(image_data_list, start=1):
+            img = Image.open(data)
+            max_size = 1048576
+            if data.size > max_size:
+                error_msg = f"이미지 크기는 1MB를 초과할 수 없습니다."
+                return Response({'error': error_msg}, status=status.HTTP_400_BAD_REQUEST)
+            
             place_image = PlaceImage.objects.create(place=place, image=data)
             image_urls.append({'id': place_image.id, 'url': place_image.image.url})
         
@@ -260,20 +269,41 @@ class PlaceCommentDetailView(APIView):
 
 
 """ 장소 검색, 정렬 시작 """
-# select, search 검색
-class PlaceSearchView(viewsets.ModelViewSet):
+# select, search title 검색
+class PlaceTitleSearchView(viewsets.ModelViewSet):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PlaceCategoryPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    ordering_fields = ['comment_count', 'like', 'bookmark', 'id',]
+    ordering_fields = ['comment_count', 'likes_count', 'books_count', 'id',]
     ordering = ['-id']
     search_fields = ['title',]
     
     def get_queryset(self):
         # 댓글 수를 계산하여 comment_count 필드를 추가
         # annotate: 계산 후 새 필드를 추가
-        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'))
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'), likes_count=Count('like'), books_count=Count('bookmark'))
+        category_query = self.request.query_params.get('category')
+        
+        if category_query is not None:
+            queryset = queryset.filter(category__icontains=category_query)
+
+        return queryset
+
+
+class PlaceRegionSearchView(viewsets.ModelViewSet):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    pagination_class = PlaceCategoryPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['comment_count', 'likes_count', 'books_count', 'id',]
+    ordering = ['-id']
+    search_fields = ['address',]
+    
+    def get_queryset(self):
+        # 댓글 수를 계산하여 comment_count 필드를 추가
+        # annotate: 계산 후 새 필드를 추가
+        queryset = super().get_queryset().annotate(comment_count=Count('place_comment_place'), likes_count=Count('like'), books_count=Count('bookmark'))
         category_query = self.request.query_params.get('category')
         
         if category_query is not None:
