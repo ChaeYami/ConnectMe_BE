@@ -102,7 +102,7 @@ class CounselCommentCreateSerializer(serializers.ModelSerializer):
 class CounselListSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y.%m.%d")
     
     def get_user(self, obj):
         return {"account": obj.user.account, "pk": obj.user.pk, "nickname": obj.user.nickname}
@@ -151,8 +151,8 @@ class CounselCreateSerializer(serializers.ModelSerializer):
             return attrs
 '''글 상세'''
 class CounselDetailSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
-    updated_at = serializers.DateTimeField(format="%Y년 %m월 %d일 %H시 %M분")
+    created_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
+    updated_at = serializers.DateTimeField(format="%Y.%m.%d %H:%M")
     user = serializers.SerializerMethodField()
     counsel_comment_counsel = CounselCommentSerializer
     def get_user(self, obj):
