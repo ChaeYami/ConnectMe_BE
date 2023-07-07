@@ -417,7 +417,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField()
     nickname = serializers.SerializerMethodField()
     user_id = serializers.SerializerMethodField()
-    profile_img = serializers.ImageField()
+    profile_img = serializers.ImageField(required=False)
     
     def get_user_id(self,obj):
         return obj.user.id
