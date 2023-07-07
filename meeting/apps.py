@@ -7,6 +7,8 @@ class MeetingConfig(AppConfig):
     name = 'meeting'
 
     def ready(self):
+        import meeting.signals
+        
         if settings.SCHEDULER_DEFAULT:
             from . import operator
             operator.start()

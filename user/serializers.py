@@ -382,15 +382,18 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
             if PasswordResetTokenGenerator().check_token(user, token) == False:
                 raise exceptions.AuthenticationFailed("토큰이 유효하지 않습니다.", 401)
-            if password != repassword:
-                raise serializers.ValidationError(
-                    detail={"repassword": "비밀번호가 일치하지 않습니다."}
-                )
+            
             # 비밀번호 유효성 검사
             if password_validator(password):
                 raise serializers.ValidationError(
                     detail={"password": "비밀번호는 8자 이상의 영문 대/소문자와 숫자, 특수문자를 포함하여야 합니다."}
                 )
+                
+            if password != repassword:
+                raise serializers.ValidationError(
+                    detail={"repassword": "비밀번호가 일치하지 않습니다."}
+                )
+            
 
             # 비밀번호 유효성 검사
             # if password_pattern(password):
