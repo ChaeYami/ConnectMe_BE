@@ -15,6 +15,8 @@ urlpatterns = [
          name='place_image_view'),
     
     # 쿼리셋을 가져와 리스트로 반환
-    path("search/", views.PlaceSearchView.as_view({'get': 'list'}), name="place_search_view"),
+    path("title/", views.PlaceTitleSearchView.as_view({'get': 'list'}), name="place_title_search_view"),
+    path("region/", views.PlaceRegionSearchView.as_view({'get': 'list'}), name="place_region_search_view"),
     path("category/", views.PlaceCategoryView.as_view({'get': 'list'}), name="place_category_view"),
+    
 ]
