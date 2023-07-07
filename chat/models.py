@@ -1,5 +1,5 @@
 from django.db import models
-from user.models import User
+from user.models import User, Profile
 
 
 class ChatRoom(models.Model):
@@ -7,8 +7,20 @@ class ChatRoom(models.Model):
     participant1 = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="participant1"
     )
+    participant1_profile = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="participant1_profile",
+    )
     participant2 = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="participant2"
+    )
+    participant2_profile = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="participant2_profile",
     )
 
     def __str__(self):
