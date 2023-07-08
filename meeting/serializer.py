@@ -84,7 +84,54 @@ class MeetingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("id","place","title","content","meeting_image","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        fields = ("id","place","meeting_city","meeting_at","num_person_meeting","place_title","place_address","title","content","meeting_image","meeting_status",)
+        extra_kwargs = {
+            
+            "meeting_city": {
+                "error_messages": {
+                    "required": "모임 지역을 선택해주세요.",
+                    "blank": "모임 지역을 선택해주세요.",
+                }
+            },
+            "meeting_at": {
+                "error_messages": {
+                    "required": "모임 날짜를 선택해주세요.",
+                    "blank": "모임 날짜를 선택해주세요.",
+                }
+            },
+            "num_person_meeting": {
+                "error_messages": {
+                    "required": "모집 인원수를 입력해주세요.",
+                    "blank": "모집 인원수를 입력해주세요.",
+                    "invalid" : "모집 인원수는 2이상 숫자만 입력해주세요.",
+                }
+            },
+            "place_title": {
+                "error_messages": {
+                    "required": "모임 장소를 입력해주세요.",
+                    "blank": "모임 장소를 입력해주세요.",
+                }
+            },
+            "place_address": {
+                "error_messages": {
+                    "required": "모임 주소를 입력해주세요.",
+                    "blank": "모임 주소를 입력해주세요.",
+                }
+            },
+            "title": {
+                "error_messages": {
+                    "required": "제목을 입력해주세요.",
+                    "blank": "제목을 입력해주세요.",
+                }
+            },
+            "content": {
+                "error_messages": {
+                    "required": "내용을 입력해주세요.",
+                    "blank": "내용을 입력해주세요.",
+                }
+            },
+                        
+        }
 
     def validate(self, attrs):
             title = attrs.get('title')
@@ -134,7 +181,54 @@ class MeetingUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Meeting
-        fields = ("title","content","meeting_city","meeting_at","num_person_meeting","meeting_status","place_title","place_address",)
+        fields = ("place","meeting_city","meeting_at","num_person_meeting","place_title","place_address","title","content","meeting_status",)      
+        extra_kwargs = {
+            
+            "meeting_city": {
+                "error_messages": {
+                    "required": "모임 지역을 선택해주세요.",
+                    "blank": "모임 지역을 선택해주세요.",
+                }
+            },
+            "meeting_at": {
+                "error_messages": {
+                    "required": "모임 날짜를 선택해주세요.",
+                    "blank": "모임 날짜를 선택해주세요.",
+                }
+            },
+            "num_person_meeting": {
+                "error_messages": {
+                    "required": "모집 인원수를 입력해주세요.",
+                    "blank": "모집 인원수를 입력해주세요.",
+                    "invalid" : "모집 인원수는 2이상 숫자만 입력해주세요.",
+                }
+            },
+            "place_title": {
+                "error_messages": {
+                    "required": "모임 장소를 입력해주세요.",
+                    "blank": "모임 장소를 입력해주세요.",
+                }
+            },
+            "place_address": {
+                "error_messages": {
+                    "required": "모임 주소를 입력해주세요.",
+                    "blank": "모임 주소를 입력해주세요.",
+                }
+            },
+            "title": {
+                "error_messages": {
+                    "required": "제목을 입력해주세요.",
+                    "blank": "제목을 입력해주세요.",
+                }
+            },
+            "content": {
+                "error_messages": {
+                    "required": "내용을 입력해주세요.",
+                    "blank": "내용을 입력해주세요.",
+                }
+            },
+                        
+        }
         
     def validate(self, attrs):
             title = attrs.get('title')
@@ -218,6 +312,16 @@ class MeetingCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingComment
         fields = ("content",)
+        extra_kwargs = {
+            
+            "content": {
+                "error_messages": {
+                    "required": "내용을 입력해주세요.",
+                    "blank": "댓글을 입력해주세요.",
+                }
+            },
+                        
+        }
         
     def validate(self, attrs):
             content = attrs.get('content')
@@ -243,6 +347,16 @@ class MeetingCommentReplyCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeetingCommentReply
         fields = ("content",)
+        extra_kwargs = {
+            
+            "content": {
+                "error_messages": {
+                    "required": "내용을 입력해주세요.",
+                    "blank": "댓글을 입력해주세요.",
+                }
+            },
+                        
+        }
         
     def validate(self, attrs):
             content = attrs.get('content')
