@@ -41,11 +41,7 @@ INSTALLED_APPS = [
     "counsel",
     "django_filters",
     "django_apscheduler",
-    "taggit.apps.TaggitAppConfig",
 ]
-
-TAGGIT_CASE_INSENSITIVE = True
-TAGGIT_LIMIT = 50
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
