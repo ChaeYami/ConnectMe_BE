@@ -173,7 +173,7 @@ class MeetingCommentView(APIView):
             return Response({"meesage": "작성완료"}, status=status.HTTP_200_OK)
         else:
             return Response(
-                {"meesage": "빈간을 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -193,7 +193,7 @@ class MeetingCommentDetailView(APIView):
                 return Response({"meesage": "수정완료"}, status=status.HTTP_200_OK)
             else:
                 return Response(
-                    {"meesage": "빈간을 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             return Response({"meesage": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
@@ -251,7 +251,7 @@ class MeetingCommentReplyView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(
-                {"meesage": "빈간을 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
 
@@ -271,7 +271,7 @@ class MeetingCommentReplyDetailView(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(
-                    {"meesage": "빈간을 입력해주세요"}, status=status.HTTP_400_BAD_REQUEST
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
