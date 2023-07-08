@@ -354,7 +354,7 @@ class CounselReplyLikeView(APIView):
 
 """ 대댓글 끝 """
 
-
+""" 베스트 댓글 """
 class TopCommentsView(APIView):
     permission_classes = [IsAuthenticated]
 
