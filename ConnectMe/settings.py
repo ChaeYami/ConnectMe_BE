@@ -15,6 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = os.environ.get("DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = [
@@ -203,11 +204,13 @@ SIMPLE_JWT = {
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
+
 CORS_ORIGIN_WHITELIST = [
     config("BACKEND_BASE_URL"),
     config("FRONTEND_BASE_URL"),
     config("BACKEND_EC2_URL"),
 ]
+
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 CSRF_COOKIE_SECURE = True
 
