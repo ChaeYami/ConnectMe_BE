@@ -262,7 +262,8 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 ***
 🐬 ERD
 ------
-![Connect ME (2)](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/55e28a36-1995-41ed-926c-bb8f09b5f79c)
+
+![Connect ME (5)](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/b1181afb-f7b4-48a8-9635-89e2a8a4d9c1)
 
 
 
