@@ -73,6 +73,14 @@ class CounselCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CounselComment
         fields = "__all__"
+        extra_kwargs = {
+            "content": {
+                "error_messages": {
+                    "required": "댓글을 입력해주세요.",
+                    "blank": "댓글을 입력해주세요.",
+                }
+            },
+        }
 
 
 """댓글 작성"""
