@@ -43,6 +43,19 @@ class ChatRoomView(APIView):
             & Q(room_name=room_name)
         )
 
+        # DB 정리용 임시 코드
+        chat_room_delete1 = ChatRoom.objects.filter(
+            Q(participant1_profile=None) | Q(participant2_profile=None)
+        )
+        chat_room_delete1.delete()
+
+        chat_room_delete2 = ChatRoom.objects.filter(
+            Q(participant1=sorted_participants[1])
+            & Q(participant2=sorted_participants[0])
+            & Q(room_name=room_name)
+        )
+        chat_room_delete2.delete()
+
         if not chat_room.exists():
             data = {
                 "room_name": room_name,

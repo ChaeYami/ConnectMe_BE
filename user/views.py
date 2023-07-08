@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.core.mail import EmailMessage
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
@@ -54,6 +55,7 @@ from PIL import Image
 
 import requests
 import uuid
+import jwt
 
 
 """ 회원가입, 회원정보 시작 """
@@ -311,6 +313,27 @@ class ActivateAccountView(APIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+""" 토큰 유효성 검사 """
+
+
+class TokenValidateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        token = str(request.auth)
+
+        # jwt 토큰 decoding
+        try:
+            decoded_token = jwt.decode(
+                token, key=settings.SECRET_KEY, algorithms=["HS256"], verify=True
+            )
+            return Response(status=status.HTTP_200_OK)
+
+        # 토큰이 유효하지 않은 경우
+        except jwt.InvalidTokenError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 """ 비밀번호 변경 """
