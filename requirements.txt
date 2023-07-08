@@ -1,4 +1,4 @@
-﻿APScheduler==3.10.1
+APScheduler==3.10.1
 asgiref==3.7.2
 async-generator==1.10
 async-timeout==4.0.2
@@ -23,8 +23,6 @@ django-apscheduler==0.6.2
 django-cleanup==7.0.0
 django-cors-headers==4.0.0
 django-filter==23.2
-django-taggit==4.0.0
-django-taggit-serializer==0.1.7
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 exceptiongroup==1.1.1
