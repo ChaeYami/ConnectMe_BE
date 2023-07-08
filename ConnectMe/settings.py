@@ -17,7 +17,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ['backend_wsgi', 'backend_asgi', 'api.connectme.co.kr', 'connectme.co.kr']
+ALLOWED_HOSTS = ['backend_wsgi', 'backend_asgi', 'api.connectme.co.kr', 'connectme.co.kr', '13.209.54.168']
 
 # Application definition
 
