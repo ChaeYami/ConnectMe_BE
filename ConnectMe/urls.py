@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from . import views
 
 # url 매핑
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path("meeting/", include("meeting.urls")),
     path("counsel/", include("counsel.urls")),
     path("chat/", include("chat.urls")),
+    path("healthchecker/", views.HealthChecker.as_view(), name="health_checker"),
 ]

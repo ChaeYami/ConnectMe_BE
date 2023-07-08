@@ -15,9 +15,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ['backend_wsgi', 'backend_asgi', config("BACKEND_BASE_HOST"), config("FRONTEND_BASE_HOST"), config("BACKEND_EC2_HOST")]
+DEBUG = os.environ.get("DEBUG", "0") == "1"
+
+ALLOWED_HOSTS = [
+    "backend_wsgi",
+    "backend_asgi",
+    config("BACKEND_BASE_HOST"),
+    config("FRONTEND_BASE_HOST"),
+    config("BACKEND_EC2_HOST"),
+]
 
 # Application definition
 
@@ -47,10 +54,8 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-    'DEFAULT_SCHEMA_CLASS': None,
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
+    "DEFAULT_SCHEMA_CLASS": None,
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
 MIDDLEWARE = [
@@ -100,24 +105,24 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-POSTGRES_DB = os.environ.get('POSTGRES_DB', '')
+POSTGRES_DB = os.environ.get("POSTGRES_DB", "")
 if POSTGRES_DB:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': POSTGRES_DB,
-            'USER': os.environ.get('POSTGRES_USER', ''),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': os.environ.get('POSTGRES_HOST', ''),
-            'PORT': os.environ.get('POSTGRES_PORT', ''),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": POSTGRES_DB,
+            "USER": os.environ.get("POSTGRES_USER", ""),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
+            "HOST": os.environ.get("POSTGRES_HOST", ""),
+            "PORT": os.environ.get("POSTGRES_PORT", ""),
         }
     }
 
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -199,7 +204,13 @@ SIMPLE_JWT = {
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ORIGIN_WHITELIST = [config("BACKEND_BASE_URL"), config("FRONTEND_BASE_URL"), config("BACKEND_EC2_URL")]
+
+CORS_ORIGIN_WHITELIST = [
+    config("BACKEND_BASE_URL"),
+    config("FRONTEND_BASE_URL"),
+    config("BACKEND_EC2_URL"),
+]
+
 CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 CSRF_COOKIE_SECURE = True
 
