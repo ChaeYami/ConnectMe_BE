@@ -35,7 +35,6 @@ idna==3.4
 incremental==22.10.0
 msgpack==1.0.5
 mypy-extensions==1.0.0
-mysqlclient==2.1.1
 outcome==1.2.0
 packaging==23.1
 pathspec==0.11.1
@@ -63,7 +62,6 @@ tomli==2.0.1
 trio==0.22.0
 trio-websocket==0.10.3
 Twisted==22.10.0
-twisted-iocpsupport==1.0.3
 txaio==23.1.1
 typing_extensions==4.6.3
 tzdata==2023.3

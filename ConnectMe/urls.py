@@ -14,4 +14,4 @@ urlpatterns = [
     path("counsel/", include("counsel.urls")),
     path("chat/", include("chat.urls")),
     path("healthchecker/", views.HealthChecker.as_view(), name="health_checker"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
