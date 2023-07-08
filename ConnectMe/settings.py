@@ -208,6 +208,8 @@ SIMPLE_JWT = {
 CORS_ORIGIN_WHITELIST = [
     config("BACKEND_BASE_URL"),
     config("FRONTEND_BASE_URL"),
+    config("BACKEND_BASE_URL_HTTP"),
+    config("FRONTEND_BASE_URL_HTTP"),
     config("BACKEND_EC2_URL"),
 ]
 
