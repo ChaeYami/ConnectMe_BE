@@ -23,7 +23,8 @@ ALLOWED_HOSTS = [
     "backend_asgi",
     config("BACKEND_BASE_HOST"),
     config("FRONTEND_BASE_HOST"),
-    config("BACKEND_EC2_HOST"),
+    config("BACKEND_EC2_PUBLIC_HOST"),
+    config("BACKEND_EC2_PRIVATE_HOST"),
 ]
 
 # Application definition
