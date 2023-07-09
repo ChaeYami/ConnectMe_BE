@@ -208,14 +208,14 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 <div markdown='1'></div>
 
 - Docker, AWS 배포
-    - nginx, Backend, PostgreSQL
+    - nginx, Dokcer, Daphne, gunicorn, PostgreSQL, redis
 - 신고 유저 차단 기능
     - django-apscheduler
 - 1:1 채팅 기능
-    - redis, daphne, django-channels
+    - django-channels
     - 채팅방 참가 권한 인증
 - 알림 기능 (진행중)
-    - redis, daphne, django-channels
+    - django-channels
 
 </details>
 
