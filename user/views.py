@@ -381,7 +381,7 @@ class ProfileListView(APIView):
             admin_ids = [admin.id for admin in admins]
             profiles = Profile.objects.filter(prefer_region=prefer_region).exclude(
                 Q(id=request.user.id) | Q(id__in=admin_ids)
-            )
+            ).order_by('-user__joined_at')  # 최근 가입자 순으로 정렬
             serializer = ProfileSerializer(profiles, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -393,7 +393,7 @@ class ProfileListView(APIView):
             admin_ids = [admin.id for admin in admins]
             profiles = Profile.objects.filter(mbti=mbti).exclude(
                 Q(id=request.user.id) | Q(id__in=admin_ids)
-            )
+            ).order_by('-user__joined_at')  # 최근 가입자 순으로 정렬
             serializer = ProfileSerializer(profiles, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -405,7 +405,7 @@ class ProfileListView(APIView):
             admin_ids = [admin.id for admin in admins]
             profiles = Profile.objects.filter(age_range=age_range).exclude(
                 Q(id=request.user.id) | Q(id__in=admin_ids)
-            )
+            ).order_by('-user__joined_at')  # 최근 가입자 순으로 정렬
             serializer = ProfileSerializer(profiles, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -416,7 +416,7 @@ class ProfileListView(APIView):
             admin_ids = [admin.id for admin in admins]
             profiles = Profile.objects.all().exclude(
                 Q(id=request.user.id) | Q(id__in=admin_ids)
-            )
+            ).order_by('-user__joined_at')  # 최근 가입자 순으로 정렬
             serializer = ProfileSerializer(profiles, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
