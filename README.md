@@ -114,24 +114,8 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 
 <details>
 <summary>모임 상태 기능  </summary>
-<div markdown='1'></div>
-
-- 모집중, 모집 종료, 진행중, 모임종료, 자리없음
-
-</details>
-
-
-<details>
-<summary>검색기능</summary>
-<div markdown='1'></div>
-
-- 모임 모집 글 검색  
-- 지역 검색  
-
-</details>
-
-
-### 1:1 채팅
+<div markdown='1'></di까지)
+- 참가중인 채팅방 목록
 
 
 
@@ -211,7 +195,7 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
     - Dokcer, nginx, Daphne, gunicorn, PostgreSQL, redis
 - 신고 유저 차단 기능
     - django-apscheduler
-- 1:1 채팅 기능
+- 채팅 기능능
     - django-channels
     - 채팅방 참가 권한 인증
 - 실시간 알림 기능 (진행중)
