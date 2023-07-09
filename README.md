@@ -131,7 +131,7 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 </details>
 
 
-### 채팅
+### 1:1 채팅
 
 
 
