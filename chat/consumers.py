@@ -103,7 +103,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         join_message = f"{nickname}님이 채팅방에 참가했습니다."
 
         message = {
-            "author": nickname,
+            "author": "system",
             "content": join_message,
             "timestamp": str(datetime.now()),
         }
@@ -126,7 +126,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             exit_message = f"{nickname}님이 채팅방을 나갔습니다."
 
             message = {
-                "author": nickname,
+                "author": "system",
                 "content": exit_message,
                 "timestamp": str(datetime.now()),
             }
