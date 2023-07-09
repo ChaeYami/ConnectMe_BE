@@ -207,7 +207,7 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 <summary>🤍 노탁근(부팀장)  </summary>
 <div markdown='1'></div>
 
-- Docker, AWS 배포
+- Backend 배포
     - nginx, Dokcer, Daphne, gunicorn, PostgreSQL, redis
 - 신고 유저 차단 기능
     - django-apscheduler
