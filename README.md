@@ -131,7 +131,19 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 </details>
 
 
-### 채팅
+### 채팅 기능
+
+<details>
+<summary>1:1 채팅</summary>
+<div markdown='1'></div>
+
+- user_id 기반 채팅방 이름 생성
+- jwt 토큰으로 채팅방 참가 권한 인증
+- 입장/퇴장 메시지 출력
+- 이전 채팅 메시지 불러오기 (50개까지)
+- 참가중인 채팅방 목록
+
+</details>
 
 
 
@@ -207,12 +219,15 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 <summary>🤍 노탁근(부팀장)  </summary>
 <div markdown='1'></div>
 
-- Docker, AWS 배포
-    - nginx, Backend, PostgreSQL
+- Backend 배포
+    - Dokcer, nginx, Daphne, gunicorn, PostgreSQL, redis
 - 신고 유저 차단 기능
     - django-apscheduler
-- 채팅, 알림기능 (진행중)
-    - redis, daphne, django-channels
+- 채팅 기능
+    - django-channels
+    - 채팅방 참가 권한 인증
+- 실시간 알림 기능 (진행중)
+    - django-channels
 
 </details>
 
@@ -274,10 +289,12 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 
 🐬 Service Architecture
 ------
-![ConnectME 중간발표 서비스 아키텍쳐](https://github.com/PunciaTail/drf_homework/assets/120395814/a506d3db-88c8-4e2d-87fa-747d18a1e74e)
+![ConnectME 서비스 아키텍쳐](https://github.com/ChaeYami/ConnectMe_BE/assets/126448023/cb109020-f9a3-40e1-93dd-36938ed99af7)
+
 
 
 
 🐬 Team Project DOCS  
 ------
 [사회화지원소 팀노션](https://rhetorical-cilantro-7e4.notion.site/538c12449cf94e28b0c20a9f4ac0a3fc?v=96c787ffabfa458586546ec93833852b&pvs=4)
+
