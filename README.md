@@ -215,12 +215,14 @@
 <div markdown='1'></div>
 
 - User 앱 전반
-    - 회원가입, 로그인 / 소셜로그인 / 친구신청,수락,삭제 등 / 유저 신고 기능 등 user 앱 기능 전반
-    - SMS 인증 - 아이디 찾기 / 이메일 인증 - 비밀번호 재설정
+    - 회원가입, 로그인 / 소셜로그인 / 친구신청,수락,삭제 / 유저 신고 기능 등
+    - SMS 인증(아이디 찾기) / 이메일 인증(비밀번호 재설정)
+- counsel 앱
 - Amazon S3 static 파일 업로드 + cloudfront 배포
 - Validator 생성 및 적용
 - 팀원 코드 피드백 및 리팩토링
 - counsel app 테스트코드
+- 팀 문서(노션,README) 작성 및 관리
 
 </details>
 
@@ -228,15 +230,16 @@
 <summary>🤍 노탁근(부팀장)  </summary>
 <div markdown='1'></div>
 
-- Backend 배포
-    - Dokcer, nginx, Daphne, gunicorn, PostgreSQL, redis
+- AWS, Docker, Nginx 배포 (Backend, server)
 - 신고 유저 차단 기능
     - django-apscheduler
 - 채팅 기능
+    - 실시간 1:1채팅
     - django-channels
     - 채팅방 참가 권한 인증
 - 실시간 알림 기능 (진행중)
     - django-channels
+- 코드 리팩토링
 
 </details>
 
@@ -245,8 +248,9 @@
 <div markdown='1'></div>
 
 - Place 앱 전반
-    - 맛집추천 CRUD : 권한 기반 접근 / 댓글, 대댓글 CRUD / 다중이미지 업로드 등 place 앱 기능 전반
+    - 맛집추천 CRUD : 권한 기반 접근 / 댓글, 대댓글 CRUD / 다중이미지 업로드 등
     - 맛집 추천 크롤링
+- counsel 앱
 - 유저 프로필 앨범 기능 / 위치 API - 유저 위치 저장
 - user app 테스트코드
 - place app 테스트코드
@@ -259,7 +263,7 @@
 
 - Meeting 앱 전반
     - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드 
-
+- counsel 앱
 </details>
 
 <details>
