@@ -215,7 +215,7 @@
 <div markdown='1'></div>
 
 - User 앱 전반
-    - 회원가입, 로그인 / 소셜로그인 / 친구신청,수락,삭제 / 유저 신고 기능 등
+    - 회원가입, 로그인, 계정 비활성화 / 소셜로그인 / 친구신청,수락,삭제 / 유저 신고 기능 등
     - SMS 인증(아이디 찾기) / 이메일 인증(비밀번호 재설정)
 - counsel 앱
 - Amazon S3 static 파일 업로드 + cloudfront 배포
@@ -262,7 +262,9 @@
 <div markdown='1'></div>
 
 - Meeting 앱 전반
-    - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드 
+    - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드
+    - 모임 자동 모집종료 기능 (django-apscheduler)
+    - 모임 참가하기 / 북마크 기능
 - counsel 앱
 </details>
 
