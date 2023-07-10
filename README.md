@@ -288,6 +288,13 @@
 
 
 ***
+
+
+🐬 Service Architecture
+------
+![ConnectME 서비스 아키텍쳐](https://github.com/ChaeYami/ConnectMe_BE/assets/126448023/cb109020-f9a3-40e1-93dd-36938ed99af7)
+
+
 🐬 ERD
 ------
 
@@ -298,10 +305,4 @@
 🐬 Wireframe
 ------
 ![Group 21](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/fca58593-6d58-4302-9dae-a87af4e43e11)
-
-
-🐬 Service Architecture
-------
-![ConnectME 서비스 아키텍쳐](https://github.com/ChaeYami/ConnectMe_BE/assets/126448023/cb109020-f9a3-40e1-93dd-36938ed99af7)
-
 
