@@ -1,35 +1,42 @@
 <div align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&color=8FB4E1&height=200&section=header&text=%20Connect%20Me&fontSize=80&fontColor=ffffff"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=8FB4E1&height=200&section=header&text=%20ConnectME&fontSize=80&fontColor=ffffff"/>
 <img width="500" alt="Connectme_logo" src="https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/c0c57819-39dd-42b9-8b11-45243e32a269">
 </div>
 
 
-📱 배포
+🔗 Shortcut Link
 ------
-https://connectme.co.kr/
+**📱배포 : https://connectme.co.kr/**  
+**🐋 Front-End : [Front-End Link](https://github.com/ChaeYami/ConnectMe_FE)**  
+**💙 DOCS : [사회화지원소 팀노션](https://rhetorical-cilantro-7e4.notion.site/538c12449cf94e28b0c20a9f4ac0a3fc?v=96c787ffabfa458586546ec93833852b&pvs=4)**
 
+
+***
 📚 stacks 
 ------
 
-Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/selenium -43B02A?style=for-the-badge&logo=selenium&logoColor=white"> <img src="https://img.shields.io/badge/Redis -DC382D?style=for-the-badge&logo=redis&logoColor=white"> 
-<br> Server : <img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/nginx 1.18.0-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/docker 20.10.21 -2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/amazons3 -569A31?style=for-the-badge&logo=amazons3&logoColor=white"> <img src="https://img.shields.io/badge/daphne-092E20?style=for-the-badge&logo=django&logoColor=white">
-<br> Frontend : <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"> <img src="https://img.shields.io/badge/css3-1572B6?style=for-the-badge&logo=css3&logoColor=whit">
-<br> Database : <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+
+
+
+|Category|Stacks|
+|---|---|
+| Backend | <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for-the-badge&logo=python&logoColor=white">  <img src="https://img.shields.io/badge/django 4.2.2-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/djangorestframework 3.14.0-092E20?style=for-the-badge&logo=django&logoColor=white">  <img src="https://img.shields.io/badge/selenium -43B02A?style=for-the-badge&logo=selenium&logoColor=white"> <img src="https://img.shields.io/badge/Redis -DC382D?style=for-the-badge&logo=redis&logoColor=white">  |
+| Server | <img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/nginx 1.18.0-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/docker 20.10.21 -2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/amazons3 -569A31?style=for-the-badge&logo=amazons3&logoColor=white"> <img src="https://img.shields.io/badge/daphne-092E20?style=for-the-badge&logo=django&logoColor=white">  |
+| Frontend | <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">  <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"> <img src="https://img.shields.io/badge/css3-1572B6?style=for-the-badge&logo=css3&logoColor=whit">  |
+| Database | <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">|
+
+
 
 
 
 ***
 
-🐳 Connect ME : 함께 놀고 소통하며 즐거움을 찾는 커뮤니티 🎉
+🐳 Connect ME 
 ------
-> 2023.06.05 ~ 2023.07.10
+> 개발기간 : 2023.06.05 ~ 2023.07.10
 
-![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/75de3bb6-ec14-4384-980c-667a11bb7418)
+![Connect ME](https://github.com/ChaeYami/ConnectMe_BE/assets/120750451/59e83cdf-aedc-4425-9572-479c42123a92)
 
-
-🐋 Front-End 
-------
-[Front-End Link](https://github.com/ChaeYami/ConnectMe_FE)
 
 
 🐬 기능
@@ -293,10 +300,4 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 ------
 ![ConnectME 서비스 아키텍쳐](https://github.com/ChaeYami/ConnectMe_BE/assets/126448023/cb109020-f9a3-40e1-93dd-36938ed99af7)
 
-
-
-
-🐬 Team Project DOCS  
-------
-[사회화지원소 팀노션](https://rhetorical-cilantro-7e4.notion.site/538c12449cf94e28b0c20a9f4ac0a3fc?v=96c787ffabfa458586546ec93833852b&pvs=4)
 
