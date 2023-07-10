@@ -89,6 +89,22 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 
 </details>
 
+
+
+### 채팅 기능
+
+<details>
+<summary>1:1 채팅</summary>
+<div markdown='1'></div>
+
+- 채팅하기 버튼 -> 채팅방 자동 생성 / 입장
+- 채팅방 참가 권한 인증 (jwt token)
+- 입장/퇴장 메시지 출력
+- 이전 채팅 메시지 불러오기 (50개까지)
+- 참가중인 채팅방 목록
+
+</details>
+
 ### 모임생성 (만남의 광장)
 
 <details>
@@ -131,22 +147,6 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 - 지역 검색  
 
 </details>
-
-
-### 채팅 기능
-
-<details>
-<summary>1:1 채팅</summary>
-<div markdown='1'></div>
-
-- 채팅하기 버튼 -> 채팅방 자동 생성 / 입장
-- 채팅방 참가 권한 인증 (jwt token)
-- 입장/퇴장 메시지 출력
-- 이전 채팅 메시지 불러오기 (50개까지)
-- 참가중인 채팅방 목록
-
-</details>
-
 
 
 ### 장소추천
