@@ -263,8 +263,9 @@
 
 - Meeting 앱 전반
     - meeting 게시글 CRUD / 댓글, 대댓글 CRUD / 다중이미지 업로드
-    - 모임 자동 모집종료 기능 (django-apscheduler)
-    - 모임 참가하기 / 북마크 기능
+    - 모임 상태 기능(자동 모집종료) - django-apscheduler
+    - 모임 참가하기 기능 / 북마크 기능
+
 - counsel 앱
 </details>
 
