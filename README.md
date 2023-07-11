@@ -215,6 +215,7 @@
 <div markdown='1'></div>
 
 - User 앱 전반
+
     - 회원가입, 로그인, 계정 비활성화 / 소셜로그인 / 친구신청,수락,삭제 / 유저 신고 기능 등
     - SMS 인증(아이디 찾기) / 이메일 인증(비밀번호 재설정)
 - counsel 앱
@@ -232,6 +233,7 @@
 
 - AWS, Docker, Nginx 배포 (Backend, server)
 - 신고 유저 차단 기능
+
     - django-apscheduler
 - 채팅 기능
     - 실시간 1:1채팅
@@ -248,6 +250,7 @@
 <div markdown='1'></div>
 
 - Place 앱 전반
+  
     - 맛집추천 CRUD : 권한 기반 접근 / 댓글, 대댓글 CRUD / 다중이미지 업로드 등
     - 맛집 추천 크롤링
 - counsel 앱
