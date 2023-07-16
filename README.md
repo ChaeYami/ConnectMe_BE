@@ -208,7 +208,7 @@ Backend : <img src="https://img.shields.io/badge/python 3.10.6 -3776AB?style=for
 <div markdown='1'></div>
 
 - Docker, AWS 배포
-    - nginx, Backend, PostgreSQL
+    - nginx, Backend, PostgreSQL  
 - 신고 유저 차단 기능
     - django-apscheduler
 - 채팅, 알림기능 (진행중)
