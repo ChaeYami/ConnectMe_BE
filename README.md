@@ -296,7 +296,7 @@
 ***
 
 
-🐬 Service Architecture
+🐬 Service Architecture 
 ------
 ![ConnectME 서비스 아키텍쳐](https://github.com/ChaeYami/ConnectMe_BE/assets/126448023/cb109020-f9a3-40e1-93dd-36938ed99af7)
 
